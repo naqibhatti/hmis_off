@@ -1,0 +1,518 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../widgets/common_header.dart';
+import '../models/patient_data.dart';
+import '../models/family_data.dart';
+import 'modify_family_page.dart';
+
+class AddFamilyPage extends StatefulWidget {
+  const AddFamilyPage({super.key});
+
+  @override
+  State<AddFamilyPage> createState() => _AddFamilyPageState();
+}
+
+class _AddFamilyPageState extends State<AddFamilyPage> {
+  final TextEditingController _cnicController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  
+  // Mock patient database - in real app this would come from backend
+  final List<PatientData> _allPatients = [
+    PatientData(
+      fullName: 'John Doe',
+      age: 35,
+      bloodGroup: 'A+',
+      email: 'john@example.com',
+      phone: '0300-1234567',
+      address: '123 Main Street, Lahore',
+      cnic: '12345-1234567-1',
+      gender: 'Male',
+      dateOfBirth: DateTime(1989, 1, 1),
+    ),
+    PatientData(
+      fullName: 'Jane Smith',
+      age: 28,
+      bloodGroup: 'B+',
+      email: 'jane@example.com',
+      phone: '0300-7654321',
+      address: '456 Park Avenue, Karachi',
+      cnic: '23456-2345678-2',
+      gender: 'Female',
+      dateOfBirth: DateTime(1996, 5, 15),
+    ),
+    PatientData(
+      fullName: 'Ahmed Khan',
+      age: 42,
+      bloodGroup: 'O+',
+      email: 'ahmed@example.com',
+      phone: '0300-9876543',
+      address: '789 Garden Road, Islamabad',
+      cnic: '34567-3456789-3',
+      gender: 'Male',
+      dateOfBirth: DateTime(1982, 8, 20),
+    ),
+  ];
+
+  List<PatientData> _searchResults = [];
+  bool _isSearching = false;
+  late VoidCallback _familyListener;
+
+  @override
+  void initState() {
+    super.initState();
+    _familyListener = () {
+      if (mounted) {
+        setState(() {});
+      }
+    };
+    FamilyManager.addListener(_familyListener);
+  }
+
+  @override
+  void dispose() {
+    _cnicController.dispose();
+    FamilyManager.removeListener(_familyListener);
+    super.dispose();
+  }
+
+  void _searchPatients() {
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() {
+        _isSearching = true;
+      });
+
+      // Simulate search delay
+      Future.delayed(const Duration(milliseconds: 500), () {
+        final searchCnic = _cnicController.text.trim();
+        _searchResults = _allPatients.where((patient) {
+          return patient.cnic.toLowerCase().contains(searchCnic.toLowerCase());
+        }).toList();
+
+        setState(() {
+          _isSearching = false;
+        });
+
+        if (_searchResults.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No patients found with this CNIC'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      });
+    }
+  }
+
+  void _selectPatient(PatientData patient) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create New Family'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Head of Family: ${patient.fullName}'),
+            Text('Age: ${patient.age} years'),
+            Text('CNIC: ${patient.cnic}'),
+            Text('Blood Group: ${patient.bloodGroup}'),
+            const SizedBox(height: 8),
+            Text('Family Name: ${patient.fullName.split(' ').last} Family'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _createFamily(patient);
+            },
+            child: const Text('Create Family'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _createFamily(PatientData patient) {
+    final headOfFamily = FamilyMember.fromPatientData(patient, 'Head of Family');
+    final newFamily = Family(
+      headOfFamily: headOfFamily,
+      members: [],
+    );
+    
+    FamilyManager.addFamily(newFamily);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${newFamily.familyName} created successfully'),
+        backgroundColor: Colors.green,
+      ),
+    );
+    
+    // Clear search results
+    setState(() {
+      _searchResults.clear();
+      _cnicController.clear();
+    });
+  }
+
+  void _modifyFamily(int familyIndex) {
+    final family = FamilyManager.families[familyIndex];
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ModifyFamilyPage(
+          family: family,
+          familyIndex: familyIndex,
+        ),
+      ),
+    );
+  }
+
+  void _deleteFamily(int familyIndex) {
+    final family = FamilyManager.families[familyIndex];
+    
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Family'),
+        content: Text('Are you sure you want to delete ${family.familyName}? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              FamilyManager.deleteFamily(familyIndex);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${family.familyName} deleted successfully'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? _requiredValidator(String? value, {String fieldName = 'This field'}) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName is required';
+    }
+    return null;
+  }
+
+  String? _cnicValidator(String? value) {
+    final String? requiredResult = _requiredValidator(value, fieldName: 'CNIC');
+    if (requiredResult != null) return requiredResult;
+    
+    final RegExp pattern = RegExp(r'^\d{5}-\d{7}-\d{1}$');
+    if (!pattern.hasMatch(value!.trim())) {
+      return 'Enter CNIC as 12345-1234567-1';
+    }
+    return null;
+  }
+
+  // Formats numeric input into 12345-1234567-1 as the user types.
+  static final RegExp _nonDigit = RegExp(r'[^0-9]');
+  static String _formatCnic(String raw) {
+    final String digits = raw.replaceAll(_nonDigit, '');
+    final StringBuffer out = StringBuffer();
+    for (int i = 0; i < digits.length && i < 13; i++) {
+      out.write(digits[i]);
+      if (i == 4 || i == 11) {
+        out.write('-');
+      }
+    }
+    return out.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      body: Column(
+        children: [
+          // Header
+          CommonHeader(
+            title: 'Add Family',
+            userAccessLevel: 'Doctor',
+            showBackButton: true,
+            onLogout: () {
+              Navigator.of(context).pushReplacementNamed('/login');
+            },
+          ),
+          
+          // Main content
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Search section
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Add New Family',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _cnicController,
+                            keyboardType: TextInputType.number,
+                            textInputAction: TextInputAction.search,
+                            decoration: const InputDecoration(
+                              labelText: 'Enter Head of Family\'s CNIC',
+                              hintText: '12345-1234567-1',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.search),
+                            ),
+                            inputFormatters: <TextInputFormatter>[
+                              _CnicInputFormatter(),
+                            ],
+                            validator: _cnicValidator,
+                            onFieldSubmitted: (_) => _searchPatients(),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: FilledButton.icon(
+                              onPressed: _isSearching ? null : _searchPatients,
+                              icon: _isSearching 
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.search),
+                              label: Text(_isSearching ? 'Searching...' : 'Search Patients'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Search results
+                  if (_searchResults.isNotEmpty) ...[
+                    Text(
+                      'Search Results',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: _searchResults.length,
+                        itemBuilder: (context, index) {
+                          final patient = _searchResults[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: theme.colorScheme.primary,
+                                child: Text(
+                                  patient.fullName[0].toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                patient.fullName,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Age: ${patient.age} years'),
+                                  Text('CNIC: ${patient.cnic}'),
+                                  Text('Blood Group: ${patient.bloodGroup}'),
+                                ],
+                              ),
+                              trailing: FilledButton(
+                                onPressed: () => _selectPatient(patient),
+                                child: const Text('Create Family'),
+                              ),
+                              isThreeLine: true,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ] else ...[
+                    // Families list
+                    Text(
+                      'Existing Families',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: FamilyManager.families.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.family_restroom,
+                                    size: 64,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No families created yet',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Search for a patient to create your first family',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: Colors.grey.shade500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: FamilyManager.families.length,
+                              itemBuilder: (context, index) {
+                                final family = FamilyManager.families[index];
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            CircleAvatar(
+                                              backgroundColor: theme.colorScheme.primary,
+                                              child: Text(
+                                                family.headOfFamily.fullName[0].toUpperCase(),
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    family.familyName,
+                                                    style: const TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Head: ${family.headOfFamily.fullName}',
+                                                    style: TextStyle(
+                                                      color: Colors.grey.shade600,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Members: ${family.allMembers.length}',
+                                                    style: TextStyle(
+                                                      color: Colors.grey.shade600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Column(
+                                              children: [
+                                                FilledButton.tonal(
+                                                  onPressed: () => _modifyFamily(index),
+                                                  style: FilledButton.styleFrom(
+                                                    minimumSize: const Size(80, 36),
+                                                  ),
+                                                  child: const Text('Modify'),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                FilledButton(
+                                                  onPressed: () => _deleteFamily(index),
+                                                  style: FilledButton.styleFrom(
+                                                    backgroundColor: theme.colorScheme.error,
+                                                    foregroundColor: theme.colorScheme.onError,
+                                                    minimumSize: const Size(80, 36),
+                                                  ),
+                                                  child: const Text('Delete'),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CnicInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final String formatted = _AddFamilyPageState._formatCnic(newValue.text);
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
