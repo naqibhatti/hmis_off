@@ -56,6 +56,7 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
   List<PatientData> _searchResults = [];
   bool _isSearching = false;
   late VoidCallback _familyListener;
+  Family? _newlyCreatedFamily;
 
   @override
   void initState() {
@@ -73,6 +74,44 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     _cnicController.dispose();
     FamilyManager.removeListener(_familyListener);
     super.dispose();
+  }
+
+  void _clearNewlyCreatedFamily() {
+    setState(() {
+      _newlyCreatedFamily = null;
+    });
+  }
+
+  String? _requiredValidator(String? value, {String fieldName = 'This field'}) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName is required';
+    }
+    return null;
+  }
+
+  String? _cnicValidator(String? value) {
+    final String? requiredResult = _requiredValidator(value, fieldName: 'CNIC');
+    if (requiredResult != null) return requiredResult;
+    
+    final RegExp pattern = RegExp(r'^\d{5}-\d{7}-\d{1}$');
+    if (!pattern.hasMatch(value!.trim())) {
+      return 'Enter CNIC as 12345-1234567-1';
+    }
+    return null;
+  }
+
+  // Formats numeric input into 12345-1234567-1 as the user types.
+  static final RegExp _nonDigit = RegExp(r'[^0-9]');
+  static String _formatCnic(String raw) {
+    final String digits = raw.replaceAll(_nonDigit, '');
+    final StringBuffer out = StringBuffer();
+    for (int i = 0; i < digits.length && i < 13; i++) {
+      out.write(digits[i]);
+      if (i == 4 || i == 11) {
+        out.write('-');
+      }
+    }
+    return out.toString();
   }
 
   void _searchPatients() {
@@ -147,18 +186,19 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     
     FamilyManager.addFamily(newFamily);
     
+    // Set the newly created family to show only this one
+    setState(() {
+      _newlyCreatedFamily = newFamily;
+      _searchResults.clear();
+      _cnicController.clear();
+    });
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${newFamily.familyName} created successfully'),
         backgroundColor: Colors.green,
       ),
     );
-    
-    // Clear search results
-    setState(() {
-      _searchResults.clear();
-      _cnicController.clear();
-    });
   }
 
   void _modifyFamily(int familyIndex) {
@@ -190,6 +230,15 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
             onPressed: () {
               Navigator.of(context).pop();
               FamilyManager.deleteFamily(familyIndex);
+              
+              // Clear the newly created family if it was deleted
+              if (_newlyCreatedFamily != null && 
+                  _newlyCreatedFamily!.headOfFamily.cnic == family.headOfFamily.cnic) {
+                setState(() {
+                  _newlyCreatedFamily = null;
+                });
+              }
+              
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('${family.familyName} deleted successfully'),
@@ -205,37 +254,6 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     );
   }
 
-  String? _requiredValidator(String? value, {String fieldName = 'This field'}) {
-    if (value == null || value.trim().isEmpty) {
-      return '$fieldName is required';
-    }
-    return null;
-  }
-
-  String? _cnicValidator(String? value) {
-    final String? requiredResult = _requiredValidator(value, fieldName: 'CNIC');
-    if (requiredResult != null) return requiredResult;
-    
-    final RegExp pattern = RegExp(r'^\d{5}-\d{7}-\d{1}$');
-    if (!pattern.hasMatch(value!.trim())) {
-      return 'Enter CNIC as 12345-1234567-1';
-    }
-    return null;
-  }
-
-  // Formats numeric input into 12345-1234567-1 as the user types.
-  static final RegExp _nonDigit = RegExp(r'[^0-9]');
-  static String _formatCnic(String raw) {
-    final String digits = raw.replaceAll(_nonDigit, '');
-    final StringBuffer out = StringBuffer();
-    for (int i = 0; i < digits.length && i < 13; i++) {
-      out.write(digits[i]);
-      if (i == 4 || i == 11) {
-        out.write('-');
-      }
-    }
-    return out.toString();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -290,22 +308,22 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _cnicController,
-                            keyboardType: TextInputType.number,
-                            textInputAction: TextInputAction.search,
-                            decoration: const InputDecoration(
-                              labelText: 'Enter Head of Family\'s CNIC',
-                              hintText: '12345-1234567-1',
-                              border: OutlineInputBorder(),
-                              prefixIcon: Icon(Icons.search),
-                            ),
-                            inputFormatters: <TextInputFormatter>[
-                              _CnicInputFormatter(),
-                            ],
-                            validator: _cnicValidator,
-                            onFieldSubmitted: (_) => _searchPatients(),
-                          ),
+                TextFormField(
+                  controller: _cnicController,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.search,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter Head of Family\'s CNIC',
+                    hintText: '12345-1234567-1',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                  inputFormatters: <TextInputFormatter>[
+                    _CnicInputFormatter(),
+                  ],
+                  validator: _cnicValidator,
+                  onFieldSubmitted: (_) => _searchPatients(),
+                ),
                           const SizedBox(height: 16),
                           SizedBox(
                             width: double.infinity,
@@ -379,122 +397,146 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                       ),
                     ),
                   ] else ...[
-                    // Families list
-                    Text(
-                      'Existing Families',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
+                    // Show newly created family or empty state
+                    if (_newlyCreatedFamily != null) ...[
+                      Row(
+                        children: [
+                          Text(
+                            'Created Family',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          FilledButton.tonal(
+                            onPressed: _clearNewlyCreatedFamily,
+                            child: const Text('Create New Family'),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: FamilyManager.families.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.family_restroom,
-                                    size: 64,
-                                    color: Colors.grey.shade400,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'No families created yet',
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      color: Colors.grey.shade600,
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: theme.colorScheme.primary,
+                                      child: Text(
+                                        _newlyCreatedFamily!.headOfFamily.fullName[0].toUpperCase(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Search for a patient to create your first family',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: Colors.grey.shade500,
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _newlyCreatedFamily!.familyName,
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Head: ${_newlyCreatedFamily!.headOfFamily.fullName}',
+                                            style: TextStyle(
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Members: ${_newlyCreatedFamily!.allMembers.length}',
+                                            style: TextStyle(
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : ListView.builder(
-                              itemCount: FamilyManager.families.length,
-                              itemBuilder: (context, index) {
-                                final family = FamilyManager.families[index];
-                                return Card(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    Column(
                                       children: [
-                                        Row(
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundColor: theme.colorScheme.primary,
-                                              child: Text(
-                                                family.headOfFamily.fullName[0].toUpperCase(),
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    family.familyName,
-                                                    style: const TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    'Head: ${family.headOfFamily.fullName}',
-                                                    style: TextStyle(
-                                                      color: Colors.grey.shade600,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    'Members: ${family.allMembers.length}',
-                                                    style: TextStyle(
-                                                      color: Colors.grey.shade600,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Column(
-                                              children: [
-                                                FilledButton.tonal(
-                                                  onPressed: () => _modifyFamily(index),
-                                                  style: FilledButton.styleFrom(
-                                                    minimumSize: const Size(80, 36),
-                                                  ),
-                                                  child: const Text('Modify'),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                FilledButton(
-                                                  onPressed: () => _deleteFamily(index),
-                                                  style: FilledButton.styleFrom(
-                                                    backgroundColor: theme.colorScheme.error,
-                                                    foregroundColor: theme.colorScheme.onError,
-                                                    minimumSize: const Size(80, 36),
-                                                  ),
-                                                  child: const Text('Delete'),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                        FilledButton.tonal(
+                                          onPressed: () {
+                                            // Find the index of the newly created family
+                                            final familyIndex = FamilyManager.families.indexWhere(
+                                              (f) => f.headOfFamily.cnic == _newlyCreatedFamily!.headOfFamily.cnic
+                                            );
+                                            if (familyIndex != -1) {
+                                              _modifyFamily(familyIndex);
+                                            }
+                                          },
+                                          style: FilledButton.styleFrom(
+                                            minimumSize: const Size(80, 36),
+                                          ),
+                                          child: const Text('Modify'),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        FilledButton(
+                                          onPressed: () {
+                                            // Find the index of the newly created family
+                                            final familyIndex = FamilyManager.families.indexWhere(
+                                              (f) => f.headOfFamily.cnic == _newlyCreatedFamily!.headOfFamily.cnic
+                                            );
+                                            if (familyIndex != -1) {
+                                              _deleteFamily(familyIndex);
+                                            }
+                                          },
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: theme.colorScheme.error,
+                                            foregroundColor: theme.colorScheme.onError,
+                                            minimumSize: const Size(80, 36),
+                                          ),
+                                          child: const Text('Delete'),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                );
-                              },
+                                  ],
+                                ),
+                              ],
                             ),
-                    ),
+                          ),
+                        ),
+                      ),
+                    ] else ...[
+                      // Empty state when no family is created
+                      Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.family_restroom,
+                                size: 64,
+                                color: Colors.grey.shade400,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No family created yet',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Search for a patient to create your first family',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ],
               ),
@@ -516,3 +558,4 @@ class _CnicInputFormatter extends TextInputFormatter {
     );
   }
 }
+
