@@ -58,61 +58,120 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Row(
-        children: <Widget>[
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.4,
-            child: Container(
-              color: theme.colorScheme.primary,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.1),
+              theme.colorScheme.secondary.withOpacity(0.05),
+            ],
+          ),
+        ),
+        child: Row(
+          children: <Widget>[
+            // Left side - Branding section
+            Container(
+              width: screenSize.width * 0.45,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    theme.colorScheme.primary,
+                    theme.colorScheme.primary.withOpacity(0.8),
+                    theme.colorScheme.secondary,
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600),
+                  constraints: const BoxConstraints(maxWidth: 500),
                   child: Padding(
-                    padding: const EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(40),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        // Logo area
-                        Align(
-                          alignment: Alignment.center,
-                          child: SizedBox(
-                            height: 140,
-                            child: Image.asset(
-                              'assets/images/punjab.png',
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.local_hospital,
-                                  size: 96,
-                                  color: theme.colorScheme.onPrimary.withOpacity(0.85),
-                                );
-                              },
-                            ),
+                        // Logo area with enhanced styling
+                        SizedBox(
+                          height: 120,
+                          child: Image.asset(
+                            'assets/images/punjab.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.local_hospital_rounded,
+                                size: 80,
+                                color: Colors.white.withOpacity(0.9),
+                              );
+                            },
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'Welcome back',
-                            style: theme.textTheme.displaySmall?.copyWith(
-                              color: theme.colorScheme.onPrimary,
-                              fontWeight: FontWeight.w700,
-                              fontSize: ((theme.textTheme.displaySmall?.fontSize) ?? 36) * 1.02,
-                            ),
+                        const SizedBox(height: 32),
+                        // Welcome text with enhanced typography
+                        Text(
+                          'Welcome back',
+                          style: theme.textTheme.displayMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'Sign in to your account',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: theme.colorScheme.onPrimary.withOpacity(0.9),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Sign in to your account',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: Colors.white.withOpacity(0.9),
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        // Feature highlights
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                              width: 1,
                             ),
+                          ),
+                          child: Column(
+                            children: [
+                              _buildFeatureItem(
+                                Icons.security_rounded,
+                                'Secure Access',
+                                'Your data is protected with enterprise-grade security',
+                                Colors.white.withOpacity(0.9),
+                              ),
+                              const SizedBox(height: 16),
+                              _buildFeatureItem(
+                                Icons.medical_services_rounded,
+                                'Healthcare Management',
+                                'Comprehensive patient and family management system',
+                                Colors.white.withOpacity(0.9),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -121,91 +180,246 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double maxFormWidth = 800;
-                return Center(
+            // Right side - Login form
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(-5, 0),
+                    ),
+                  ],
+                ),
+                child: Center(
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: maxFormWidth),
+                    constraints: const BoxConstraints(maxWidth: 450),
                     child: Padding(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(48),
                       child: Form(
                         key: _formKey,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[
-                              // Login form fields
-                              TextFormField(
-                                controller: _cnicController,
-                                keyboardType: TextInputType.number,
-                                textInputAction: TextInputAction.next,
-                                decoration: const InputDecoration(
-                                  labelText: 'CNIC',
-                                  hintText: '12345-1234567-1',
-                                  border: OutlineInputBorder(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            // Header
+                            Text(
+                              'Sign In',
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: theme.colorScheme.primary,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Enter your credentials to access your account',
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            // CNIC field with enhanced styling
+                            TextFormField(
+                              controller: _cnicController,
+                              keyboardType: TextInputType.number,
+                              textInputAction: TextInputAction.next,
+                              style: theme.textTheme.bodyLarge,
+                              decoration: InputDecoration(
+                                labelText: 'CNIC',
+                                hintText: '12345-1234567-1',
+                                prefixIcon: Icon(
+                                  Icons.credit_card_rounded,
+                                  color: theme.colorScheme.primary,
                                 ),
-                                inputFormatters: <TextInputFormatter>[
-                                  _CnicInputFormatter(),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                              ),
+                              inputFormatters: <TextInputFormatter>[
+                                _CnicInputFormatter(),
+                              ],
+                              validator: (value) {
+                                final String? requiredResult = _requiredValidator(value, fieldName: 'CNIC');
+                                if (requiredResult != null) return requiredResult;
+                                final RegExp pattern = RegExp(r'^\d{5}-\d{7}-\d{1}$');
+                                if (!pattern.hasMatch(value!.trim())) {
+                                  return 'Enter CNIC as 12345-1234567-1';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                            // Password field with enhanced styling
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.done,
+                              style: theme.textTheme.bodyLarge,
+                              decoration: InputDecoration(
+                                labelText: 'Password',
+                                prefixIcon: Icon(
+                                  Icons.lock_rounded,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                              ),
+                              validator: (value) {
+                                final String? requiredResult = _requiredValidator(value, fieldName: 'Password');
+                                if (requiredResult != null) return requiredResult;
+                                if (value!.length < 8) {
+                                  return 'Password must be at least 8 characters';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 32),
+                            // Enhanced login button
+                            Container(
+                              height: 56,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    theme.colorScheme.primary,
+                                    theme.colorScheme.primary.withOpacity(0.8),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.primary.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
                                 ],
-                                validator: (value) {
-                                  final String? requiredResult = _requiredValidator(value, fieldName: 'CNIC');
-                                  if (requiredResult != null) return requiredResult;
-                                  final RegExp pattern = RegExp(r'^\d{5}-\d{7}-\d{1}$');
-                                  if (!pattern.hasMatch(value!.trim())) {
-                                    return 'Enter CNIC as 12345-1234567-1';
-                                  }
-                                  return null;
-                                },
                               ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                textInputAction: TextInputAction.done,
-                                decoration: InputDecoration(
-                                  labelText: 'Password',
-                                  border: const OutlineInputBorder(),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                              child: FilledButton(
+                                onPressed: _login,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                validator: (value) {
-                                  final String? requiredResult = _requiredValidator(value, fieldName: 'Password');
-                                  if (requiredResult != null) return requiredResult;
-                                  if (value!.length < 8) {
-                                    return 'Password must be at least 8 characters';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 24),
-                              // Login button
-                              SizedBox(
-                                height: 56,
-                                child: FilledButton(
-                                  onPressed: _login,
-                                  style: FilledButton.styleFrom(
-                                    textStyle: theme.textTheme.titleMedium,
+                                child: Text(
+                                  'Sign In',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
                                   ),
-                                  child: const Text('Sign in'),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 24),
+                            // Footer text
+                            Text(
+                              'By signing in, you agree to our Terms of Service and Privacy Policy',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: Colors.grey.shade500,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildFeatureItem(IconData icon, String title, String description, Color color) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                description,
+                style: TextStyle(
+                  color: color.withOpacity(0.8),
+                  fontSize: 12,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
