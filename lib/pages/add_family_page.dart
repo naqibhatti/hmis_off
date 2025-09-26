@@ -57,6 +57,11 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
   bool _isSearching = false;
   late VoidCallback _familyListener;
   Family? _newlyCreatedFamily;
+  
+  // For existing family search
+  final TextEditingController _existingFamilyCnicController = TextEditingController();
+  List<Family> _existingFamilyResults = [];
+  bool _isSearchingExisting = false;
 
   @override
   void initState() {
@@ -72,6 +77,7 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
   @override
   void dispose() {
     _cnicController.dispose();
+    _existingFamilyCnicController.dispose();
     FamilyManager.removeListener(_familyListener);
     super.dispose();
   }
@@ -80,6 +86,100 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     setState(() {
       _newlyCreatedFamily = null;
     });
+  }
+
+  void _selectExistingFamily(Family family) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Family: ${family.familyName}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Head: ${family.headOfFamily.fullName}'),
+            Text('Members: ${family.allMembers.length}'),
+            const SizedBox(height: 16),
+            const Text('What would you like to do?'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.tonal(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _modifyExistingFamily(family);
+            },
+            child: const Text('Modify'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _deleteExistingFamily(family);
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _modifyExistingFamily(Family family) {
+    final familyIndex = FamilyManager.families.indexWhere((f) => f.headOfFamily.cnic == family.headOfFamily.cnic);
+    if (familyIndex != -1) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ModifyFamilyPage(
+            family: family,
+            familyIndex: familyIndex,
+          ),
+        ),
+      );
+    }
+  }
+
+  void _deleteExistingFamily(Family family) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Family'),
+        content: Text('Are you sure you want to delete ${family.familyName}? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              final familyIndex = FamilyManager.families.indexWhere((f) => f.headOfFamily.cnic == family.headOfFamily.cnic);
+              if (familyIndex != -1) {
+                FamilyManager.deleteFamily(familyIndex);
+                setState(() {
+                  _existingFamilyResults.clear();
+                  _existingFamilyCnicController.clear();
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${family.familyName} deleted successfully'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   String? _requiredValidator(String? value, {String fieldName = 'This field'}) {
@@ -141,6 +241,40 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
         }
       });
     }
+  }
+
+  void _searchExistingFamilies() {
+    final searchCnic = _existingFamilyCnicController.text.trim();
+    if (searchCnic.isEmpty) {
+      setState(() {
+        _existingFamilyResults.clear();
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearchingExisting = true;
+    });
+
+    // Simulate search delay
+    Future.delayed(const Duration(milliseconds: 300), () {
+      _existingFamilyResults = FamilyManager.families.where((family) {
+        return family.headOfFamily.cnic.toLowerCase().contains(searchCnic.toLowerCase());
+      }).toList();
+
+      setState(() {
+        _isSearchingExisting = false;
+      });
+
+      if (_existingFamilyResults.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No existing families found with this CNIC'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    });
   }
 
   void _selectPatient(PatientData patient) {
@@ -340,6 +474,48 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                               label: Text(_isSearching ? 'Searching...' : 'Search Patients'),
                             ),
                           ),
+                          const SizedBox(height: 32),
+                          
+                          // Existing Family Search Section
+                          Text(
+                            'Search Existing Family',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _existingFamilyCnicController,
+                            keyboardType: TextInputType.number,
+                            textInputAction: TextInputAction.search,
+                            decoration: const InputDecoration(
+                              labelText: 'Enter Head of Family\'s CNIC',
+                              hintText: '12345-1234567-1',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.family_restroom),
+                            ),
+                            inputFormatters: <TextInputFormatter>[
+                              _CnicInputFormatter(),
+                            ],
+                            onFieldSubmitted: (_) => _searchExistingFamilies(),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: FilledButton.icon(
+                              onPressed: _isSearchingExisting ? null : _searchExistingFamilies,
+                              icon: _isSearchingExisting 
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.search),
+                              label: Text(_isSearchingExisting ? 'Searching...' : 'Search Existing Families'),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -397,8 +573,87 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                       ),
                     ),
                   ] else ...[
-                    // Show newly created family or empty state
-                    if (_newlyCreatedFamily != null) ...[
+                    // Show search results or newly created family
+                    if (_searchResults.isNotEmpty) ...[
+                      Text(
+                        'Search Results',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: _searchResults.length,
+                          itemBuilder: (context, index) {
+                            final patient = _searchResults[index];
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: theme.colorScheme.primary,
+                                  child: Text(
+                                    patient.fullName[0].toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                title: Text(patient.fullName),
+                                subtitle: Text('CNIC: ${patient.cnic} • Age: ${patient.age}'),
+                                trailing: FilledButton(
+                                  onPressed: () => _selectPatient(patient),
+                                  child: const Text('Create Family'),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ] else if (_existingFamilyResults.isNotEmpty) ...[
+                      Text(
+                        'Existing Families Found',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: _existingFamilyResults.length,
+                          itemBuilder: (context, index) {
+                            final family = _existingFamilyResults[index];
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: theme.colorScheme.secondary,
+                                  child: const Icon(
+                                    Icons.family_restroom,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                title: Text(family.familyName),
+                                subtitle: Text('Head: ${family.headOfFamily.fullName} • Members: ${family.allMembers.length}'),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    FilledButton.tonal(
+                                      onPressed: () => _selectExistingFamily(family),
+                                      style: FilledButton.styleFrom(
+                                        minimumSize: const Size(80, 36),
+                                      ),
+                                      child: const Text('Select'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ] else if (_newlyCreatedFamily != null) ...[
                       Row(
                         children: [
                           Text(
