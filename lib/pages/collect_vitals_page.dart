@@ -326,9 +326,9 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
     final isRecent = DateTime.now().difference(record.recordedAt).inDays < 7;
     
     return Container(
-      width: 250,
-      margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.all(16),
+      width: 200,
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -346,43 +346,86 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
               Icon(
                 Icons.favorite,
                 color: isRecent ? Colors.green.shade600 : Colors.grey.shade600,
-                size: 16,
+                size: 14,
               ),
               const SizedBox(width: 4),
               Expanded(
-                child:           Text(
-            _formatDate(record.recordedAt),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: isRecent ? Colors.green.shade700 : Colors.grey.shade700,
-            ),
-          ),
+                child: Text(
+                  _formatDate(record.recordedAt),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isRecent ? Colors.green.shade700 : Colors.grey.shade700,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _buildVitalRow('BP', '${record.systolic}/${record.diastolic}', 'systolic', record.systolic.toString()),
-          _buildVitalRow('Weight', '${record.weight}kg', 'weight', record.weight.toString()),
-          if (record.temperature != null)
-            _buildVitalRow('Temp', '${record.temperature}°F', 'temperature', record.temperature.toString()),
-          if (record.pulse != null)
-            _buildVitalRow('Pulse', '${record.pulse}bpm', 'pulse', record.pulse.toString()),
-          _buildVitalRow('Height', '${record.height}cm', 'height', record.height.toString()),
           const SizedBox(height: 8),
+          _buildCompactVitalRow('BP', '${record.systolic}/${record.diastolic}', 'systolic', record.systolic.toString()),
+          _buildCompactVitalRow('Weight', '${record.weight}kg', 'weight', record.weight.toString()),
+          if (record.temperature != null)
+            _buildCompactVitalRow('Temp', '${record.temperature}°F', 'temperature', record.temperature.toString()),
+          if (record.pulse != null)
+            _buildCompactVitalRow('Pulse', '${record.pulse}bpm', 'pulse', record.pulse.toString()),
+          _buildCompactVitalRow('Height', '${record.height}cm', 'height', record.height.toString()),
+          const SizedBox(height: 6),
           Text(
             'By: ${record.recordedBy}',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 9,
               color: Colors.grey.shade600,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // Build compact vital row for history cards
+  Widget _buildCompactVitalRow(String label, String value, String vitalType, String valueString) {
+    final color = _getVitalColor(vitalType, valueString);
+    final isAbnormal = _isVitalAbnormal(vitalType, valueString);
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 40,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 9,
+                color: color,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 9,
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          if (isAbnormal)
+            Icon(
+              Icons.warning,
+              size: 10,
+              color: color,
+            ),
         ],
       ),
     );
@@ -693,7 +736,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                 ),
                                 const SizedBox(height: 12),
                                 SizedBox(
-                                  height: 160,
+                                  height: 180,
                                   child: ListView.builder(
                                     scrollDirection: Axis.horizontal,
                                     itemCount: _patientVitalsHistory.length,
