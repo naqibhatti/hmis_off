@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'doctor_dashboard.dart';
+import 'receptionist_dashboard.dart';
+import '../models/user_type.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   
   bool _obscurePassword = true;
+  UserType _selectedUserType = UserType.doctor;
 
   @override
   void dispose() {
@@ -25,10 +28,17 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Navigate to doctor dashboard
+      // Navigate to appropriate dashboard based on user type
+      Widget dashboard;
+      if (_selectedUserType == UserType.doctor) {
+        dashboard = const DoctorDashboard();
+      } else {
+        dashboard = const ReceptionistDashboard();
+      }
+      
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const DoctorDashboard(),
+          builder: (context) => dashboard,
         ),
       );
     }
@@ -222,6 +232,61 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             const SizedBox(height: 40),
+                            // User type selection tabs
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: UserType.values.map((userType) {
+                                  final isSelected = _selectedUserType == userType;
+                                  return Expanded(
+                                    child: InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedUserType = userType;
+                                        });
+                                      },
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                          horizontal: 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? theme.colorScheme.primary
+                                              : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              userType.icon,
+                                              style: const TextStyle(fontSize: 24),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              userType.displayName,
+                                              style: theme.textTheme.bodyMedium?.copyWith(
+                                                color: isSelected
+                                                    ? Colors.white
+                                                    : Colors.grey.shade600,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w600
+                                                    : FontWeight.w400,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
                             // CNIC field with enhanced styling
                             TextFormField(
                               controller: _cnicController,

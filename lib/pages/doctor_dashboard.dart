@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'add_patient_page.dart';
 import 'collect_vitals_page.dart';
 import 'add_family_page.dart';
+import 'login_page.dart';
 import '../widgets/common_header.dart';
 import '../models/patient_data.dart';
 
@@ -46,7 +47,11 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
             userAccessLevel: 'Doctor',
             showBackButton: false,
             onLogout: () {
-              Navigator.of(context).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const LoginPage(),
+                ),
+              );
             },
           ),
           // Main content
@@ -61,26 +66,12 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(60),
-                  child:                   GridView.count(
-                    crossAxisCount: 4,
+                  child: GridView.count(
+                    crossAxisCount: 3,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                     childAspectRatio: 1.1,
                     children: <Widget>[
-                    _buildDashboardCard(
-                      context: context,
-                      title: 'Add Patient',
-                      icon: Icons.person_add,
-                      color: Colors.blue,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const AddPatientPage(),
-                          ),
-                        );
-                      },
-                      isEnabled: true, // Always enabled
-                    ),
                     _buildDashboardCard(
                       context: context,
                       title: 'Add Family',
