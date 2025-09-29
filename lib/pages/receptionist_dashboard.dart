@@ -284,7 +284,7 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
   String _getUrduTranslation(String title) {
     switch (title) {
       case 'Add Patient':
-        return 'مریض شامل کریں';
+        return 'مریض ان پٹ کریں';
       case 'Collect Vitals':
         return 'حیاتیاتی علامات جمع کریں';
       default:

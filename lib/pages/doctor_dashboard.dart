@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'add_patient_page.dart';
 import 'collect_vitals_page.dart';
 import 'add_family_page.dart';
+import 'diagnostic_page.dart';
 import 'login_page.dart';
 import '../widgets/common_header.dart';
 import '../models/patient_data.dart';
@@ -194,8 +195,10 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       icon: Icons.medical_services,
                       color: Colors.green,
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Diagnosis & Prescription feature coming soon')),
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const DiagnosticPage(),
+                          ),
                         );
                       },
                       isEnabled: true,
@@ -345,7 +348,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
   String _getUrduTranslation(String title) {
     switch (title) {
       case 'Add Family':
-        return 'خاندان شامل کریں';
+        return 'خاندانی تفصیلات ان پٹ کریں';
       case 'Collect Vitals':
         return 'حیاتیاتی علامات جمع کریں';
       case 'Diagnosis & Prescription':
