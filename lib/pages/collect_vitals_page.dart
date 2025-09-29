@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/common_header.dart';
 import 'vitals_pdf_preview_page.dart';
 import '../models/patient_data.dart';
+import '../services/patient_data_service.dart';
 
 class CollectVitalsPage extends StatefulWidget {
   final String? patientName;
@@ -29,6 +30,12 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
   final TextEditingController _pulseController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
 
+  // Patient selection
+  PatientData? _selectedPatient;
+  List<PatientData> _allPatients = [];
+  List<PatientData> _filteredPatients = [];
+  final TextEditingController _patientSearchController = TextEditingController();
+
   // Normal health ranges for vital signs
   static const Map<String, VitalRange> _vitalRanges = {
     'systolic': VitalRange(normal: Range(90, 120), warning: Range(80, 140), critical: Range(50, 180)),
@@ -40,6 +47,13 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    _loadPatients();
+    _patientSearchController.addListener(_filterPatients);
+  }
+
+  @override
   void dispose() {
     _systolicController.dispose();
     _diastolicController.dispose();
@@ -47,7 +61,38 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
     _temperatureController.dispose();
     _pulseController.dispose();
     _heightController.dispose();
+    _patientSearchController.dispose();
     super.dispose();
+  }
+
+  void _loadPatients() {
+    setState(() {
+      _allPatients = PatientDataService.allPatients;
+      _filteredPatients = _allPatients;
+      
+      // If patient info was passed from previous screen, try to find the patient
+      if (widget.patientName != null) {
+        _selectedPatient = _allPatients.firstWhere(
+          (p) => p.fullName == widget.patientName,
+          orElse: () => _allPatients.first, // Fallback to first patient
+        );
+      }
+    });
+  }
+
+  void _filterPatients() {
+    final query = _patientSearchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _filteredPatients = _allPatients;
+      } else {
+        _filteredPatients = _allPatients.where((patient) {
+          return patient.fullName.toLowerCase().contains(query) ||
+                 patient.cnic.contains(query) ||
+                 patient.phone.contains(query);
+        }).toList();
+      }
+    });
   }
 
   void _submit() {
@@ -57,8 +102,12 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
         systolic: int.parse(_systolicController.text.trim()),
         diastolic: int.parse(_diastolicController.text.trim()),
         weight: double.parse(_weightController.text.trim()),
-        temperature: double.parse(_temperatureController.text.trim()),
-        pulse: int.parse(_pulseController.text.trim()),
+        temperature: _temperatureController.text.trim().isNotEmpty 
+            ? double.parse(_temperatureController.text.trim()) 
+            : 0.0,
+        pulse: _pulseController.text.trim().isNotEmpty 
+            ? int.parse(_pulseController.text.trim()) 
+            : 0,
         height: double.parse(_heightController.text.trim()),
       );
 
@@ -72,7 +121,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog
-                final patient = PatientManager.currentPatient;
+                final patient = _selectedPatient ?? PatientManager.currentPatient;
                 if (patient == null) {
                   // Create a default patient for PDF generation
                   final defaultPatient = PatientData(
@@ -253,21 +302,153 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
+                      // Patient Selection Dropdown
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          border: Border.all(color: Colors.blue.shade200),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.person_search,
+                                  color: Colors.blue.shade700,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Select Patient',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Autocomplete<PatientData>(
+                              optionsBuilder: (TextEditingValue textEditingValue) {
+                                if (textEditingValue.text.isEmpty) {
+                                  return _allPatients.take(10);
+                                }
+                                return _filteredPatients.take(10);
+                              },
+                              displayStringForOption: (PatientData patient) => 
+                                  '${patient.fullName} (${patient.cnic}) - ${patient.age} years',
+                              fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                                _patientSearchController.addListener(() {
+                                  controller.text = _patientSearchController.text;
+                                });
+                                return TextFormField(
+                                  controller: controller,
+                                  focusNode: focusNode,
+                                  decoration: InputDecoration(
+                                    hintText: 'Search by name, CNIC, or phone...',
+                                    border: const OutlineInputBorder(),
+                                    prefixIcon: const Icon(Icons.search),
+                                    suffixIcon: _selectedPatient != null
+                                        ? IconButton(
+                                            icon: const Icon(Icons.clear),
+                                            onPressed: () {
+                                              setState(() {
+                                                _selectedPatient = null;
+                                                _patientSearchController.clear();
+                                              });
+                                            },
+                                          )
+                                        : null,
+                                  ),
+                                  onChanged: (value) {
+                                    _patientSearchController.text = value;
+                                  },
+                                );
+                              },
+                              onSelected: (PatientData patient) {
+                                setState(() {
+                                  _selectedPatient = patient;
+                                  _patientSearchController.text = '${patient.fullName} (${patient.cnic})';
+                                });
+                              },
+                              optionsViewBuilder: (context, onSelected, options) {
+                                return Align(
+                                  alignment: Alignment.topLeft,
+                                  child: Material(
+                                    elevation: 4.0,
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(maxHeight: 200),
+                                      child: ListView.builder(
+                                        padding: EdgeInsets.zero,
+                                        shrinkWrap: true,
+                                        itemCount: options.length,
+                                        itemBuilder: (context, index) {
+                                          final patient = options.elementAt(index);
+                                          return ListTile(
+                                            dense: true,
+                                            leading: CircleAvatar(
+                                              radius: 16,
+                                              backgroundColor: Colors.blue.shade100,
+                                              child: Text(
+                                                patient.fullName[0].toUpperCase(),
+                                                style: TextStyle(
+                                                  color: Colors.blue.shade700,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            title: Text(
+                                              patient.fullName,
+                                              style: const TextStyle(fontSize: 14),
+                                            ),
+                                            subtitle: Text(
+                                              '${patient.cnic} • ${patient.age} years • ${patient.bloodGroup}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ),
+                                            onTap: () => onSelected(patient),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       // Patient Information Card
-                      if (widget.patientName != null) ...[
+                      if (_selectedPatient != null) ...[
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            border: Border.all(color: Colors.blue.shade200),
+                            color: Colors.green.shade50,
+                            border: Border.all(color: Colors.green.shade200),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: <Widget>[
-                              Icon(
-                                Icons.person,
-                                color: Colors.blue.shade700,
-                                size: 32,
+                              CircleAvatar(
+                                radius: 24,
+                                backgroundColor: Colors.green.shade100,
+                                child: Text(
+                                  _selectedPatient!.fullName[0].toUpperCase(),
+                                  style: TextStyle(
+                                    color: Colors.green.shade700,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
@@ -275,33 +456,37 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     Text(
-                                      'Patient: ${widget.patientName}',
+                                      'Patient: ${_selectedPatient!.fullName}',
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.blue.shade700,
+                                        color: Colors.green.shade700,
                                       ),
                                     ),
-                                    if (widget.patientAge != null) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Age: ${widget.patientAge} years',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.blue.shade600,
-                                        ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Age: ${_selectedPatient!.age} years • ${_selectedPatient!.gender}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.green.shade600,
                                       ),
-                                    ],
-                                    if (widget.patientBloodGroup != null) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Blood Group: ${widget.patientBloodGroup}',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.blue.shade600,
-                                        ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Blood Group: ${_selectedPatient!.bloodGroup} • CNIC: ${_selectedPatient!.cnic}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.green.shade600,
                                       ),
-                                    ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Phone: ${_selectedPatient!.phone}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.green.shade600,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
