@@ -41,6 +41,124 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
   List<Disease> _filteredDiseases = [];
   Disease? _selectedDisease;
   
+  // Lab reports modal state
+  String _searchQuery = '';
+  String _selectedTestType = 'individual';
+  
+  // Lab tests data
+  static const List<String> _packageTests = [
+    'Basic Metabolic Panel',
+    'Comprehensive Metabolic Panel',
+    'Lipid Profile',
+    'Liver Function Tests',
+    'Thyroid Function Profile',
+    'Cardiac Panel',
+    'Coagulation Panel',
+    'Anemia Workup',
+    'Diabetes Panel',
+    'Hepatitis Panel',
+    'STI Screening Panel',
+    'Tumor Markers (Male)',
+    'Tumor Markers (Female)',
+    '5-Panel Drug Screen',
+    'Pre-operative Panel',
+    'Prenatal Panel',
+  ];
+  
+  static const List<String> _individualTests = [
+    'Glucose',
+    'Urea/BUN',
+    'Creatinine',
+    'Sodium',
+    'Potassium',
+    'Chloride',
+    'Carbon Dioxide',
+    'Alanine Aminotransferase (ALT)',
+    'Aspartate Aminotransferase (AST)',
+    'Alkaline Phosphatase',
+    'Total Bilirubin',
+    'Direct Bilirubin',
+    'Albumin',
+    'Total Protein',
+    'Total Cholesterol',
+    'Triglycerides',
+    'HDL Cholesterol',
+    'LDL Cholesterol',
+    'Troponin I',
+    'Troponin T',
+    'CK-MB',
+    'NT-proBNP',
+    'B-Type Natriuretic Peptide',
+    'Creatine Kinase Total',
+    'Neutrophils %',
+    'Lymphocytes %',
+    'Monocytes %',
+    'Eosinophils %',
+    'Basophils %',
+    'Prothrombin Time',
+    'International Normalized Ratio',
+    'Partial Thromboplastin Time',
+    'D-Dimer',
+    'Fibrinogen',
+    'Hemoglobin',
+    'Hematocrit',
+    'Mean Cell Volume',
+    'Mean Cell Hemoglobin',
+    'Mean Cell Hemoglobin Concentration',
+    'Platelet Count',
+    'Red Cell Distribution Width',
+    'White Blood Cell Count',
+    'Red Blood Cell Count',
+    'Thyroid Stimulating Hormone',
+    'Thyroxine (T4)',
+    'Triiodothyronine (T3)',
+    'Free Thyroxine',
+    'Free Triiodothyronine',
+    'Luteinizing Hormone',
+    'Follicle Stimulating Hormone',
+    'Prolactin',
+    'Testosterone',
+    'Estradiol',
+    'Updated Test',
+    'Insulin',
+    'Hemoglobin A1c',
+    'VDRL/RPR',
+    'Treponema pallidum Antibody',
+    'Prostate Specific Antigen',
+    'Carcinoembryonic Antigen',
+    'Alpha Fetoprotein',
+    'Cancer Antigen 125',
+    'Cancer Antigen 19-9',
+    'Hepatitis B Surface Antigen',
+    'Hepatitis B Surface Antibody',
+    'Hepatitis C Antibody',
+    'Blood Culture Aerobic',
+    'Blood Culture Anaerobic',
+    'Urine Culture',
+    'Sputum Culture',
+    'Throat Culture',
+    'Wound Culture',
+    'Stool Culture',
+    'Stool Ova and Parasites',
+    'Gram Stain',
+    'Pap Smear (Conventional)',
+    'Liquid Based Cytology',
+    'Fine Needle Aspiration Cytology',
+    'Body Fluid Cytology',
+    'Routine Histopathology',
+    'Frozen Section',
+    'Immunohistochemistry (Single Stain)',
+    'Special Stains',
+    'Drug Screen (Urine)',
+    'Cocaine (Urine)',
+    'Cannabis (THC) Urine',
+    'Amphetamines (Urine)',
+    'Digoxin Level',
+    'Phenytoin Level',
+    'Lithium Level',
+    'Blood Alcohol Level',
+  ];
+  
   // Prescription Controllers
   final _medicineNameController = TextEditingController();
   final _medicineInstructionsController = TextEditingController();
@@ -678,11 +796,12 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                             ),
                           ],
                         ),
-                        child: Row(
+                        child:                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            // Refer Patient Button
                             SizedBox(
-                              width: 140,
+                              width: 120,
                               height: 56,
                               child: FilledButton(
                                 onPressed: () {
@@ -704,8 +823,30 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 ),
                               ),
                             ),
+                            // Lab Reports Button
                             SizedBox(
-                              width: 140,
+                              width: 120,
+                              height: 56,
+                              child: FilledButton(
+                                onPressed: () {
+                                  _showLabReportsModal(context);
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.purple,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Lab Reports',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            // Save Diagnosis Button
+                            SizedBox(
+                              width: 120,
                               height: 56,
                               child: FilledButton(
                                 onPressed: _saveDiagnosis,
@@ -852,5 +993,468 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
         ),
       );
     }
+  }
+
+  void _showLabReportsModal(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.8,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+            ),
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.purple.shade600,
+                        Colors.purple.shade400,
+                      ],
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.science,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Laboratory Reports',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Content
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Patient Info
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.purple.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.purple.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: Colors.purple.shade100,
+                                child: Icon(
+                                  Icons.person,
+                                  color: Colors.purple.shade700,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _selectedPatient?.fullName ?? 'No Patient Selected',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.purple.shade700,
+                                      ),
+                                    ),
+                                    Text(
+                                      'CNIC: ${_selectedPatient?.cnic ?? 'N/A'}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.purple.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        // Search Field
+                        TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Search Lab Tests',
+                            hintText: 'Type to search tests...',
+                            prefixIcon: const Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                          ),
+                          onChanged: (value) {
+                            setModalState(() {
+                              _searchQuery = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        // Test Type Selection Buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () {
+                                  setModalState(() {
+                                    _selectedTestType = 'individual';
+                                  });
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: _selectedTestType == 'individual' 
+                                      ? Colors.purple 
+                                      : Colors.grey.shade300,
+                                  foregroundColor: _selectedTestType == 'individual' 
+                                      ? Colors.white 
+                                      : Colors.grey.shade600,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text('Individual Tests'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () {
+                                  setModalState(() {
+                                    _selectedTestType = 'package';
+                                  });
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: _selectedTestType == 'package' 
+                                      ? Colors.purple 
+                                      : Colors.grey.shade300,
+                                  foregroundColor: _selectedTestType == 'package' 
+                                      ? Colors.white 
+                                      : Colors.grey.shade600,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text('Package Tests'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        // Lab Tests Section
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _selectedTestType == 'individual' 
+                                      ? 'Individual Lab Tests' 
+                                      : 'Package Lab Tests',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.purple.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                // Lab Tests List
+                                _buildLabTestsList(),
+                                const SizedBox(height: 20),
+                                // Recent Reports Section
+                                Text(
+                                  'Recent Lab Reports',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.purple.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade50,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.info_outline,
+                                            color: Colors.blue.shade600,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'No recent lab reports found',
+                                            style: TextStyle(
+                                              color: Colors.grey.shade600,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Lab reports will appear here once tests are ordered and completed.',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade500,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Footer Actions
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      FilledButton(
+                        onPressed: () {
+                          // TODO: Implement order lab tests
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Order lab tests feature coming soon')),
+                          );
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Order Lab Tests'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildLabTestCard(String title, String code, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 24,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            code,
+            style: TextStyle(
+              fontSize: 10,
+              color: color.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLabTestsList() {
+    final tests = _selectedTestType == 'individual' ? _individualTests : _packageTests;
+    final filteredTests = _searchQuery.isEmpty 
+        ? tests 
+        : tests.where((test) => 
+            test.toLowerCase().contains(_searchQuery.toLowerCase())
+          ).toList();
+
+    if (filteredTests.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.search_off,
+              color: Colors.grey.shade400,
+              size: 48,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'No tests found',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Try adjusting your search terms',
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: filteredTests.length,
+      itemBuilder: (context, index) {
+        final test = filteredTests[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade200,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: CircleAvatar(
+              backgroundColor: _selectedTestType == 'individual' 
+                  ? Colors.blue.shade100 
+                  : Colors.purple.shade100,
+              child: Icon(
+                _selectedTestType == 'individual' 
+                    ? Icons.science 
+                    : Icons.inventory,
+                color: _selectedTestType == 'individual' 
+                    ? Colors.blue.shade700 
+                    : Colors.purple.shade700,
+                size: 20,
+              ),
+            ),
+            title: Text(
+              test,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade800,
+              ),
+            ),
+            subtitle: Text(
+              _selectedTestType == 'individual' 
+                  ? 'Individual Test' 
+                  : 'Package Test',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            trailing: IconButton(
+              onPressed: () {
+                // TODO: Add test to order
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Added $test to order'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              icon: Icon(
+                Icons.add_circle_outline,
+                color: Colors.purple.shade600,
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
