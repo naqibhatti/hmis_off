@@ -213,18 +213,23 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
     
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.black.withOpacity(0.2),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
             spreadRadius: 0,
           ),
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
             spreadRadius: 0,
           ),
         ],
@@ -233,71 +238,30 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
         color: Colors.transparent,
         child: InkWell(
           onTap: isEnabled ? onTap : null,
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: isEnabled
-                  ? LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        color.withOpacity(0.1),
-                        color.withOpacity(0.05),
-                        Colors.white,
-                      ],
-                    )
-                  : LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.grey.shade100,
-                        Colors.grey.shade50,
-                      ],
-                    ),
-              border: Border.all(
-                color: isEnabled ? color.withOpacity(0.2) : Colors.grey.shade300,
-                width: 1.5,
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: isEnabled ? color.withOpacity(0.15) : Colors.grey.shade200,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: isEnabled ? color.withOpacity(0.3) : Colors.grey.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      icon,
-                      size: 36,
-                      color: isEnabled ? color : Colors.grey.shade400,
-                    ),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(
+                  icon,
+                  size: 28,
+                  color: isEnabled ? color : Colors.grey.shade400,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: isEnabled ? theme.colorScheme.onSurface : Colors.grey.shade500,
+                    fontSize: 14,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: isEnabled ? theme.colorScheme.onSurface : Colors.grey.shade500,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ),
