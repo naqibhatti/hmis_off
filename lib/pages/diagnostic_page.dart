@@ -163,6 +163,32 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
   final _medicineNameController = TextEditingController();
   final _medicineInstructionsController = TextEditingController();
   
+  // Medicine dropdown
+  String? _selectedMedicine;
+  
+  // Available medicines
+  static const List<String> _availableMedicines = [
+    'Panadol 500mg Tablet',
+    'Paracetamol 500mg Tablet',
+    'Panadol Syrup 120mg/5ml',
+    'Brufen 400mg Tablet',
+    'Ibuprofen 400mg Tablet',
+    'Brufen Suspension 100mg/5ml',
+    'Amoxil 500mg Capsule',
+    'Amoxicillin 500mg Capsule',
+    'Amoxil 125mg/5ml Suspension',
+    'Glucophage 500mg Tablet',
+    'Metformin 500mg Tablet',
+    'Norvasc 5mg Tablet',
+    'Amlodipine 5mg Tablet',
+    'Losec 20mg Capsule',
+    'Ventolin Inhaler 100mcg',
+    'Claritin 10mg Tablet',
+    'Zocor 20mg Tablet',
+    'Keflex 500mg Capsule',
+    'Panadol 100mg Tablet',
+  ];
+  
   List<Map<String, String>> _prescriptions = [];
 
   @override
@@ -736,13 +762,34 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                     children: [
                                       Expanded(
                                         flex: 2,
-                                        child: TextFormField(
-                                          controller: _medicineNameController,
+                                        child: DropdownButtonFormField<String>(
+                                          value: _selectedMedicine,
                                           decoration: const InputDecoration(
-                                            labelText: 'Medicine Name',
+                                            labelText: 'Select Medicine',
                                             border: OutlineInputBorder(),
                                             isDense: true,
                                           ),
+                                          items: _availableMedicines.map((String medicine) {
+                                            return DropdownMenuItem<String>(
+                                              value: medicine,
+                                              child: Text(
+                                                medicine,
+                                                style: const TextStyle(fontSize: 14),
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (String? newValue) {
+                                            setState(() {
+                                              _selectedMedicine = newValue;
+                                              _medicineNameController.text = newValue ?? '';
+                                            });
+                                          },
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please select a medicine';
+                                            }
+                                            return null;
+                                          },
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -970,13 +1017,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
   }
 
   void _addPrescription() {
-    if (_medicineNameController.text.isNotEmpty && 
+    if (_selectedMedicine != null && 
         _medicineInstructionsController.text.isNotEmpty) {
       setState(() {
         _prescriptions.add({
-          'name': _medicineNameController.text,
+          'name': _selectedMedicine!,
           'instructions': _medicineInstructionsController.text,
         });
+        _selectedMedicine = null;
         _medicineNameController.clear();
         _medicineInstructionsController.clear();
       });
@@ -1023,8 +1071,8 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Colors.purple.shade600,
-                        Colors.purple.shade400,
+                        Colors.green.shade600,
+                        Colors.green.shade400,
                       ],
                     ),
                     borderRadius: const BorderRadius.only(
@@ -1072,17 +1120,17 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.purple.shade50,
+                            color: Colors.green.shade50,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.purple.shade200),
+                            border: Border.all(color: Colors.green.shade200),
                           ),
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: Colors.purple.shade100,
+                                backgroundColor: Colors.green.shade100,
                                 child: Icon(
                                   Icons.person,
-                                  color: Colors.purple.shade700,
+                                  color: Colors.green.shade700,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -1095,14 +1143,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.purple.shade700,
+                                        color: Colors.green.shade700,
                                       ),
                                     ),
                                     Text(
                                       'CNIC: ${_selectedPatient?.cnic ?? 'N/A'}',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: Colors.purple.shade600,
+                                        color: Colors.green.shade600,
                                       ),
                                     ),
                                   ],
@@ -1143,7 +1191,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 },
                                 style: FilledButton.styleFrom(
                                   backgroundColor: _selectedTestType == 'individual' 
-                                      ? Colors.purple 
+                                      ? Colors.green 
                                       : Colors.grey.shade300,
                                   foregroundColor: _selectedTestType == 'individual' 
                                       ? Colors.white 
@@ -1165,7 +1213,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 },
                                 style: FilledButton.styleFrom(
                                   backgroundColor: _selectedTestType == 'package' 
-                                      ? Colors.purple 
+                                      ? Colors.green 
                                       : Colors.grey.shade300,
                                   foregroundColor: _selectedTestType == 'package' 
                                       ? Colors.white 
@@ -1193,60 +1241,12 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.purple.shade700,
+                                    color: Colors.green.shade700,
                                   ),
                                 ),
                                 const SizedBox(height: 16),
                                 // Lab Tests List
                                 _buildLabTestsList(),
-                                const SizedBox(height: 20),
-                                // Recent Reports Section
-                                Text(
-                                  'Recent Lab Reports',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.purple.shade700,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade50,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.grey.shade300),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.info_outline,
-                                            color: Colors.blue.shade600,
-                                            size: 20,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'No recent lab reports found',
-                                            style: TextStyle(
-                                              color: Colors.grey.shade600,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Lab reports will appear here once tests are ordered and completed.',
-                                        style: TextStyle(
-                                          color: Colors.grey.shade500,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
                               ],
                             ),
                           ),
@@ -1276,7 +1276,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                           );
                         },
                         style: FilledButton.styleFrom(
-                          backgroundColor: Colors.purple,
+                          backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -1409,14 +1409,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
             leading: CircleAvatar(
               backgroundColor: _selectedTestType == 'individual' 
                   ? Colors.blue.shade100 
-                  : Colors.purple.shade100,
+                  : Colors.green.shade100,
               child: Icon(
                 _selectedTestType == 'individual' 
                     ? Icons.science 
                     : Icons.inventory,
                 color: _selectedTestType == 'individual' 
                     ? Colors.blue.shade700 
-                    : Colors.purple.shade700,
+                    : Colors.green.shade700,
                 size: 20,
               ),
             ),
@@ -1449,7 +1449,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
               },
               icon: Icon(
                 Icons.add_circle_outline,
-                color: Colors.purple.shade600,
+                color: Colors.green.shade600,
               ),
             ),
           ),
