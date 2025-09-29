@@ -320,6 +320,155 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
     );
   }
 
+  // Build vitals display for history records (similar to diagnostic page)
+  Widget _buildVitalsDisplayForHistory(VitalsRecord record) {
+    final isRecent = DateTime.now().difference(record.recordedAt).inDays < 7;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Date and recorded by info
+        Row(
+          children: [
+            Icon(
+              Icons.favorite,
+              color: isRecent ? Colors.green.shade600 : Colors.grey.shade600,
+              size: 16,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _formatDate(record.recordedAt),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isRecent ? Colors.green.shade700 : Colors.grey.shade700,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              'By: ${record.recordedBy}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // Vitals display in one row
+        Row(
+          children: [
+            Expanded(
+              child: _buildVitalCardForHistory(
+                'Temperature',
+                '${record.temperature?.toStringAsFixed(1) ?? 'N/A'}°F',
+                Icons.thermostat,
+                Colors.red,
+                'temperature',
+                record.temperature?.toString() ?? '',
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: _buildVitalCardForHistory(
+                'Pulse',
+                '${record.pulse?.toString() ?? 'N/A'} bpm',
+                Icons.favorite,
+                Colors.pink,
+                'pulse',
+                record.pulse?.toString() ?? '',
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: _buildVitalCardForHistory(
+                'Blood Pressure',
+                '${record.systolic}/${record.diastolic}',
+                Icons.monitor_heart,
+                Colors.blue,
+                'systolic',
+                record.systolic.toString(),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: _buildVitalCardForHistory(
+                'Weight',
+                '${record.weight.toStringAsFixed(1)} kg',
+                Icons.monitor_weight,
+                Colors.green,
+                'weight',
+                record.weight.toString(),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: _buildVitalCardForHistory(
+                'Height',
+                '${record.height.toStringAsFixed(0)} cm',
+                Icons.height,
+                Colors.purple,
+                'height',
+                record.height.toString(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Build vital card for history display
+  Widget _buildVitalCardForHistory(String label, String value, IconData icon, Color color, String vitalType, String valueString) {
+    final vitalColor = _getVitalColor(vitalType, valueString);
+    final isAbnormal = _isVitalAbnormal(vitalType, valueString);
+    
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: vitalColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: vitalColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: vitalColor, size: 14),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 8,
+              color: vitalColor,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 1),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 9,
+              color: vitalColor,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (isAbnormal)
+            Icon(
+              Icons.warning,
+              size: 8,
+              color: vitalColor,
+            ),
+        ],
+      ),
+    );
+  }
+
   // Build vitals history card
   Widget _buildVitalsHistoryCard(VitalsRecord record) {
     final theme = Theme.of(context);
@@ -751,49 +900,53 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                         const SizedBox(height: 16),
                         // Previous Vitals History
                         if (_patientVitalsHistory.isNotEmpty) ...[
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.shade50,
-                              border: Border.all(color: Colors.orange.shade200),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.history,
-                                      color: Colors.orange.shade700,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Previous Vitals (${_patientVitalsHistory.length} records)',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.orange.shade700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  height: 180,
-                                  child: ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: _patientVitalsHistory.length,
-                                    itemBuilder: (context, index) {
-                                      final record = _patientVitalsHistory[index];
-                                      return _buildVitalsHistoryCard(record);
-                                    },
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            'Previous Vitals (${_patientVitalsHistory.length} records)',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade700,
                             ),
                           ),
+                          const SizedBox(height: 12),
+                          ...(_patientVitalsHistory.take(3).map((record) => 
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade200),
+                              ),
+                              child: _buildVitalsDisplayForHistory(record),
+                            ),
+                          ).toList()),
+                          if (_patientVitalsHistory.length > 3)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.blue.shade200),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    color: Colors.blue.shade700,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${_patientVitalsHistory.length - 3} more records available',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.blue.shade700,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           const SizedBox(height: 16),
                         ],
                       ] else ...[
