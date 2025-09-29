@@ -20,7 +20,7 @@ class ModifyFamilyPage extends StatefulWidget {
 }
 
 class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _cnicController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   
   // Mock patient database - in real app this would come from backend
@@ -143,16 +143,16 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _cnicController.dispose();
     FamilyManager.removeListener(_familyListener);
     super.dispose();
   }
 
-  void _searchPatients() {
+  void _searchPatientsByCNIC() {
     if (_currentFamily == null) return;
     
-    final searchName = _nameController.text.trim();
-    if (searchName.isEmpty) {
+    final searchCnic = _cnicController.text.trim();
+    if (searchCnic.isEmpty) {
       setState(() {
         _searchResults.clear();
       });
@@ -168,7 +168,7 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
       _searchResults = _allPatients.where((patient) {
         // Exclude existing family members
         final existingCNICs = _currentFamily!.allMembers.map((member) => member.cnic).toList();
-        return patient.fullName.toLowerCase().contains(searchName.toLowerCase()) &&
+        return patient.cnic.toLowerCase().contains(searchCnic.toLowerCase()) &&
                !existingCNICs.contains(patient.cnic);
       }).toList();
 
@@ -178,17 +178,36 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
     });
   }
 
-  List<PatientData> _getFilteredPatients(String query) {
-    if (_currentFamily == null) return [];
+  String? _requiredValidator(String? value, {String fieldName = 'This field'}) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName is required';
+    }
+    return null;
+  }
+
+  String? _cnicValidator(String? value) {
+    final String? requiredResult = _requiredValidator(value, fieldName: 'CNIC');
+    if (requiredResult != null) return requiredResult;
     
-    if (query.isEmpty) return [];
-    
-    return _allPatients.where((patient) {
-      // Exclude existing family members
-      final existingCNICs = _currentFamily!.allMembers.map((member) => member.cnic).toList();
-      return patient.fullName.toLowerCase().contains(query.toLowerCase()) &&
-             !existingCNICs.contains(patient.cnic);
-    }).toList();
+    final RegExp pattern = RegExp(r'^\d{5}-\d{7}-\d{1}$');
+    if (!pattern.hasMatch(value!.trim())) {
+      return 'Enter CNIC as 12345-1234567-1';
+    }
+    return null;
+  }
+
+  // Formats numeric input into 12345-1234567-1 as the user types.
+  static final RegExp _nonDigit = RegExp(r'[^0-9]');
+  static String _formatCnic(String raw) {
+    final String digits = raw.replaceAll(_nonDigit, '');
+    final StringBuffer out = StringBuffer();
+    for (int i = 0; i < digits.length && i < 13; i++) {
+      out.write(digits[i]);
+      if (i == 4 || i == 11) {
+        out.write('-');
+      }
+    }
+    return out.toString();
   }
 
   void _addFamilyMember(PatientData patient) {
@@ -259,7 +278,7 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
     // Clear search results
     setState(() {
       _searchResults.clear();
-      _nameController.clear();
+      _cnicController.clear();
     });
   }
 
@@ -438,87 +457,32 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Autocomplete<PatientData>(
-                  optionsBuilder: (TextEditingValue textEditingValue) {
-                    if (textEditingValue.text.isEmpty) {
-                      return const Iterable<PatientData>.empty();
-                    }
-                    return _getFilteredPatients(textEditingValue.text);
+                TextFormField(
+                  controller: _cnicController,
+                  textInputAction: TextInputAction.search,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    TextInputFormatter.withFunction((oldValue, newValue) {
+                      final String formatted = _formatCnic(newValue.text);
+                      return TextEditingValue(
+                        text: formatted,
+                        selection: TextSelection.collapsed(offset: formatted.length),
+                      );
+                    }),
+                  ],
+                  validator: _cnicValidator,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter Family Member\'s CNIC',
+                    hintText: '12345-1234567-1',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.credit_card),
+                  ),
+                  onChanged: (value) {
+                    _searchPatientsByCNIC();
                   },
-                  displayStringForOption: (PatientData patient) => patient.fullName,
-                  fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                    _nameController.addListener(() {
-                      controller.text = _nameController.text;
-                    });
-                    return TextFormField(
-                      controller: controller,
-                      focusNode: focusNode,
-                      textInputAction: TextInputAction.search,
-                      decoration: const InputDecoration(
-                        labelText: 'Enter Family Member\'s Name',
-                        hintText: 'Type name to search...',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person_search),
-                      ),
-                      onChanged: (value) {
-                        _nameController.text = value;
-                        _searchPatients();
-                      },
-                      onFieldSubmitted: (value) {
-                        onFieldSubmitted();
-                        _searchPatients();
-                      },
-                    );
-                  },
-                  optionsViewBuilder: (context, onSelected, options) {
-                    return Align(
-                      alignment: Alignment.topLeft,
-                      child: Material(
-                        elevation: 4.0,
-                        borderRadius: BorderRadius.circular(8),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 200),
-                          child: ListView.builder(
-                            padding: EdgeInsets.zero,
-                            shrinkWrap: true,
-                            itemCount: options.length,
-                            itemBuilder: (context, index) {
-                              final patient = options.elementAt(index);
-                              return ListTile(
-                                dense: true,
-                                leading: CircleAvatar(
-                                  radius: 16,
-                                  backgroundColor: theme.colorScheme.primary,
-                                  child: Text(
-                                    patient.fullName[0].toUpperCase(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                title: Text(
-                                  patient.fullName,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                                subtitle: Text(
-                                  'CNIC: ${patient.cnic} • Age: ${patient.age}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                                onTap: () {
-                                  onSelected(patient);
-                                  _addFamilyMember(patient);
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    );
+                  onFieldSubmitted: (value) {
+                    _searchPatientsByCNIC();
                   },
                 ),
                 const SizedBox(height: 16),
@@ -526,7 +490,7 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
                   width: double.infinity,
                   height: 48,
                   child: FilledButton.icon(
-                    onPressed: _isSearching ? null : _searchPatients,
+                    onPressed: _isSearching ? null : _searchPatientsByCNIC,
                     icon: _isSearching 
                         ? const SizedBox(
                             width: 20,
@@ -534,7 +498,7 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.search),
-                    label: Text(_isSearching ? 'Searching...' : 'Search by Name'),
+                    label: Text(_isSearching ? 'Searching...' : 'Search by CNIC'),
                   ),
                 ),
               ],
