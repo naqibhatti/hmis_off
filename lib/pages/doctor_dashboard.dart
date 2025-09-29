@@ -56,21 +56,95 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
           ),
           // Main content
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const SizedBox(height: 16),
-              // Cards grid
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(60),
-                  child: GridView.count(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 1.1,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.grey.shade50,
+                    Colors.white,
+                  ],
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const SizedBox(height: 20),
+                    // Welcome message
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.blue.shade50,
+                            Colors.purple.shade50,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.blue.shade100),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.medical_services,
+                              color: Colors.blue.shade700,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Welcome, Doctor!',
+                                  style: theme.textTheme.headlineSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.shade800,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Manage patients and their health records efficiently',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: Colors.blue.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Cards grid
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: GridView.count(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1.2,
                     children: <Widget>[
                     _buildDashboardCard(
                       context: context,
@@ -162,11 +236,12 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       },
                       isEnabled: true,
                     ),
+                        ],
+                        ),
+                      ),
+                    ),
                   ],
-                  ),
                 ),
-              ),
-                ],
               ),
             ),
           ),
@@ -185,57 +260,46 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
   }) {
     final ThemeData theme = Theme.of(context);
 
-    return Card(
-      elevation: isEnabled ? 4 : 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
         onTap: isEnabled ? onTap : null,
         borderRadius: BorderRadius.circular(12),
-        child: Opacity(
-          opacity: isEnabled ? 1.0 : 0.5,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(isEnabled ? 0.1 : 0.05),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 32,
-                    color: color.withOpacity(isEnabled ? 1.0 : 0.5),
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(
+                icon,
+                size: 28,
+                color: isEnabled ? color : Colors.grey.shade400,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: isEnabled ? theme.colorScheme.onSurface : Colors.grey.shade500,
+                  fontSize: 14,
                 ),
-                const SizedBox(height: 12),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (!isEnabled) ...[
+                const SizedBox(height: 4),
                 Text(
-                  title,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface.withOpacity(isEnabled ? 1.0 : 0.5),
+                  'Add patient first',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.orange.shade700,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 10,
                   ),
                   textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                if (!isEnabled) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    'Add patient first',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.grey.shade600,
-                      fontStyle: FontStyle.italic,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
               ],
-            ),
+            ],
           ),
         ),
       ),
