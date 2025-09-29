@@ -69,11 +69,11 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     // User Information Section
                     Container(
                       padding: const EdgeInsets.all(24),
@@ -128,7 +128,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    'HMIS (PRIMARY HEALTH FACILITIES) (2.6)',
+                                    'HMIS (PRIMARY HEALTH FACILITIES)',
                                     style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.green.shade700,
@@ -140,7 +140,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 15),
                           // User Details
                           Row(
                             children: [
@@ -156,7 +156,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                       Icons.person,
                                       isBold: true,
                                     ),
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: 10),
                                     _buildInfoCard(
                                       'Connection Status',
                                       'Connected',
@@ -180,7 +180,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                       Icons.medical_services,
                                       isBold: true,
                                     ),
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: 10),
                                     _buildInfoCard(
                                       'User ID',
                                       'MDU-01',
@@ -219,7 +219,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
                     // Cards grid
                     Expanded(
                       child: Container(

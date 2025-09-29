@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../widgets/common_header.dart';
 import '../services/patient_data_service.dart';
 import '../services/vitals_storage_service.dart';
+import '../services/diseases_service.dart';
 import '../models/patient_data.dart';
 
 class DiagnosticPage extends StatefulWidget {
@@ -31,8 +32,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
   
   // Diagnosis Controllers
   final _diseaseController = TextEditingController();
+  late TextEditingController _diseaseSearchController;
   final _followupDateController = TextEditingController();
   final _doctorNotesController = TextEditingController();
+  
+  // Disease search
+  List<Disease> _allDiseases = [];
+  List<Disease> _filteredDiseases = [];
+  Disease? _selectedDisease;
   
   // Prescription Controllers
   final _medicineNameController = TextEditingController();
@@ -43,12 +50,16 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
   @override
   void initState() {
     super.initState();
+    _diseaseSearchController = TextEditingController();
     _loadPatients();
+    _loadDiseases();
+    _diseaseSearchController.addListener(_filterDiseases);
   }
 
   @override
   void dispose() {
     _diseaseController.dispose();
+    _diseaseSearchController.dispose();
     _followupDateController.dispose();
     _doctorNotesController.dispose();
     _medicineNameController.dispose();
@@ -67,6 +78,50 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
         _loadPatientVitals();
       }
     });
+  }
+
+  void _loadDiseases() {
+    setState(() {
+      _allDiseases = DiseasesService.getAllDiseases();
+      _filteredDiseases = _allDiseases;
+    });
+  }
+
+  void _filterDiseases() {
+    setState(() {
+      _filteredDiseases = DiseasesService.searchDiseases(_diseaseSearchController.text);
+    });
+  }
+
+  IconData _getDiseaseIcon(String category) {
+    switch (category) {
+      case 'Cardiovascular':
+        return Icons.favorite;
+      case 'Respiratory':
+        return Icons.air;
+      case 'Endocrine':
+        return Icons.biotech;
+      case 'Gastrointestinal':
+        return Icons.restaurant;
+      case 'Neurological':
+        return Icons.psychology;
+      case 'Musculoskeletal':
+        return Icons.accessibility;
+      case 'Infectious':
+        return Icons.bug_report;
+      case 'Mental Health':
+        return Icons.psychology;
+      case 'Dermatological':
+        return Icons.face;
+      case 'Urological':
+        return Icons.water_drop;
+      case 'Gynecological':
+        return Icons.pregnant_woman;
+      case 'Pediatric':
+        return Icons.child_care;
+      default:
+        return Icons.medical_services;
+    }
   }
 
   void _loadPatientVitals() {
@@ -172,18 +227,24 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 SizedBox(
                                   width: 120,
                                   height: 56,
-                                  child: ElevatedButton(
+                                  child: FilledButton(
                                     onPressed: () {
                                       // TODO: Implement test reports functionality
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         const SnackBar(content: Text('Test Reports feature coming soon')),
                                       );
                                     },
-                                    style: ElevatedButton.styleFrom(
+                                    style: FilledButton.styleFrom(
                                       backgroundColor: Colors.amber,
                                       foregroundColor: Colors.black,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
-                                    child: const Text('Test Reports'),
+                                    child: const Text(
+                                      'Test Reports',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -322,17 +383,84 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                     ),
                                   ),
                                   const SizedBox(height: 20),
-                                  TextFormField(
-                                    controller: _diseaseController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Select Disease',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter disease';
+                                  // Disease Search Field
+                                  Autocomplete<Disease>(
+                                    optionsBuilder: (TextEditingValue textEditingValue) {
+                                      if (textEditingValue.text.isEmpty) {
+                                        return _allDiseases.take(10);
                                       }
-                                      return null;
+                                      return _filteredDiseases.take(10);
+                                    },
+                                    displayStringForOption: (Disease disease) => disease.name,
+                                    onSelected: (Disease disease) {
+                                      setState(() {
+                                        _selectedDisease = disease;
+                                        _diseaseController.text = disease.name;
+                                      });
+                                    },
+                                    fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                                      return TextFormField(
+                                        controller: controller,
+                                        focusNode: focusNode,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Search Disease',
+                                          hintText: 'Type to search diseases...',
+                                          border: OutlineInputBorder(),
+                                          prefixIcon: Icon(Icons.search),
+                                          suffixIcon: Icon(Icons.arrow_drop_down),
+                                        ),
+                                        onChanged: (value) {
+                                          _filterDiseases();
+                                        },
+                                        validator: (value) {
+                                          if (_selectedDisease == null) {
+                                            return 'Please select a disease';
+                                          }
+                                          return null;
+                                        },
+                                      );
+                                    },
+                                    optionsViewBuilder: (context, onSelected, options) {
+                                      return Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Material(
+                                          elevation: 4,
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: ConstrainedBox(
+                                            constraints: const BoxConstraints(maxHeight: 300),
+                                            child: ListView.builder(
+                                              padding: EdgeInsets.zero,
+                                              shrinkWrap: true,
+                                              itemCount: options.length,
+                                              itemBuilder: (context, index) {
+                                                final disease = options.elementAt(index);
+                                                return ListTile(
+                                                  dense: true,
+                                                  leading: Icon(
+                                                    _getDiseaseIcon(disease.category),
+                                                    size: 20,
+                                                    color: Colors.green.shade700,
+                                                  ),
+                                                  title: Text(
+                                                    disease.name,
+                                                    style: const TextStyle(fontSize: 14),
+                                                  ),
+                                                  subtitle: Text(
+                                                    '${disease.category} • ${disease.icdCode}',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey.shade600,
+                                                    ),
+                                                  ),
+                                                  onTap: () {
+                                                    onSelected(disease);
+                                                  },
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      );
                                     },
                                   ),
                                   const SizedBox(height: 16),
@@ -469,7 +597,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                                           _prescriptions.removeAt(index);
                                                         });
                                                       },
-                                                      icon: const Icon(Icons.delete, color: Colors.red),
+                                                      style: IconButton.styleFrom(
+                                                        backgroundColor: Colors.red.shade50,
+                                                        foregroundColor: Colors.red,
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(8),
+                                                        ),
+                                                      ),
+                                                      icon: const Icon(Icons.delete),
                                                     ),
                                                   ],
                                                 ),
@@ -505,13 +640,19 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      ElevatedButton(
+                                      FilledButton(
                                         onPressed: _addPrescription,
-                                        style: ElevatedButton.styleFrom(
+                                        style: FilledButton.styleFrom(
                                           backgroundColor: Colors.green,
                                           foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
                                         ),
-                                        child: const Text('ADD'),
+                                        child: const Text(
+                                          'ADD',
+                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -543,14 +684,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                             SizedBox(
                               width: 140,
                               height: 56,
-                              child: ElevatedButton(
+                              child: FilledButton(
                                 onPressed: () {
                                   // TODO: Implement refer functionality
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Refer feature coming soon')),
                                   );
                                 },
-                                style: ElevatedButton.styleFrom(
+                                style: FilledButton.styleFrom(
                                   backgroundColor: Colors.amber,
                                   foregroundColor: Colors.black,
                                   shape: RoundedRectangleBorder(
@@ -566,9 +707,9 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                             SizedBox(
                               width: 140,
                               height: 56,
-                              child: ElevatedButton(
+                              child: FilledButton(
                                 onPressed: _saveDiagnosis,
-                                style: ElevatedButton.styleFrom(
+                                style: FilledButton.styleFrom(
                                   backgroundColor: Colors.blue,
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
