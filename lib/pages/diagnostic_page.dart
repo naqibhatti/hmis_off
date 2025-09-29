@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/common_header.dart';
+import '../services/patient_data_service.dart';
+import '../services/vitals_storage_service.dart';
+import '../models/patient_data.dart';
 
 class DiagnosticPage extends StatefulWidget {
   final String? patientName;
@@ -21,14 +24,10 @@ class DiagnosticPage extends StatefulWidget {
 class _DiagnosticPageState extends State<DiagnosticPage> {
   final _formKey = GlobalKey<FormState>();
   
-  // Patient Vitals Controllers
-  final _patientNameController = TextEditingController();
-  final _temperatureController = TextEditingController();
-  final _pulseController = TextEditingController();
-  final _systolicController = TextEditingController();
-  final _diastolicController = TextEditingController();
-  final _heightController = TextEditingController();
-  final _weightController = TextEditingController();
+  // Patient Selection
+  PatientData? _selectedPatient;
+  List<PatientData> _allPatients = [];
+  List<VitalsRecord> _patientVitals = [];
   
   // Diagnosis Controllers
   final _diseaseController = TextEditingController();
@@ -44,26 +43,38 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.patientName != null) {
-      _patientNameController.text = widget.patientName!;
-    }
+    _loadPatients();
   }
 
   @override
   void dispose() {
-    _patientNameController.dispose();
-    _temperatureController.dispose();
-    _pulseController.dispose();
-    _systolicController.dispose();
-    _diastolicController.dispose();
-    _heightController.dispose();
-    _weightController.dispose();
     _diseaseController.dispose();
     _followupDateController.dispose();
     _doctorNotesController.dispose();
     _medicineNameController.dispose();
     _medicineInstructionsController.dispose();
     super.dispose();
+  }
+
+  void _loadPatients() {
+    setState(() {
+      _allPatients = PatientDataService.allPatients;
+      if (widget.patientName != null) {
+        _selectedPatient = _allPatients.firstWhere(
+          (patient) => patient.fullName == widget.patientName,
+          orElse: () => _allPatients.first,
+        );
+        _loadPatientVitals();
+      }
+    });
+  }
+
+  void _loadPatientVitals() {
+    if (_selectedPatient != null) {
+      setState(() {
+        _patientVitals = VitalsStorageService.getPatientVitals(_selectedPatient!.cnic);
+      });
+    }
   }
 
   @override
@@ -90,152 +101,71 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       const SizedBox(height: 16),
-                      // Patient Vitals Section
+                      // Patient Selection and Vitals Display Section
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade300, width: 1.5),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withOpacity(0.1),
                               blurRadius: 8,
-                              offset: const Offset(0, 2),
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Patient Vitals',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade700,
-                              ),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.person,
+                                  color: Colors.blue.shade700,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Patient Information & Vitals',
+                                  style: theme.textTheme.headlineSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.shade700,
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 20),
-                            // Patient Name
-                            TextFormField(
-                              controller: _patientNameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Patient Name',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter patient name';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            // Vitals Row 1: Temperature and Pulse
+                            // Patient Selection Dropdown
                             Row(
                               children: [
                                 Expanded(
-                                  child: TextFormField(
-                                    controller: _temperatureController,
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                                    ],
+                                  child: DropdownButtonFormField<PatientData>(
+                                    value: _selectedPatient,
                                     decoration: const InputDecoration(
-                                      labelText: 'Temperature (96-106) (°F)',
+                                      labelText: 'Select Patient',
                                       border: OutlineInputBorder(),
+                                      prefixIcon: Icon(Icons.search),
                                     ),
-                                    validator: (value) => _rangeValidator(value, 96, 106, 'Temperature'),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _pulseController,
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                    ],
-                                    decoration: const InputDecoration(
-                                      labelText: 'Pulse (60-100) (bpm)',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    validator: (value) => _rangeValidator(value, 60, 100, 'Pulse'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            // Blood Pressure Row
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _systolicController,
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                    ],
-                                    decoration: const InputDecoration(
-                                      labelText: 'Systolic (50-250) *',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    validator: (value) => _rangeValidator(value, 50, 250, 'Systolic'),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                const Text(
-                                  '/',
-                                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _diastolicController,
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                    ],
-                                    decoration: const InputDecoration(
-                                      labelText: 'Diastolic (30-200) *',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    validator: (value) => _rangeValidator(value, 30, 200, 'Diastolic'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            // Height and Weight Row
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _heightController,
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                                    ],
-                                    decoration: const InputDecoration(
-                                      labelText: 'Height (cm) *',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    validator: (value) => _rangeValidator(value, 50, 250, 'Height'),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _weightController,
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                                    ],
-                                    decoration: const InputDecoration(
-                                      labelText: 'Weight (1-220) (kg) *',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    validator: (value) => _rangeValidator(value, 1, 220, 'Weight'),
+                                    items: _allPatients.map((patient) {
+                                      return DropdownMenuItem<PatientData>(
+                                        value: patient,
+                                        child: Text('${patient.fullName} (${patient.cnic})'),
+                                      );
+                                    }).toList(),
+                                    onChanged: (PatientData? newValue) {
+                                      setState(() {
+                                        _selectedPatient = newValue;
+                                        _loadPatientVitals();
+                                      });
+                                    },
+                                    validator: (value) {
+                                      if (value == null) {
+                                        return 'Please select a patient';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -258,6 +188,105 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 ),
                               ],
                             ),
+                            if (_selectedPatient != null) ...[
+                              const SizedBox(height: 20),
+                              // Patient Info Card
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.blue.shade200),
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 30,
+                                      backgroundColor: Colors.blue.shade100,
+                                      child: Text(
+                                        _selectedPatient!.fullName[0].toUpperCase(),
+                                        style: TextStyle(
+                                          color: Colors.blue.shade700,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _selectedPatient!.fullName,
+                                            style: theme.textTheme.titleLarge?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue.shade800,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '${_selectedPatient!.age} years • ${_selectedPatient!.bloodGroup} • ${_selectedPatient!.cnic}',
+                                            style: theme.textTheme.bodyMedium?.copyWith(
+                                              color: Colors.blue.shade600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              // Latest Vitals Display
+                              if (_patientVitals.isNotEmpty) ...[
+                                Text(
+                                  'Latest Vitals',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade50,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.grey.shade200),
+                                  ),
+                                  child: _buildVitalsDisplay(_patientVitals.first),
+                                ),
+                              ] else ...[
+                                Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.shade50,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.orange.shade200),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.warning,
+                                        color: Colors.orange.shade700,
+                                        size: 24,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          'No vitals recorded for this patient. Please collect vitals first.',
+                                          style: theme.textTheme.bodyMedium?.copyWith(
+                                            color: Colors.orange.shade700,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
                           ],
                         ),
                       ),
@@ -272,13 +301,13 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.grey.shade300, width: 1.5),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
+                                    color: Colors.black.withOpacity(0.1),
                                     blurRadius: 8,
-                                    offset: const Offset(0, 2),
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
@@ -349,13 +378,13 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.grey.shade300, width: 1.5),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
+                                    color: Colors.black.withOpacity(0.1),
                                     blurRadius: 8,
-                                    offset: const Offset(0, 2),
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
@@ -494,39 +523,66 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                       ),
                       const SizedBox(height: 20),
                       // Action Buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 120,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                // TODO: Implement refer functionality
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Refer feature coming soon')),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber,
-                                foregroundColor: Colors.black,
-                              ),
-                              child: const Text('Refer'),
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
                             ),
-                          ),
-                          SizedBox(
-                            width: 120,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: _saveDiagnosis,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: 140,
+                              height: 56,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  // TODO: Implement refer functionality
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Refer feature coming soon')),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.amber,
+                                  foregroundColor: Colors.black,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Refer Patient',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                               ),
-                              child: const Text('Save'),
                             ),
-                          ),
-                        ],
+                            SizedBox(
+                              width: 140,
+                              height: 56,
+                              child: ElevatedButton(
+                                onPressed: _saveDiagnosis,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Save Diagnosis',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -539,18 +595,96 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
     );
   }
 
-  String? _rangeValidator(String? value, double min, double max, String fieldName) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter $fieldName';
-    }
-    final double? numValue = double.tryParse(value);
-    if (numValue == null) {
-      return 'Enter a valid number';
-    }
-    if (numValue < min || numValue > max) {
-      return 'Value must be between $min-$max';
-    }
-    return null;
+  Widget _buildVitalsDisplay(VitalsRecord vitals) {
+    return Row(
+      children: [
+        // Temperature
+        Expanded(
+          child: _buildVitalCard(
+            'Temperature',
+            '${vitals.temperature?.toStringAsFixed(1) ?? 'N/A'}°F',
+            Icons.thermostat,
+            Colors.red,
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Pulse
+        Expanded(
+          child: _buildVitalCard(
+            'Pulse',
+            '${vitals.pulse?.toString() ?? 'N/A'} bpm',
+            Icons.favorite,
+            Colors.pink,
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Blood Pressure
+        Expanded(
+          child: _buildVitalCard(
+            'Blood Pressure',
+            '${vitals.systolic}/${vitals.diastolic}',
+            Icons.monitor_heart,
+            Colors.blue,
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Weight
+        Expanded(
+          child: _buildVitalCard(
+            'Weight',
+            '${vitals.weight.toStringAsFixed(1)} kg',
+            Icons.monitor_weight,
+            Colors.green,
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Height
+        Expanded(
+          child: _buildVitalCard(
+            'Height',
+            '${vitals.height.toStringAsFixed(0)} cm',
+            Icons.height,
+            Colors.purple,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVitalCard(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 
   void _addPrescription() {
