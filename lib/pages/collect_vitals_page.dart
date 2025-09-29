@@ -3,6 +3,7 @@ import '../widgets/common_header.dart';
 import 'vitals_pdf_preview_page.dart';
 import '../models/patient_data.dart';
 import '../services/patient_data_service.dart';
+import '../services/vitals_storage_service.dart';
 
 class CollectVitalsPage extends StatefulWidget {
   final String? patientName;
@@ -36,6 +37,10 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
   List<PatientData> _filteredPatients = [];
   final TextEditingController _patientSearchController = TextEditingController();
 
+  // Vitals history
+  List<VitalsRecord> _patientVitalsHistory = [];
+  late VoidCallback _vitalsListener;
+
   // Normal health ranges for vital signs
   static const Map<String, VitalRange> _vitalRanges = {
     'systolic': VitalRange(normal: Range(90, 120), warning: Range(80, 140), critical: Range(50, 180)),
@@ -51,6 +56,14 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
     super.initState();
     _loadPatients();
     _patientSearchController.addListener(_filterPatients);
+    
+    // Set up vitals listener
+    _vitalsListener = () {
+      if (mounted) {
+        _loadPatientVitals();
+      }
+    };
+    VitalsStorageService.addListener(_vitalsListener);
   }
 
   @override
@@ -62,6 +75,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
     _pulseController.dispose();
     _heightController.dispose();
     _patientSearchController.dispose();
+    VitalsStorageService.removeListener(_vitalsListener);
     super.dispose();
   }
 
@@ -76,8 +90,17 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
           (p) => p.fullName == widget.patientName,
           orElse: () => _allPatients.first, // Fallback to first patient
         );
+        _loadPatientVitals();
       }
     });
+  }
+
+  void _loadPatientVitals() {
+    if (_selectedPatient != null) {
+      setState(() {
+        _patientVitalsHistory = VitalsStorageService.getPatientVitals(_selectedPatient!.cnic);
+      });
+    }
   }
 
   void _filterPatients() {
@@ -110,6 +133,23 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
             : 0,
         height: double.parse(_heightController.text.trim()),
       );
+
+      // Save vitals to storage
+      if (_selectedPatient != null) {
+        final vitalsRecord = VitalsRecord(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          patientCnic: _selectedPatient!.cnic,
+          systolic: vitals.systolic,
+          diastolic: vitals.diastolic,
+          weight: vitals.weight,
+          temperature: vitals.temperature > 0 ? vitals.temperature : null,
+          pulse: vitals.pulse > 0 ? vitals.pulse : null,
+          height: vitals.height,
+          recordedAt: DateTime.now(),
+          recordedBy: 'Doctor', // You can make this dynamic based on user type
+        );
+        VitalsStorageService.addVitalsRecord(vitalsRecord);
+      }
 
       // Show success dialog and navigate to PDF preview
       showDialog<void>(
@@ -280,6 +320,132 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
     );
   }
 
+  // Build vitals history card
+  Widget _buildVitalsHistoryCard(VitalsRecord record) {
+    final theme = Theme.of(context);
+    final isRecent = DateTime.now().difference(record.recordedAt).inDays < 7;
+    
+    return Container(
+      width: 250,
+      margin: const EdgeInsets.only(right: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isRecent ? Colors.green.shade300 : Colors.grey.shade300,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.favorite,
+                color: isRecent ? Colors.green.shade600 : Colors.grey.shade600,
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child:           Text(
+            _formatDate(record.recordedAt),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isRecent ? Colors.green.shade700 : Colors.grey.shade700,
+            ),
+          ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildVitalRow('BP', '${record.systolic}/${record.diastolic}', 'systolic', record.systolic.toString()),
+          _buildVitalRow('Weight', '${record.weight}kg', 'weight', record.weight.toString()),
+          if (record.temperature != null)
+            _buildVitalRow('Temp', '${record.temperature}°F', 'temperature', record.temperature.toString()),
+          if (record.pulse != null)
+            _buildVitalRow('Pulse', '${record.pulse}bpm', 'pulse', record.pulse.toString()),
+          _buildVitalRow('Height', '${record.height}cm', 'height', record.height.toString()),
+          const SizedBox(height: 8),
+          Text(
+            'By: ${record.recordedBy}',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build individual vital row in history card
+  Widget _buildVitalRow(String label, String value, String vitalType, String valueString) {
+    final color = _getVitalColor(vitalType, valueString);
+    final isAbnormal = _isVitalAbnormal(vitalType, valueString);
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 60,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 12,
+                color: color,
+                fontWeight: isAbnormal ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ),
+          if (isAbnormal)
+            Icon(
+              Icons.warning,
+              size: 16,
+              color: color,
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Format date for display
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    
+    if (difference.inDays == 0) {
+      return 'Today ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -295,7 +461,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
           // Main content
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(40),
+              padding: const EdgeInsets.all(20),
               child: Form(
                 key: _formKey,
                 child: SingleChildScrollView(
@@ -373,6 +539,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                 setState(() {
                                   _selectedPatient = patient;
                                   _patientSearchController.text = '${patient.fullName} (${patient.cnic})';
+                                  _loadPatientVitals();
                                 });
                               },
                               optionsViewBuilder: (context, onSelected, options) {
@@ -493,7 +660,54 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
+                        // Previous Vitals History
+                        if (_patientVitalsHistory.isNotEmpty) ...[
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              border: Border.all(color: Colors.orange.shade200),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.history,
+                                      color: Colors.orange.shade700,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Previous Vitals (${_patientVitalsHistory.length} records)',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  height: 160,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: _patientVitalsHistory.length,
+                                    itemBuilder: (context, index) {
+                                      final record = _patientVitalsHistory[index];
+                                      return _buildVitalsHistoryCard(record);
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                       ] else ...[
                         // No patient selected message
                         Container(
@@ -523,7 +737,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                       ],
                       // Vital Signs Status Summary
                       Container(
@@ -569,7 +783,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       // Blood Pressure Row
                       Row(
                         children: <Widget>[
@@ -817,7 +1031,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       // Save button - fixed width and right-aligned
                       Align(
                         alignment: Alignment.centerRight,
@@ -902,3 +1116,4 @@ extension VitalSeverityExtension on VitalSeverity {
     }
   }
 }
+
