@@ -170,6 +170,80 @@ class FamilyManager {
     return _families.map((family) => family.headOfFamily).toList();
   }
 
+  // Change head of family
+  static bool changeHeadOfFamily(int familyIndex, FamilyMember newHead) {
+    if (familyIndex >= 0 && familyIndex < _families.length) {
+      final family = _families[familyIndex];
+      
+      // Check if the new head is already a member of the family
+      final existingMemberIndex = family.members.indexWhere(
+        (member) => member.cnic == newHead.cnic
+      );
+      
+      Family updatedFamily;
+      
+      if (existingMemberIndex != -1) {
+        // New head is already a family member
+        final oldHead = family.headOfFamily;
+        final newHeadMember = family.members[existingMemberIndex];
+        
+        // Create updated members list
+        final updatedMembers = List<FamilyMember>.from(family.members);
+        updatedMembers.removeAt(existingMemberIndex);
+        updatedMembers.add(FamilyMember(
+          fullName: oldHead.fullName,
+          age: oldHead.age,
+          bloodGroup: oldHead.bloodGroup,
+          email: oldHead.email,
+          phone: oldHead.phone,
+          address: oldHead.address,
+          cnic: oldHead.cnic,
+          gender: oldHead.gender,
+          dateOfBirth: oldHead.dateOfBirth,
+          relationship: 'Family Member', // Default relationship
+        ));
+        
+        // Create new family with updated head and members
+        updatedFamily = Family(
+          id: family.id,
+          headOfFamily: newHeadMember,
+          members: updatedMembers,
+          createdAt: family.createdAt,
+        );
+      } else {
+        // New head is not a family member, add them and make them head
+        final oldHead = family.headOfFamily;
+        final updatedMembers = List<FamilyMember>.from(family.members);
+        updatedMembers.add(FamilyMember(
+          fullName: oldHead.fullName,
+          age: oldHead.age,
+          bloodGroup: oldHead.bloodGroup,
+          email: oldHead.email,
+          phone: oldHead.phone,
+          address: oldHead.address,
+          cnic: oldHead.cnic,
+          gender: oldHead.gender,
+          dateOfBirth: oldHead.dateOfBirth,
+          relationship: 'Family Member', // Default relationship
+        ));
+        
+        // Create new family with new head and updated members
+        updatedFamily = Family(
+          id: family.id,
+          headOfFamily: newHead,
+          members: updatedMembers,
+          createdAt: family.createdAt,
+        );
+      }
+      
+      // Replace the family in the list
+      _families[familyIndex] = updatedFamily;
+      _notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
   // Clear all families (for testing)
   static void clearAllFamilies() {
     _families.clear();

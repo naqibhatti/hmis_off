@@ -316,6 +316,96 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
     );
   }
 
+  void _showChangeHeadDialog(FamilyMember currentHead) {
+    if (_currentFamily == null) return;
+    
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change Head of Family'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Current Head: ${currentHead.fullName}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            const Text('Select new head of family:'),
+            const SizedBox(height: 8),
+            if (_currentFamily!.members.isNotEmpty) ...[
+              SizedBox(
+                height: 200,
+                width: double.maxFinite,
+                child: ListView.builder(
+                  itemCount: _currentFamily!.members.length,
+                  itemBuilder: (context, index) {
+                    final member = _currentFamily!.members[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        child: Text(
+                          member.fullName[0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      title: Text(member.fullName),
+                      subtitle: Text('${member.relationship} • Age: ${member.age}'),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        _changeHeadOfFamily(member);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ] else ...[
+              const Text(
+                'No other family members available to become head.',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _changeHeadOfFamily(FamilyMember newHead) {
+    if (_currentFamily == null) return;
+    
+    final familyIndex = FamilyManager.families.indexWhere((f) => f.headOfFamily.cnic == _currentFamily!.headOfFamily.cnic);
+    if (familyIndex != -1) {
+      final success = FamilyManager.changeHeadOfFamily(familyIndex, newHead);
+      if (success) {
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${newHead.fullName} is now the head of family'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to change head of family'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -623,7 +713,14 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
                       ],
                     ),
                     trailing: isHeadOfFamily
-                        ? null
+                        ? IconButton.filledTonal(
+                            onPressed: () => _showChangeHeadDialog(member),
+                            icon: const Icon(Icons.swap_horiz),
+                            style: IconButton.styleFrom(
+                              foregroundColor: theme.colorScheme.primary,
+                            ),
+                            tooltip: 'Change Head of Family',
+                          )
                         : IconButton.filledTonal(
                             onPressed: () => _removeFamilyMember(member),
                             icon: const Icon(Icons.remove_circle_outline),
