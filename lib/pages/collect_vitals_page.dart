@@ -704,6 +704,51 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        // Vital Signs Status Summary
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade50,
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.health_and_safety,
+                                    color: theme.colorScheme.primary,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Vital Signs Status',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 16,
+                                runSpacing: 8,
+                                children: [
+                                  _buildVitalStatusChip('Systolic', _systolicController.text, 'systolic'),
+                                  _buildVitalStatusChip('Diastolic', _diastolicController.text, 'diastolic'),
+                                  _buildVitalStatusChip('Pulse', _pulseController.text, 'pulse'),
+                                  _buildVitalStatusChip('Temperature', _temperatureController.text, 'temperature'),
+                                  _buildVitalStatusChip('Weight', _weightController.text, 'weight'),
+                                  _buildVitalStatusChip('Height', _heightController.text, 'height'),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         // Previous Vitals History
                         if (_patientVitalsHistory.isNotEmpty) ...[
                           Container(
@@ -782,50 +827,6 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                         ),
                         const SizedBox(height: 16),
                       ],
-                      // Vital Signs Status Summary
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.health_and_safety,
-                                  color: theme.colorScheme.primary,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Vital Signs Status',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 16,
-                              runSpacing: 8,
-                              children: [
-                                _buildVitalStatusChip('Systolic', _systolicController.text, 'systolic'),
-                                _buildVitalStatusChip('Diastolic', _diastolicController.text, 'diastolic'),
-                                _buildVitalStatusChip('Pulse', _pulseController.text, 'pulse'),
-                                _buildVitalStatusChip('Temperature', _temperatureController.text, 'temperature'),
-                                _buildVitalStatusChip('Weight', _weightController.text, 'weight'),
-                                _buildVitalStatusChip('Height', _heightController.text, 'height'),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
                       const SizedBox(height: 16),
                       // Blood Pressure Row
                       Row(
