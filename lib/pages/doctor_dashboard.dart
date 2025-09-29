@@ -74,56 +74,147 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     const SizedBox(height: 20),
-                    // Welcome message
+                    // User Information Section
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.blue.shade50,
-                            Colors.purple.shade50,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.blue.shade100),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade100,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.medical_services,
-                              color: Colors.blue.shade700,
-                              size: 24,
-                            ),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.green.shade300, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.shade100,
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          // Header
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.green.shade50,
+                                  Colors.green.shade100,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
                               children: [
-                                Text(
-                                  'Welcome, Doctor!',
-                                  style: theme.textTheme.headlineSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue.shade800,
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade200,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.local_hospital,
+                                    color: Colors.green.shade700,
+                                    size: 24,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Manage patients and their health records efficiently',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: Colors.blue.shade600,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'HMIS (PRIMARY HEALTH FACILITIES) (2.6)',
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green.shade700,
+                                      fontSize: 18,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                               ],
                             ),
+                          ),
+                          const SizedBox(height: 20),
+                          // User Details
+                          Row(
+                            children: [
+                              // Left Column - Name & Connection Status
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    _buildInfoCard(
+                                      'Name',
+                                      'Dr. Muhammad Ali',
+                                      Colors.green.shade700,
+                                      Colors.red.shade600,
+                                      Icons.person,
+                                      isBold: true,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _buildInfoCard(
+                                      'Connection Status',
+                                      'Connected',
+                                      Colors.green.shade700,
+                                      Colors.grey.shade600,
+                                      Icons.wifi,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              // Middle Column - Designation & User ID
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    _buildInfoCard(
+                                      'Designation',
+                                      'Doctor',
+                                      Colors.green.shade700,
+                                      Colors.red.shade600,
+                                      Icons.medical_services,
+                                      isBold: true,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _buildInfoCard(
+                                      'User ID',
+                                      'MDU-01',
+                                      Colors.green.shade700,
+                                      Colors.grey.shade600,
+                                      Icons.badge,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              // Right Column - Facility & Timestamp
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    _buildInfoCard(
+                                      'Facility Name',
+                                      'Basic Health Unit HISDU, Lahore City, Lahore',
+                                      Colors.green.shade700,
+                                      Colors.grey.shade600,
+                                      Icons.location_on,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _buildInfoCard(
+                                      'Last Login',
+                                      '02-07-2024 06:40:20',
+                                      Colors.green.shade700,
+                                      Colors.grey.shade600,
+                                      Icons.access_time,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -362,5 +453,69 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
       default:
         return title;
     }
+  }
+
+  Widget _buildInfoCard(
+    String label,
+    String value,
+    Color labelColor,
+    Color valueColor,
+    IconData icon, {
+    bool isBold = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: labelColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: labelColor.withOpacity(0.2),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: labelColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: labelColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: labelColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: valueColor,
+                    fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+                    fontSize: isBold ? 16 : 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
