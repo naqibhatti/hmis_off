@@ -132,7 +132,7 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
                       child: Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.green.shade50,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: Colors.grey.shade300,
@@ -217,7 +217,7 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Colors.black.withOpacity(0.2),
-          width: 1.5,
+          width: 3.0,
         ),
         boxShadow: [
           BoxShadow(
@@ -240,22 +240,34 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
           onTap: isEnabled ? onTap : null,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(32),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Icon(
                   icon,
-                  size: 28,
+                  size: 42,
                   color: isEnabled ? color : Colors.grey.shade400,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   title,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: isEnabled ? theme.colorScheme.onSurface : Colors.grey.shade500,
-                    fontSize: 14,
+                    fontSize: 21,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _getUrduTranslation(title),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: isEnabled ? theme.colorScheme.onSurface.withOpacity(0.7) : Colors.grey.shade400,
+                    fontSize: 12,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -267,5 +279,16 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
         ),
       ),
     );
+  }
+
+  String _getUrduTranslation(String title) {
+    switch (title) {
+      case 'Add Patient':
+        return 'مریض شامل کریں';
+      case 'Collect Vitals':
+        return 'حیاتیاتی علامات جمع کریں';
+      default:
+        return title;
+    }
   }
 }

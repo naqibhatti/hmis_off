@@ -133,7 +133,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       child: Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.green.shade50,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: Colors.grey.shade300,
@@ -141,7 +141,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                           ),
                         ),
                         child: GridView.count(
-                          crossAxisCount: 3,
+                          crossAxisCount: 4,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
                           childAspectRatio: 1.2,
@@ -266,7 +266,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Colors.black.withOpacity(0.2),
-          width: 1.5,
+          width: 3.0,
         ),
         boxShadow: [
           BoxShadow(
@@ -295,16 +295,28 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
               children: <Widget>[
                 Icon(
                   icon,
-                  size: 28,
+                  size: 42,
                   color: isEnabled ? color : Colors.grey.shade400,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   title,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: isEnabled ? theme.colorScheme.onSurface : Colors.grey.shade500,
-                    fontSize: 14,
+                    fontSize: 21,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _getUrduTranslation(title),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: isEnabled ? theme.colorScheme.onSurface.withOpacity(0.7) : Colors.grey.shade400,
+                    fontSize: 12,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -328,5 +340,24 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         ),
       ),
     );
+  }
+
+  String _getUrduTranslation(String title) {
+    switch (title) {
+      case 'Add Family':
+        return 'خاندان شامل کریں';
+      case 'Collect Vitals':
+        return 'حیاتیاتی علامات جمع کریں';
+      case 'Diagnosis & Prescription':
+        return 'تشخیص اور نسخہ';
+      case 'LHV':
+        return 'لیڈی ہیلتھ ورکر';
+      case 'Family Planning':
+        return 'خاندانی منصوبہ بندی';
+      case 'Integrated Screening':
+        return 'مربوط اسکریننگ';
+      default:
+        return title;
+    }
   }
 }
