@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../models/patient_data.dart';
 import '../models/family_data.dart';
 import 'modify_family_page.dart';
+import '../theme/shadcn_colors.dart';
 
 class AddFamilyPage extends StatefulWidget {
   const AddFamilyPage({super.key});
@@ -311,7 +312,7 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${newFamily.familyName} created successfully'),
-        backgroundColor: Colors.green,
+        backgroundColor: ShadcnColors.accent,
       ),
     );
   }
@@ -507,7 +508,7 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                       'Create New Family',
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.green.shade700,
+                        color: ShadcnColors.accent700,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -527,10 +528,10 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                             margin: const EdgeInsets.only(bottom: 12),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: Colors.green.shade100,
+                                backgroundColor: ShadcnColors.accent100,
                                 child: Icon(
                                   Icons.person_add,
-                                  color: Colors.green.shade700,
+                                  color: ShadcnColors.accent700,
                                 ),
                               ),
                               title: Text(patient.fullName),
@@ -538,7 +539,7 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                               trailing: FilledButton(
                                 onPressed: () => _selectPatient(patient),
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.green.shade600,
+                                  backgroundColor: ShadcnColors.accent600,
                                   foregroundColor: Colors.white,
                                 ),
                                 child: const Text('Create Family'),

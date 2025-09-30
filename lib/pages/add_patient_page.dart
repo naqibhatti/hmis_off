@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/patient_data.dart';
+import '../theme/shadcn_colors.dart';
 
 class AddPatientPage extends StatefulWidget {
   const AddPatientPage({super.key});

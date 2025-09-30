@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../widgets/family_tree_widget.dart';
 import '../models/patient_data.dart';
 import '../models/family_data.dart';
+import '../theme/shadcn_colors.dart';
 
 class ModifyFamilyPage extends StatefulWidget {
   final Family family;
@@ -270,7 +271,7 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${patient.fullName} added as $relationship'),
-        backgroundColor: Colors.green,
+        backgroundColor: ShadcnColors.accent,
       ),
     );
     
@@ -391,7 +392,7 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${newHead.fullName} is now the head of family'),
-            backgroundColor: Colors.green,
+            backgroundColor: ShadcnColors.accent,
           ),
         );
       } else {

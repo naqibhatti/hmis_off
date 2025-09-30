@@ -4,6 +4,7 @@ import '../services/patient_data_service.dart';
 import '../services/vitals_storage_service.dart';
 import '../services/diseases_service.dart';
 import '../models/patient_data.dart';
+import '../theme/shadcn_colors.dart';
 
 class DiagnosticPage extends StatefulWidget {
   final String? patientName;
@@ -517,7 +518,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                     'Diagnosis',
                                     style: theme.textTheme.headlineSmall?.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.green.shade700,
+                                      color: ShadcnColors.accent700,
                                     ),
                                   ),
                                   const SizedBox(height: 20),
@@ -577,7 +578,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                                   leading: Icon(
                                                     _getDiseaseIcon(disease.category),
                                                     size: 20,
-                                                    color: Colors.green.shade700,
+                                                    color: ShadcnColors.accent700,
                                                   ),
                                                   title: Text(
                                                     disease.name,
@@ -661,7 +662,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                     'Prescription',
                                     style: theme.textTheme.headlineSmall?.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.green.shade700,
+                                      color: ShadcnColors.accent700,
                                     ),
                                   ),
                                   const SizedBox(height: 20),
@@ -802,7 +803,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                       FilledButton(
                                         onPressed: _addPrescription,
                                         style: FilledButton.styleFrom(
-                                          backgroundColor: Colors.green,
+                                          backgroundColor: ShadcnColors.accent,
                                           foregroundColor: Colors.white,
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(8),
@@ -957,7 +958,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
             'Weight',
             '${vitals.weight.toStringAsFixed(1)} kg',
             Icons.monitor_weight,
-            Colors.green,
+            ShadcnColors.accent,
           ),
         ),
         const SizedBox(width: 12),
@@ -1031,7 +1032,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Diagnosis saved successfully'),
-          backgroundColor: Colors.green,
+          backgroundColor: ShadcnColors.accent,
         ),
       );
     }
@@ -1065,8 +1066,8 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Colors.green.shade600,
-                        Colors.green.shade400,
+                        ShadcnColors.accent600,
+                        ShadcnColors.accent400,
                       ],
                     ),
                     borderRadius: const BorderRadius.only(
@@ -1114,17 +1115,17 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.green.shade50,
+                            color: ShadcnColors.accent50,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.green.shade200),
+                            border: Border.all(color: ShadcnColors.accent200),
                           ),
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: Colors.green.shade100,
+                                backgroundColor: ShadcnColors.accent100,
                                 child: Icon(
                                   Icons.person,
-                                  color: Colors.green.shade700,
+                                  color: ShadcnColors.accent700,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -1137,14 +1138,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.green.shade700,
+                                        color: ShadcnColors.accent700,
                                       ),
                                     ),
                                     Text(
                                       'CNIC: ${_selectedPatient?.cnic ?? 'N/A'}',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: Colors.green.shade600,
+                                        color: ShadcnColors.accent600,
                                       ),
                                     ),
                                   ],
@@ -1185,7 +1186,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 },
                                 style: FilledButton.styleFrom(
                                   backgroundColor: _selectedTestType == 'individual' 
-                                      ? Colors.green 
+                                      ? ShadcnColors.accent 
                                       : Colors.grey.shade300,
                                   foregroundColor: _selectedTestType == 'individual' 
                                       ? Colors.white 
@@ -1207,7 +1208,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 },
                                 style: FilledButton.styleFrom(
                                   backgroundColor: _selectedTestType == 'package' 
-                                      ? Colors.green 
+                                      ? ShadcnColors.accent 
                                       : Colors.grey.shade300,
                                   foregroundColor: _selectedTestType == 'package' 
                                       ? Colors.white 
@@ -1235,7 +1236,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.green.shade700,
+                                    color: ShadcnColors.accent700,
                                   ),
                                 ),
                                 const SizedBox(height: 16),
@@ -1270,7 +1271,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                           );
                         },
                         style: FilledButton.styleFrom(
-                          backgroundColor: Colors.green,
+                          backgroundColor: ShadcnColors.accent,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -1403,14 +1404,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
             leading: CircleAvatar(
               backgroundColor: _selectedTestType == 'individual' 
                   ? Colors.blue.shade100 
-                  : Colors.green.shade100,
+                  : ShadcnColors.accent100,
               child: Icon(
                 _selectedTestType == 'individual' 
                     ? Icons.science 
                     : Icons.inventory,
                 color: _selectedTestType == 'individual' 
                     ? Colors.blue.shade700 
-                    : Colors.green.shade700,
+                    : ShadcnColors.accent700,
                 size: 20,
               ),
             ),
@@ -1437,13 +1438,13 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Added $test to order'),
-                    backgroundColor: Colors.green,
+                    backgroundColor: ShadcnColors.accent,
                   ),
                 );
               },
               icon: Icon(
                 Icons.add_circle_outline,
-                color: Colors.green.shade600,
+                color: ShadcnColors.accent600,
               ),
             ),
           ),

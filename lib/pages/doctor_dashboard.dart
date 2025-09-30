@@ -5,6 +5,7 @@ import 'add_family_page.dart';
 import 'diagnostic_page.dart';
 import 'login_page.dart';
 import '../models/patient_data.dart';
+import '../theme/shadcn_colors.dart';
 
 class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({super.key});
@@ -66,10 +67,10 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.green.shade300, width: 2),
+                        border: Border.all(color: ShadcnColors.accent300, width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.green.shade100,
+                            color: ShadcnColors.accent100,
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -91,8 +92,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  Colors.green.shade50,
-                                  Colors.green.shade100,
+                                  ShadcnColors.accent50,
+                                  ShadcnColors.accent100,
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(16),
@@ -102,12 +103,12 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Colors.green.shade200,
+                                    color: ShadcnColors.accent200,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
                                     Icons.local_hospital,
-                                    color: Colors.green.shade700,
+                                    color: ShadcnColors.accent700,
                                     size: 24,
                                   ),
                                 ),
@@ -117,7 +118,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                     'HMIS (PRIMARY HEALTH FACILITIES)',
                                     style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.green.shade700,
+                                      color: ShadcnColors.accent700,
                                       fontSize: 18,
                                     ),
                                     textAlign: TextAlign.center,
@@ -137,7 +138,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                     _buildInfoCard(
                                       'Name',
                                       'Dr. Muhammad Ali',
-                                      Colors.green.shade700,
+                                      ShadcnColors.accent700,
                                       Colors.red.shade600,
                                       Icons.person,
                                       isBold: true,
@@ -146,7 +147,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                     _buildInfoCard(
                                       'Connection Status',
                                       'Connected',
-                                      Colors.green.shade700,
+                                      ShadcnColors.accent700,
                                       Colors.grey.shade600,
                                       Icons.wifi,
                                     ),
@@ -161,7 +162,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                     _buildInfoCard(
                                       'Designation',
                                       'Doctor',
-                                      Colors.green.shade700,
+                                      ShadcnColors.accent700,
                                       Colors.red.shade600,
                                       Icons.medical_services,
                                       isBold: true,
@@ -170,7 +171,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                     _buildInfoCard(
                                       'User ID',
                                       'MDU-01',
-                                      Colors.green.shade700,
+                                      ShadcnColors.accent700,
                                       Colors.grey.shade600,
                                       Icons.badge,
                                     ),
@@ -185,7 +186,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                     _buildInfoCard(
                                       'Facility Name',
                                       'Basic Health Unit HISDU, Lahore City, Lahore',
-                                      Colors.green.shade700,
+                                      ShadcnColors.accent700,
                                       Colors.grey.shade600,
                                       Icons.location_on,
                                     ),
@@ -193,7 +194,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                     _buildInfoCard(
                                       'Last Login',
                                       '02-07-2024 06:40:20',
-                                      Colors.green.shade700,
+                                      ShadcnColors.accent700,
                                       Colors.grey.shade600,
                                       Icons.access_time,
                                     ),
@@ -211,7 +212,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       child: Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.green.shade50,
+                          color: ShadcnColors.accent50,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: Colors.grey.shade300,
@@ -270,7 +271,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       context: context,
                       title: 'Diagnosis & Prescription',
                       icon: Icons.medical_services,
-                      color: Colors.green,
+                      color: ShadcnColors.accent,
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(

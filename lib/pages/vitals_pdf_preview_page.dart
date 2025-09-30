@@ -5,6 +5,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'dart:typed_data';
 import '../models/patient_data.dart';
+import '../theme/shadcn_colors.dart';
 
 class VitalsData {
   final int systolic;
@@ -256,7 +257,7 @@ class _VitalsPdfPreviewPageState extends State<VitalsPdfPreviewPage> {
                   icon: const Icon(Icons.share),
                   label: const Text('Share'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: ShadcnColors.accent,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),

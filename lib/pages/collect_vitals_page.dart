@@ -3,6 +3,7 @@ import 'vitals_pdf_preview_page.dart';
 import '../models/patient_data.dart';
 import '../services/patient_data_service.dart';
 import '../services/vitals_storage_service.dart';
+import '../theme/shadcn_colors.dart';
 
 class CollectVitalsPage extends StatefulWidget {
   final String? patientName;
@@ -331,7 +332,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
           children: [
             Icon(
               Icons.favorite,
-              color: isRecent ? Colors.green.shade600 : Colors.grey.shade600,
+              color: isRecent ? ShadcnColors.accent600 : Colors.grey.shade600,
               size: 16,
             ),
             const SizedBox(width: 8),
@@ -340,7 +341,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: isRecent ? Colors.green.shade700 : Colors.grey.shade700,
+                color: isRecent ? ShadcnColors.accent700 : Colors.grey.shade700,
               ),
             ),
             const Spacer(),
@@ -395,7 +396,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                 'Weight',
                 '${record.weight.toStringAsFixed(1)} kg',
                 Icons.monitor_weight,
-                Colors.green,
+                ShadcnColors.accent,
                 'weight',
                 record.weight.toString(),
               ),
@@ -481,7 +482,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isRecent ? Colors.green.shade300 : Colors.grey.shade300,
+          color: isRecent ? ShadcnColors.accent300 : Colors.grey.shade300,
           width: 1,
         ),
         boxShadow: [
@@ -500,7 +501,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
             children: [
               Icon(
                 Icons.favorite,
-                color: isRecent ? Colors.green.shade600 : Colors.grey.shade600,
+                color: isRecent ? ShadcnColors.accent600 : Colors.grey.shade600,
                 size: 14,
               ),
               const SizedBox(width: 4),
@@ -510,7 +511,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: isRecent ? Colors.green.shade700 : Colors.grey.shade700,
+                    color: isRecent ? ShadcnColors.accent700 : Colors.grey.shade700,
                   ),
                 ),
               ),
@@ -785,19 +786,19 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.green.shade50,
-                            border: Border.all(color: Colors.green.shade200),
+                            color: ShadcnColors.accent50,
+                            border: Border.all(color: ShadcnColors.accent200),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: <Widget>[
                               CircleAvatar(
                                 radius: 24,
-                                backgroundColor: Colors.green.shade100,
+                                backgroundColor: ShadcnColors.accent100,
                                 child: Text(
                                   _selectedPatient!.fullName[0].toUpperCase(),
                                   style: TextStyle(
-                                    color: Colors.green.shade700,
+                                    color: ShadcnColors.accent700,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -813,7 +814,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.green.shade700,
+                                        color: ShadcnColors.accent700,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -821,7 +822,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                       'Age: ${_selectedPatient!.age} years • ${_selectedPatient!.gender}',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: Colors.green.shade600,
+                                        color: ShadcnColors.accent600,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
@@ -829,7 +830,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                       'Blood Group: ${_selectedPatient!.bloodGroup} • CNIC: ${_selectedPatient!.cnic}',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: Colors.green.shade600,
+                                        color: ShadcnColors.accent600,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
@@ -837,7 +838,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                       'Phone: ${_selectedPatient!.phone}',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: Colors.green.shade600,
+                                        color: ShadcnColors.accent600,
                                       ),
                                     ),
                                   ],
@@ -1288,11 +1289,11 @@ extension VitalSeverityExtension on VitalSeverity {
   Color get color {
     switch (this) {
       case VitalSeverity.normal:
-        return Colors.green;
+        return ShadcnColors.success;
       case VitalSeverity.warning:
-        return Colors.orange;
+        return ShadcnColors.warning;
       case VitalSeverity.critical:
-        return Colors.red;
+        return ShadcnColors.destructive;
     }
   }
   

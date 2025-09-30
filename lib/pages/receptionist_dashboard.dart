@@ -3,6 +3,7 @@ import 'add_patient_page.dart';
 import 'collect_vitals_page.dart';
 import 'login_page.dart';
 import '../models/patient_data.dart';
+import '../theme/shadcn_colors.dart';
 
 class ReceptionistDashboard extends StatefulWidget {
   const ReceptionistDashboard({super.key});
@@ -66,24 +67,24 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Colors.green.shade50,
+                            ShadcnColors.accent50,
                             Colors.blue.shade50,
                           ],
                         ),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.green.shade100),
+                        border: Border.all(color: ShadcnColors.accent100),
                       ),
                       child: Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.green.shade100,
+                              color: ShadcnColors.accent100,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
                               Icons.person_add,
-                              color: Colors.green.shade700,
+                              color: ShadcnColors.accent700,
                               size: 24,
                             ),
                           ),
@@ -96,14 +97,14 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
                                   'Welcome, Receptionist!',
                                   style: theme.textTheme.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.green.shade800,
+                                    color: ShadcnColors.accent800,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Add patients and collect their vital signs',
                                   style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: Colors.green.shade600,
+                                    color: ShadcnColors.accent600,
                                   ),
                                 ),
                               ],
@@ -118,7 +119,7 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
                       child: Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.green.shade50,
+                          color: ShadcnColors.accent50,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: Colors.grey.shade300,
