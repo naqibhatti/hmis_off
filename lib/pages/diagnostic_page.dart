@@ -766,12 +766,16 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                               labelText: 'Select Medicine',
                                               border: OutlineInputBorder(),
                                               isDense: true,
+                                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                             ),
+                                            isExpanded: true,
                                             items: _availableMedicines.map((String medicine) {
                                               return DropdownMenuItem<String>(
                                                 value: medicine,
                                                 child: Text(
                                                   medicine,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
                                                   style: const TextStyle(fontSize: 14),
                                                 ),
                                               );
@@ -799,24 +803,39 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                               labelText: 'Instructions',
                                               border: OutlineInputBorder(),
                                               isDense: true,
+                                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                             ),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
-                                        FilledButton(
-                                          onPressed: _addPrescription,
-                                          style: FilledButton.styleFrom(
-                                            backgroundColor: ThemeController.instance.useShadcn.value
-                                                ? ShadcnColors.accent
-                                                : Colors.green.shade600,
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                            minWidth: 72,
+                                            maxWidth: 96,
+                                            minHeight: 40,
+                                            maxHeight: 44,
                                           ),
-                                          child: const Text(
-                                            'ADD',
-                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                          child: FilledButton(
+                                            onPressed: _addPrescription,
+                                            style: FilledButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                              backgroundColor: ThemeController.instance.useShadcn.value
+                                                  ? ShadcnColors.accent
+                                                  : Colors.green.shade600,
+                                              foregroundColor: Colors.white,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              visualDensity: VisualDensity.compact,
+                                            ),
+                                            child: const FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: Text(
+                                                'ADD',
+                                                style: TextStyle(fontWeight: FontWeight.bold),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ],
