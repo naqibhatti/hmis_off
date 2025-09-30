@@ -49,30 +49,146 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         userType: 'Doctor',
         child: Column(
           children: <Widget>[
+            // HMIS section (moved to top, compact height)
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    tooltip: 'Toggle theme (Shadcn / Green)',
-                    onPressed: () {
-                      ThemeController.instance.toggle();
-                      setState(() {});
-                    },
-                    icon: ValueListenableBuilder<bool>(
-                      valueListenable: ThemeController.instance.useShadcn,
-                      builder: (context, useShadcn, _) {
-                        return Icon(
-                          useShadcn ? Icons.palette : Icons.grass,
-                        );
-                      },
-                    ),
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: ThemeController.instance.useShadcn.value
+                      ? Colors.white
+                      : Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent300
+                        : Colors.green.shade300,
+                    width: 1.5,
                   ),
-                ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: ThemeController.instance.useShadcn.value
+                          ? ShadcnColors.accent100
+                          : Colors.green.shade100,
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header with title and theme toggle
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent200
+                                : Colors.green.shade200,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.local_hospital,
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'HMIS (PRIMARY HEALTH FACILITIES)',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: ThemeController.instance.useShadcn.value
+                                  ? ShadcnColors.accent700
+                                  : Colors.green.shade800,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Toggle theme (Shadcn / Green)',
+                          onPressed: () {
+                            ThemeController.instance.toggle();
+                            setState(() {});
+                          },
+                          icon: ValueListenableBuilder<bool>(
+                            valueListenable: ThemeController.instance.useShadcn,
+                            builder: (context, useShadcn, _) {
+                              return Icon(
+                                useShadcn ? Icons.palette : Icons.grass,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    // Compact details row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildInfoCard(
+                            'Name',
+                            'Dr. Muhammad Ali',
+                            ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                            Colors.grey.shade600,
+                            Icons.person,
+                            isBold: true,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildInfoCard(
+                            'Designation',
+                            'Doctor',
+                            ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                            Colors.grey.shade600,
+                            Icons.medical_services,
+                            isBold: true,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildInfoCard(
+                            'Facility Name',
+                            'Basic Health Unit HISDU, Lahore City, Lahore',
+                            ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                            Colors.grey.shade600,
+                            Icons.location_on,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildInfoCard(
+                            'User ID',
+                            'MDU-01',
+                            ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                            Colors.grey.shade600,
+                            Icons.badge,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-            // Main content
+            const SizedBox(height: 12),
+            // Cards grid
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -95,135 +211,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: ThemeController.instance.useShadcn.value
-                              ? Colors.white
-                              : Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: ThemeController.instance.useShadcn.value
-                                ? ShadcnColors.accent300
-                                : Colors.green.shade300,
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: ThemeController.instance.useShadcn.value
-                                  ? ShadcnColors.accent100
-                                  : Colors.green.shade100,
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            // Header
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    ShadcnColors.accent50,
-                                    ShadcnColors.accent100,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: ShadcnColors.accent200,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      Icons.local_hospital,
-                                      color: ShadcnColors.accent700,
-                                      size: 24,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      'HMIS (PRIMARY HEALTH FACILITIES)',
-                                      style: theme.textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: ShadcnColors.accent700,
-                                        fontSize: 18,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 15),
-                            // User Details
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Name
-                                Expanded(
-                                  child: _buildInfoCard(
-                                    'Name',
-                                    'Dr. Muhammad Ali',
-                                    ShadcnColors.accent700,
-                                    Colors.red.shade600,
-                                    Icons.person,
-                                    isBold: true,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                // Designation
-                                Expanded(
-                                  child: _buildInfoCard(
-                                    'Designation',
-                                    'Doctor',
-                                    ShadcnColors.accent700,
-                                    Colors.red.shade600,
-                                    Icons.medical_services,
-                                    isBold: true,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                // Facility Name
-                                Expanded(
-                                  child: _buildInfoCard(
-                                    'Facility Name',
-                                    'Basic Health Unit HISDU, Lahore City, Lahore',
-                                    ShadcnColors.accent700,
-                                    Colors.grey.shade600,
-                                    Icons.location_on,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                // User ID
-                                Expanded(
-                                  child: _buildInfoCard(
-                                    'User ID',
-                                    'MDU-01',
-                                    ShadcnColors.accent700,
-                                    Colors.grey.shade600,
-                                    Icons.badge,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                      // duplicate HMIS section removed
                       const SizedBox(height: 18),
                       // Cards grid
                       Expanded(
