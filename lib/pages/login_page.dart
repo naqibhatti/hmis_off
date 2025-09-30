@@ -22,19 +22,19 @@ class _LoginPageState extends State<LoginPage> {
   // Responsive sizing methods
   double getResponsiveSize(double baseSize) {
     final screenSize = MediaQuery.of(context).size;
-    final scaleFactor = screenSize.width < 600 ? 0.42 : screenSize.width < 1200 ? 0.64 : 1.0;
+    final scaleFactor = screenSize.width < 600 ? 0.315 : screenSize.width < 1200 ? 0.64 : 1.0;
     return baseSize * scaleFactor;
   }
 
   double getResponsiveHeight(double baseHeight) {
     final screenSize = MediaQuery.of(context).size;
-    final scaleFactor = screenSize.height < 800 ? 0.49 : screenSize.height < 1000 ? 0.72 : 1.0;
+    final scaleFactor = screenSize.height < 800 ? 0.3675 : screenSize.height < 1000 ? 0.72 : 1.0;
     return baseHeight * scaleFactor;
   }
 
   double getResponsiveFontSize(double baseFontSize) {
     final screenSize = MediaQuery.of(context).size;
-    final scaleFactor = screenSize.width < 600 ? 0.49 : screenSize.width < 1200 ? 0.72 : 1.0;
+    final scaleFactor = screenSize.width < 600 ? 0.3675 : screenSize.width < 1200 ? 0.72 : 1.0;
     return baseFontSize * scaleFactor;
   }
 
