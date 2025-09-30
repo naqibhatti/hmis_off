@@ -4,7 +4,6 @@ import 'collect_vitals_page.dart';
 import 'add_family_page.dart';
 import 'diagnostic_page.dart';
 import 'login_page.dart';
-import '../widgets/common_header.dart';
 import '../models/patient_data.dart';
 
 class DoctorDashboard extends StatefulWidget {
@@ -42,19 +41,6 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
       backgroundColor: Colors.grey.shade50,
       body: Column(
         children: <Widget>[
-          // Header section
-          CommonHeader(
-            title: 'Doctor Dashboard',
-            userAccessLevel: 'Doctor',
-            showBackButton: false,
-            onLogout: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => const LoginPage(),
-                ),
-              );
-            },
-          ),
           // Main content
           Expanded(
             child: Container(

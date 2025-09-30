@@ -4,7 +4,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'dart:typed_data';
-import '../widgets/common_header.dart';
 import '../models/patient_data.dart';
 
 class VitalsData {
@@ -210,16 +209,6 @@ class _VitalsPdfPreviewPageState extends State<VitalsPdfPreviewPage> {
       backgroundColor: Colors.grey.shade50,
       body: Column(
         children: [
-          // Header
-          CommonHeader(
-            title: 'Vitals Report',
-            userAccessLevel: 'Doctor',
-            showBackButton: true,
-            onLogout: () {
-              Navigator.of(context).pushReplacementNamed('/login');
-            },
-          ),
-          
           // Content
           Expanded(
             child: _pdfBytes == null

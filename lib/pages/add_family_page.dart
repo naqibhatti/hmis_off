@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/common_header.dart';
 import '../models/patient_data.dart';
 import '../models/family_data.dart';
 import 'modify_family_page.dart';
@@ -379,16 +378,6 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
       backgroundColor: Colors.grey.shade50,
       body: Column(
         children: [
-          // Header
-          CommonHeader(
-            title: 'Add Family',
-            userAccessLevel: 'Doctor',
-            showBackButton: true,
-            onLogout: () {
-              Navigator.of(context).pushReplacementNamed('/login');
-            },
-          ),
-          
           // Main content
           Expanded(
             child: Padding(

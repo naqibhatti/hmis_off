@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/common_header.dart';
 import '../widgets/family_tree_widget.dart';
 import '../models/patient_data.dart';
 import '../models/family_data.dart';
@@ -415,16 +414,6 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
       backgroundColor: Colors.grey.shade50,
       body: Column(
         children: [
-          // Header
-          CommonHeader(
-            title: 'Modify ${_currentFamily?.familyName ?? widget.family.familyName}',
-            userAccessLevel: 'Doctor',
-            showBackButton: true,
-            onLogout: () {
-              Navigator.of(context).pushReplacementNamed('/login');
-            },
-          ),
-          
           // Main content
           Expanded(
             child: Padding(

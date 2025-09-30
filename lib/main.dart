@@ -22,10 +22,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.green,
-          foregroundColor: Colors.white,
-        ),
       ),
       home: const LoginPage(),
     );

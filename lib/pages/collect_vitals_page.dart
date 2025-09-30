@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/common_header.dart';
 import 'vitals_pdf_preview_page.dart';
 import '../models/patient_data.dart';
 import '../services/patient_data_service.dart';
@@ -645,11 +644,6 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
     return Scaffold(
       body: Column(
         children: <Widget>[
-          // Header section
-          CommonHeader(
-            title: 'Collect Vitals',
-            userAccessLevel: 'Doctor',
-          ),
           // Main content
           Expanded(
             child: Padding(

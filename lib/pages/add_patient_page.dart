@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/common_header.dart';
 import '../models/patient_data.dart';
 
 class AddPatientPage extends StatefulWidget {
@@ -140,11 +139,6 @@ class _AddPatientPageState extends State<AddPatientPage> {
     return Scaffold(
       body: Column(
         children: <Widget>[
-          // Header section
-          CommonHeader(
-            title: 'Add Patient',
-            userAccessLevel: 'Doctor',
-          ),
           // Main content
           Expanded(
             child: Padding(

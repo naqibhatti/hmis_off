@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'add_patient_page.dart';
 import 'collect_vitals_page.dart';
 import 'login_page.dart';
-import '../widgets/common_header.dart';
 import '../models/patient_data.dart';
 
 class ReceptionistDashboard extends StatefulWidget {
@@ -40,19 +39,6 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
       backgroundColor: Colors.grey.shade50,
       body: Column(
         children: <Widget>[
-          // Header section
-          CommonHeader(
-            title: 'Receptionist Dashboard',
-            userAccessLevel: 'Receptionist',
-            showBackButton: false,
-            onLogout: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => const LoginPage(),
-                ),
-              );
-            },
-          ),
           // Main content
           Expanded(
             child: Container(

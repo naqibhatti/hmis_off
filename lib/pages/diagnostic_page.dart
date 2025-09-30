@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/common_header.dart';
 import '../services/patient_data_service.dart';
 import '../services/vitals_storage_service.dart';
 import '../services/diseases_service.dart';
@@ -284,11 +283,6 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
       backgroundColor: Colors.grey.shade50,
       body: Column(
         children: <Widget>[
-          // Header section
-          CommonHeader(
-            title: 'Diagnosis & Prescription',
-            userAccessLevel: 'Doctor',
-          ),
           // Main content
           Expanded(
             child: Padding(
