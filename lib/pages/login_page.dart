@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'doctor_dashboard.dart';
 import 'receptionist_dashboard.dart';
 import '../models/user_type.dart';
+import '../theme/theme_controller.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -96,10 +97,15 @@ class _LoginPageState extends State<LoginPage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primary.withOpacity(0.1),
-              theme.colorScheme.secondary.withOpacity(0.05),
-            ],
+            colors: ThemeController.instance.useShadcn.value
+                ? [
+                    theme.colorScheme.primary.withOpacity(0.1),
+                    theme.colorScheme.secondary.withOpacity(0.05),
+                  ]
+                : [
+                    Colors.green.shade300.withOpacity(0.25),
+                    Colors.green.shade100.withOpacity(0.15),
+                  ],
           ),
         ),
         child: Row(
@@ -111,11 +117,17 @@ class _LoginPageState extends State<LoginPage> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    theme.colorScheme.primary,
-                    theme.colorScheme.primary.withOpacity(0.8),
-                    theme.colorScheme.secondary,
-                  ],
+                  colors: ThemeController.instance.useShadcn.value
+                      ? [
+                          theme.colorScheme.primary,
+                          theme.colorScheme.primary.withOpacity(0.8),
+                          theme.colorScheme.secondary,
+                        ]
+                      : [
+                          Colors.green.shade600,
+                          Colors.green.shade500,
+                          Colors.green.shade400,
+                        ],
                 ),
                 boxShadow: [
                   BoxShadow(

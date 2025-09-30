@@ -7,6 +7,7 @@ import 'login_page.dart';
 import '../models/patient_data.dart';
 import '../theme/shadcn_colors.dart';
 import '../widgets/side_navigation_drawer.dart';
+import '../theme/theme_controller.dart';
 
 class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({super.key});
@@ -40,12 +41,37 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: ThemeController.instance.useShadcn.value
+          ? Colors.grey.shade50
+          : Colors.green.shade50,
       body: SideNavigationDrawer(
         currentRoute: '/doctor-dashboard',
         userType: 'Doctor',
         child: Column(
           children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    tooltip: 'Toggle theme (Shadcn / Green)',
+                    onPressed: () {
+                      ThemeController.instance.toggle();
+                      setState(() {});
+                    },
+                    icon: ValueListenableBuilder<bool>(
+                      valueListenable: ThemeController.instance.useShadcn,
+                      builder: (context, useShadcn, _) {
+                        return Icon(
+                          useShadcn ? Icons.palette : Icons.grass,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
             // Main content
             Expanded(
               child: Container(
@@ -53,28 +79,40 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.grey.shade50,
-                      Colors.white,
-                    ],
+                    colors: ThemeController.instance.useShadcn.value
+                        ? [
+                            Colors.grey.shade50,
+                            Colors.white,
+                          ]
+                        : [
+                            Colors.green.shade100,
+                            Colors.white,
+                          ],
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      const SizedBox(height: 16),
-                      // User Information Section
+                    children: [
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: ThemeController.instance.useShadcn.value
+                              ? Colors.white
+                              : Colors.green.shade50,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: ShadcnColors.accent300, width: 2),
+                          border: Border.all(
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent300
+                                : Colors.green.shade300,
+                            width: 2,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: ShadcnColors.accent100,
+                              color: ThemeController.instance.useShadcn.value
+                                  ? ShadcnColors.accent100
+                                  : Colors.green.shade100,
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -192,10 +230,14 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                         child: Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: ShadcnColors.accent50,
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent50
+                                : Colors.green.shade50,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.grey.shade300,
+                              color: ThemeController.instance.useShadcn.value
+                                  ? Colors.grey.shade300
+                                  : Colors.green.shade200,
                               width: 1.8,
                             ),
                           ),
