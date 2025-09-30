@@ -28,7 +28,7 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          width: _isExpanded ? 200 : 80,
+          width: _isExpanded ? 180 : 80,
           height: double.infinity,
           decoration: BoxDecoration(
             color: ShadcnColors.background,
@@ -50,7 +50,10 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
             children: [
               // Header
               Container(
-                padding: EdgeInsets.all(_isExpanded ? 16 : 8),
+                padding: EdgeInsets.symmetric(
+                  horizontal: _isExpanded ? 14 : 6,
+                  vertical: _isExpanded ? 10 : 6,
+                ),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -60,48 +63,8 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
                   ),
                 ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo/Icon
-                    Container(
-                      width: _isExpanded ? 40 : 32,
-                      height: _isExpanded ? 40 : 32,
-                      decoration: BoxDecoration(
-                        color: ShadcnColors.accent,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.local_hospital,
-                        color: Colors.white,
-                        size: _isExpanded ? 24 : 20,
-                      ),
-                    ),
-                    if (_isExpanded) ...[
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'HMS Off',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: ShadcnColors.foreground,
-                              ),
-                            ),
-                            Text(
-                              'Health Management',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: ShadcnColors.mutedForeground,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    // Toggle Button
-                    if (!_isExpanded) const Spacer(),
                     IconButton(
                       onPressed: () {
                         setState(() {
@@ -109,7 +72,7 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
                         });
                       },
                       icon: Icon(
-                        _isExpanded ? Icons.chevron_left : Icons.chevron_right,
+                        _isExpanded ? Icons.chevron_left : Icons.menu,
                         color: ShadcnColors.mutedForeground,
                         size: _isExpanded ? 16 : 16,
                       ),
@@ -261,11 +224,11 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
             }
           },
           borderRadius: BorderRadius.circular(8),
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: _isExpanded ? 12 : 8,
-                vertical: _isExpanded ? 8 : 10,
-              ),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: _isExpanded ? 12 : 8,
+              vertical: _isExpanded ? 8 : 10,
+            ),
             decoration: BoxDecoration(
               color: isActive 
                   ? ShadcnColors.accent50 
@@ -279,6 +242,7 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
                   : null,
             ),
             child: Row(
+              mainAxisAlignment: _isExpanded ? MainAxisAlignment.start : MainAxisAlignment.center,
               children: [
                 Icon(
                   icon,
@@ -319,6 +283,20 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
       return;
     }
     Navigator.of(context).pushReplacementNamed(route);
+  }
+
+  void _handleBack() {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else {
+      // Fallback: navigate to dashboard depending on userType
+      final String fallback = widget.userType == 'Doctor'
+          ? '/doctor-dashboard'
+          : '/receptionist-dashboard';
+      if (widget.currentRoute != fallback) {
+        Navigator.of(context).pushReplacementNamed(fallback);
+      }
+    }
   }
 
   void _showLogoutDialog() {

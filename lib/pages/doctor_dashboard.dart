@@ -134,75 +134,51 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                             const SizedBox(height: 15),
                             // User Details
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Left Column - Name & Connection Status
+                                // Name
                                 Expanded(
-                                  child: Column(
-                                    children: [
-                                      _buildInfoCard(
-                                        'Name',
-                                        'Dr. Muhammad Ali',
-                                        ShadcnColors.accent700,
-                                        Colors.red.shade600,
-                                        Icons.person,
-                                        isBold: true,
-                                      ),
-                                      const SizedBox(height: 10),
-                                      _buildInfoCard(
-                                        'Connection Status',
-                                        'Connected',
-                                        ShadcnColors.accent700,
-                                        Colors.grey.shade600,
-                                        Icons.wifi,
-                                      ),
-                                    ],
+                                  child: _buildInfoCard(
+                                    'Name',
+                                    'Dr. Muhammad Ali',
+                                    ShadcnColors.accent700,
+                                    Colors.red.shade600,
+                                    Icons.person,
+                                    isBold: true,
                                   ),
                                 ),
-                                const SizedBox(width: 16),
-                                // Middle Column - Designation & User ID
+                                const SizedBox(width: 8),
+                                // Designation
                                 Expanded(
-                                  child: Column(
-                                    children: [
-                                      _buildInfoCard(
-                                        'Designation',
-                                        'Doctor',
-                                        ShadcnColors.accent700,
-                                        Colors.red.shade600,
-                                        Icons.medical_services,
-                                        isBold: true,
-                                      ),
-                                      const SizedBox(height: 10),
-                                      _buildInfoCard(
-                                        'User ID',
-                                        'MDU-01',
-                                        ShadcnColors.accent700,
-                                        Colors.grey.shade600,
-                                        Icons.badge,
-                                      ),
-                                    ],
+                                  child: _buildInfoCard(
+                                    'Designation',
+                                    'Doctor',
+                                    ShadcnColors.accent700,
+                                    Colors.red.shade600,
+                                    Icons.medical_services,
+                                    isBold: true,
                                   ),
                                 ),
-                                const SizedBox(width: 16),
-                                // Right Column - Facility & Timestamp
+                                const SizedBox(width: 8),
+                                // Facility Name
                                 Expanded(
-                                  child: Column(
-                                    children: [
-                                      _buildInfoCard(
-                                        'Facility Name',
-                                        'Basic Health Unit HISDU, Lahore City, Lahore',
-                                        ShadcnColors.accent700,
-                                        Colors.grey.shade600,
-                                        Icons.location_on,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      _buildInfoCard(
-                                        'Last Login',
-                                        '02-07-2024 06:40:20',
-                                        ShadcnColors.accent700,
-                                        Colors.grey.shade600,
-                                        Icons.access_time,
-                                      ),
-                                    ],
+                                  child: _buildInfoCard(
+                                    'Facility Name',
+                                    'Basic Health Unit HISDU, Lahore City, Lahore',
+                                    ShadcnColors.accent700,
+                                    Colors.grey.shade600,
+                                    Icons.location_on,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                // User ID
+                                Expanded(
+                                  child: _buildInfoCard(
+                                    'User ID',
+                                    'MDU-01',
+                                    ShadcnColors.accent700,
+                                    Colors.grey.shade600,
+                                    Icons.badge,
                                   ),
                                 ),
                               ],
