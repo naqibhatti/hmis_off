@@ -4,6 +4,7 @@ import '../widgets/family_tree_widget.dart';
 import '../models/patient_data.dart';
 import '../models/family_data.dart';
 import '../theme/shadcn_colors.dart';
+import '../widgets/side_navigation_drawer.dart';
 
 class ModifyFamilyPage extends StatefulWidget {
   final Family family;
@@ -413,93 +414,97 @@ class _ModifyFamilyPageState extends State<ModifyFamilyPage> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: Column(
-        children: [
-          // Main content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Family info section
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.shade200),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _currentFamily?.familyName ?? widget.family.familyName,
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Head of Family: ${_currentFamily?.headOfFamily.fullName ?? widget.family.headOfFamily.fullName}',
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        Text(
-                          'Total Members: ${_currentFamily?.allMembers.length ?? widget.family.allMembers.length}',
-                          style: theme.textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Tab view for Family Tree and Member Management
-                  Expanded(
-                    child: DefaultTabController(
-                      length: 2,
+      body: SideNavigationDrawer(
+        currentRoute: '/modify-family',
+        userType: 'Doctor',
+        child: Column(
+          children: [
+            // Main content
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Family info section
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TabBar(
-                            onTap: (index) {
-                              setState(() {
-                                _selectedTabIndex = index;
-                              });
-                            },
-                            tabs: const [
-                              Tab(
-                                icon: Icon(Icons.account_tree),
-                                text: 'Family Tree',
-                              ),
-                              Tab(
-                                icon: Icon(Icons.people),
-                                text: 'Manage Members',
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Expanded(
-                            child: TabBarView(
-                              children: [
-                                // Family Tree Tab
-                                FamilyTreeWidget(
-                                  family: _currentFamily ?? widget.family,
-                                ),
-                                // Member Management Tab
-                                _buildMemberManagementTab(context),
-                              ],
+                          Text(
+                            _currentFamily?.familyName ?? widget.family.familyName,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
                             ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Head of Family: ${_currentFamily?.headOfFamily.fullName ?? widget.family.headOfFamily.fullName}',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          Text(
+                            'Total Members: ${_currentFamily?.allMembers.length ?? widget.family.allMembers.length}',
+                            style: theme.textTheme.titleMedium,
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Tab view for Family Tree and Member Management
+                    Expanded(
+                      child: DefaultTabController(
+                        length: 2,
+                        child: Column(
+                          children: [
+                            TabBar(
+                              onTap: (index) {
+                                setState(() {
+                                  _selectedTabIndex = index;
+                                });
+                              },
+                              tabs: const [
+                                Tab(
+                                  icon: Icon(Icons.account_tree),
+                                  text: 'Family Tree',
+                                ),
+                                Tab(
+                                  icon: Icon(Icons.people),
+                                  text: 'Manage Members',
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Expanded(
+                              child: TabBarView(
+                                children: [
+                                  // Family Tree Tab
+                                  FamilyTreeWidget(
+                                    family: _currentFamily ?? widget.family,
+                                  ),
+                                  // Member Management Tab
+                                  _buildMemberManagementTab(context),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

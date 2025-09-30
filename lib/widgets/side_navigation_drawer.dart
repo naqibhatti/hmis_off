@@ -180,52 +180,28 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
                       isActive: widget.currentRoute == '/doctor-dashboard' || 
                                widget.currentRoute == '/receptionist-dashboard',
                     ),
-                    if (widget.userType == 'Doctor') ...[
-                      _buildNavItem(
-                        icon: Icons.person_add_outlined,
-                        label: 'Add Patient',
-                        route: '/add-patient',
-                        isActive: widget.currentRoute == '/add-patient',
-                      ),
-                      _buildNavItem(
-                        icon: Icons.favorite_outlined,
-                        label: 'Collect Vitals',
-                        route: '/collect-vitals',
-                        isActive: widget.currentRoute == '/collect-vitals',
-                      ),
-                      _buildNavItem(
-                        icon: Icons.medical_services_outlined,
-                        label: 'Diagnosis',
-                        route: '/diagnostic',
-                        isActive: widget.currentRoute == '/diagnostic',
-                      ),
-                      _buildNavItem(
-                        icon: Icons.family_restroom_outlined,
-                        label: 'Add Family',
-                        route: '/add-family',
-                        isActive: widget.currentRoute == '/add-family',
-                      ),
-                      _buildNavItem(
-                        icon: Icons.edit_outlined,
-                        label: 'Modify Family',
-                        route: '/modify-family',
-                        isActive: widget.currentRoute == '/modify-family',
-                      ),
-                    ],
-                    if (widget.userType == 'Receptionist') ...[
-                      _buildNavItem(
-                        icon: Icons.person_add_outlined,
-                        label: 'Add Patient',
-                        route: '/add-patient',
-                        isActive: widget.currentRoute == '/add-patient',
-                      ),
-                      _buildNavItem(
-                        icon: Icons.favorite_outlined,
-                        label: 'Collect Vitals',
-                        route: '/collect-vitals',
-                        isActive: widget.currentRoute == '/collect-vitals',
-                      ),
-                    ],
+                     if (widget.userType == 'Doctor') ...[
+                       _buildNavItem(
+                         icon: Icons.favorite_outlined,
+                         label: 'Collect Vitals',
+                         route: '/collect-vitals',
+                         isActive: widget.currentRoute == '/collect-vitals',
+                       ),
+                       _buildNavItem(
+                         icon: Icons.medical_services_outlined,
+                         label: 'Diagnosis',
+                         route: '/diagnostic',
+                         isActive: widget.currentRoute == '/diagnostic',
+                       ),
+                     ],
+                     if (widget.userType == 'Receptionist') ...[
+                       _buildNavItem(
+                         icon: Icons.favorite_outlined,
+                         label: 'Collect Vitals',
+                         route: '/collect-vitals',
+                         isActive: widget.currentRoute == '/collect-vitals',
+                       ),
+                     ],
                   ],
                 ),
               ),
@@ -331,14 +307,14 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
   }
 
   void _navigateToRoute(String route) {
-    // This would typically use Navigator to navigate to the route
-    // For now, we'll just show a snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Navigate to $route'),
-        duration: const Duration(seconds: 1),
-      ),
-    );
+    if (route == widget.currentRoute) {
+      return;
+    }
+    if (route == '/logout') {
+      _showLogoutDialog();
+      return;
+    }
+    Navigator.of(context).pushReplacementNamed(route);
   }
 
   void _showLogoutDialog() {

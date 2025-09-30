@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'pages/login_page.dart';
 import 'theme/shadcn_colors.dart';
+import 'pages/doctor_dashboard.dart';
+import 'pages/receptionist_dashboard.dart';
+import 'pages/add_patient_page.dart';
+import 'pages/collect_vitals_page.dart';
+import 'pages/diagnostic_page.dart';
+import 'pages/add_family_page.dart';
+import 'pages/modify_family_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +42,17 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const LoginPage(),
+      initialRoute: '/',
+      routes: <String, WidgetBuilder>{
+        '/': (context) => const LoginPage(),
+        '/doctor-dashboard': (context) => const DoctorDashboard(),
+        '/receptionist-dashboard': (context) => const ReceptionistDashboard(),
+        '/add-patient': (context) => const AddPatientPage(),
+        '/collect-vitals': (context) => const CollectVitalsPage(),
+        '/diagnostic': (context) => const DiagnosticPage(),
+        '/add-family': (context) => const AddFamilyPage(),
+        // '/modify-family': (context) => ModifyFamilyPage(...), // requires args, not routed here
+      },
     );
   }
 }

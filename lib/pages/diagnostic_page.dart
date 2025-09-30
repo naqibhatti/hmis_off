@@ -5,6 +5,7 @@ import '../services/vitals_storage_service.dart';
 import '../services/diseases_service.dart';
 import '../models/patient_data.dart';
 import '../theme/shadcn_colors.dart';
+import '../widgets/side_navigation_drawer.dart';
 
 class DiagnosticPage extends StatefulWidget {
   final String? patientName;
@@ -282,639 +283,643 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: Column(
-        children: <Widget>[
-          // Main content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      const SizedBox(height: 16),
-                      // Patient Selection and Vitals Display Section
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade300, width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.person,
-                                  color: Colors.blue.shade700,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'Patient Information & Vitals',
-                                  style: theme.textTheme.headlineSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
+      body: SideNavigationDrawer(
+        currentRoute: '/diagnostic',
+        userType: 'Doctor',
+        child: Column(
+          children: <Widget>[
+            // Main content
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        const SizedBox(height: 16),
+                        // Patient Selection and Vitals Display Section
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.person,
                                     color: Colors.blue.shade700,
+                                    size: 24,
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            // Patient Selection Dropdown
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: DropdownButtonFormField<PatientData>(
-                                    value: _selectedPatient,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Select Patient',
-                                      border: OutlineInputBorder(),
-                                      prefixIcon: Icon(Icons.search),
-                                    ),
-                                    items: _allPatients.map((patient) {
-                                      return DropdownMenuItem<PatientData>(
-                                        value: patient,
-                                        child: Text('${patient.fullName} (${patient.cnic})'),
-                                      );
-                                    }).toList(),
-                                    onChanged: (PatientData? newValue) {
-                                      setState(() {
-                                        _selectedPatient = newValue;
-                                        _loadPatientVitals();
-                                      });
-                                    },
-                                    validator: (value) {
-                                      if (value == null) {
-                                        return 'Please select a patient';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                SizedBox(
-                                  width: 120,
-                                  height: 56,
-                                  child: FilledButton(
-                                    onPressed: () {
-                                      // TODO: Implement test reports functionality
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Test Reports feature coming soon')),
-                                      );
-                                    },
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: Colors.amber,
-                                      foregroundColor: Colors.black,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Test Reports',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Patient Information & Vitals',
+                                    style: theme.textTheme.headlineSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade700,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            if (_selectedPatient != null) ...[
+                                ],
+                              ),
                               const SizedBox(height: 20),
-                              // Patient Info Card
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.shade50,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.blue.shade200),
-                                ),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 30,
-                                      backgroundColor: Colors.blue.shade100,
-                                      child: Text(
-                                        _selectedPatient!.fullName[0].toUpperCase(),
-                                        style: TextStyle(
-                                          color: Colors.blue.shade700,
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
+                              // Patient Selection Dropdown
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: DropdownButtonFormField<PatientData>(
+                                      value: _selectedPatient,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Select Patient',
+                                        border: OutlineInputBorder(),
+                                        prefixIcon: Icon(Icons.search),
+                                      ),
+                                      items: _allPatients.map((patient) {
+                                        return DropdownMenuItem<PatientData>(
+                                          value: patient,
+                                          child: Text('${patient.fullName} (${patient.cnic})'),
+                                        );
+                                      }).toList(),
+                                      onChanged: (PatientData? newValue) {
+                                        setState(() {
+                                          _selectedPatient = newValue;
+                                          _loadPatientVitals();
+                                        });
+                                      },
+                                      validator: (value) {
+                                        if (value == null) {
+                                          return 'Please select a patient';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  SizedBox(
+                                    width: 120,
+                                    height: 56,
+                                    child: FilledButton(
+                                      onPressed: () {
+                                        // TODO: Implement test reports functionality
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Test Reports feature coming soon')),
+                                        );
+                                      },
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: Colors.amber,
+                                        foregroundColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
                                         ),
                                       ),
+                                      child: const Text(
+                                        'Test Reports',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
                                     ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            _selectedPatient!.fullName,
-                                            style: theme.textTheme.titleLarge?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.blue.shade800,
-                                            ),
+                                  ),
+                                ],
+                              ),
+                              if (_selectedPatient != null) ...[
+                                const SizedBox(height: 20),
+                                // Patient Info Card
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade50,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.blue.shade200),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 30,
+                                        backgroundColor: Colors.blue.shade100,
+                                        child: Text(
+                                          _selectedPatient!.fullName[0].toUpperCase(),
+                                          style: TextStyle(
+                                            color: Colors.blue.shade700,
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '${_selectedPatient!.age} years • ${_selectedPatient!.bloodGroup} • ${_selectedPatient!.cnic}',
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _selectedPatient!.fullName,
+                                              style: theme.textTheme.titleLarge?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.blue.shade800,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              '${_selectedPatient!.age} years • ${_selectedPatient!.bloodGroup} • ${_selectedPatient!.cnic}',
+                                              style: theme.textTheme.bodyMedium?.copyWith(
+                                                color: Colors.blue.shade600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                // Latest Vitals Display
+                                if (_patientVitals.isNotEmpty) ...[
+                                  Text(
+                                    'Latest Vitals',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade50,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.grey.shade200),
+                                    ),
+                                    child: _buildVitalsDisplay(_patientVitals.first),
+                                  ),
+                                ] else ...[
+                                  Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.shade50,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.orange.shade200),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.warning,
+                                          color: Colors.orange.shade700,
+                                          size: 24,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            'No vitals recorded for this patient. Please collect vitals first.',
                                             style: theme.textTheme.bodyMedium?.copyWith(
-                                              color: Colors.blue.shade600,
+                                              color: Colors.orange.shade700,
+                                              fontWeight: FontWeight.w500,
                                             ),
                                           ),
-                                        ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        // Diagnosis and Prescription Section
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Diagnosis Panel
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Diagnosis',
+                                      style: theme.textTheme.headlineSmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: ShadcnColors.accent700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    // Disease Search Field
+                                    Autocomplete<Disease>(
+                                      optionsBuilder: (TextEditingValue textEditingValue) {
+                                        if (textEditingValue.text.isEmpty) {
+                                          return _allDiseases.take(10);
+                                        }
+                                        return _filteredDiseases.take(10);
+                                      },
+                                      displayStringForOption: (Disease disease) => disease.name,
+                                      onSelected: (Disease disease) {
+                                        setState(() {
+                                          _selectedDisease = disease;
+                                          _diseaseController.text = disease.name;
+                                        });
+                                      },
+                                      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                                        return TextFormField(
+                                          controller: controller,
+                                          focusNode: focusNode,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Search Disease',
+                                            hintText: 'Type to search diseases...',
+                                            border: OutlineInputBorder(),
+                                            prefixIcon: Icon(Icons.search),
+                                            suffixIcon: Icon(Icons.arrow_drop_down),
+                                          ),
+                                          onChanged: (value) {
+                                            _filterDiseases();
+                                          },
+                                          validator: (value) {
+                                            if (_selectedDisease == null) {
+                                              return 'Please select a disease';
+                                            }
+                                            return null;
+                                          },
+                                        );
+                                      },
+                                      optionsViewBuilder: (context, onSelected, options) {
+                                        return Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Material(
+                                            elevation: 4,
+                                            borderRadius: BorderRadius.circular(8),
+                                            child: ConstrainedBox(
+                                              constraints: const BoxConstraints(maxHeight: 300),
+                                              child: ListView.builder(
+                                                padding: EdgeInsets.zero,
+                                                shrinkWrap: true,
+                                                itemCount: options.length,
+                                                itemBuilder: (context, index) {
+                                                  final disease = options.elementAt(index);
+                                                  return ListTile(
+                                                    dense: true,
+                                                    leading: Icon(
+                                                      _getDiseaseIcon(disease.category),
+                                                      size: 20,
+                                                      color: ShadcnColors.accent700,
+                                                    ),
+                                                    title: Text(
+                                                      disease.name,
+                                                      style: const TextStyle(fontSize: 14),
+                                                    ),
+                                                    subtitle: Text(
+                                                      '${disease.category} • ${disease.icdCode}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.grey.shade600,
+                                                      ),
+                                                    ),
+                                                    onTap: () {
+                                                      onSelected(disease);
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 16),
+                                    TextFormField(
+                                      controller: _followupDateController,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Followup Date',
+                                        border: OutlineInputBorder(),
+                                        suffixIcon: Icon(Icons.calendar_today),
+                                      ),
+                                      readOnly: true,
+                                      onTap: () async {
+                                        final date = await showDatePicker(
+                                          context: context,
+                                          initialDate: DateTime.now(),
+                                          firstDate: DateTime.now(),
+                                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                                        );
+                                        if (date != null) {
+                                          _followupDateController.text = 
+                                              '${date.day}/${date.month}/${date.year}';
+                                        }
+                                      },
+                                    ),
+                                    const SizedBox(height: 16),
+                                    TextFormField(
+                                      controller: _doctorNotesController,
+                                      maxLines: 4,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Doctor\'s Notes',
+                                        border: OutlineInputBorder(),
+                                        alignLabelWithHint: true,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 20),
-                              // Latest Vitals Display
-                              if (_patientVitals.isNotEmpty) ...[
-                                Text(
-                                  'Latest Vitals',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey.shade700,
-                                  ),
+                            ),
+                            const SizedBox(width: 20),
+                            // Prescription Panel
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 12),
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade50,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.grey.shade200),
-                                  ),
-                                  child: _buildVitalsDisplay(_patientVitals.first),
-                                ),
-                              ] else ...[
-                                Container(
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.shade50,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.orange.shade200),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.warning,
-                                        color: Colors.orange.shade700,
-                                        size: 24,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Prescription',
+                                      style: theme.textTheme.headlineSmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: ShadcnColors.accent700,
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          'No vitals recorded for this patient. Please collect vitals first.',
-                                          style: theme.textTheme.bodyMedium?.copyWith(
-                                            color: Colors.orange.shade700,
-                                            fontWeight: FontWeight.w500,
+                                    ),
+                                    const SizedBox(height: 20),
+                                    // Prescription Table Headers
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Name',
+                                            style: theme.textTheme.titleMedium?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      // Diagnosis and Prescription Section
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Diagnosis Panel
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.shade300, width: 1.5),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Diagnosis',
-                                    style: theme.textTheme.headlineSmall?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: ShadcnColors.accent700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  // Disease Search Field
-                                  Autocomplete<Disease>(
-                                    optionsBuilder: (TextEditingValue textEditingValue) {
-                                      if (textEditingValue.text.isEmpty) {
-                                        return _allDiseases.take(10);
-                                      }
-                                      return _filteredDiseases.take(10);
-                                    },
-                                    displayStringForOption: (Disease disease) => disease.name,
-                                    onSelected: (Disease disease) {
-                                      setState(() {
-                                        _selectedDisease = disease;
-                                        _diseaseController.text = disease.name;
-                                      });
-                                    },
-                                    fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                                      return TextFormField(
-                                        controller: controller,
-                                        focusNode: focusNode,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Search Disease',
-                                          hintText: 'Type to search diseases...',
-                                          border: OutlineInputBorder(),
-                                          prefixIcon: Icon(Icons.search),
-                                          suffixIcon: Icon(Icons.arrow_drop_down),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            'Instructions',
+                                            style: theme.textTheme.titleMedium?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
-                                        onChanged: (value) {
-                                          _filterDiseases();
-                                        },
-                                        validator: (value) {
-                                          if (_selectedDisease == null) {
-                                            return 'Please select a disease';
-                                          }
-                                          return null;
-                                        },
-                                      );
-                                    },
-                                    optionsViewBuilder: (context, onSelected, options) {
-                                      return Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Material(
-                                          elevation: 4,
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: ConstrainedBox(
-                                            constraints: const BoxConstraints(maxHeight: 300),
-                                            child: ListView.builder(
-                                              padding: EdgeInsets.zero,
-                                              shrinkWrap: true,
-                                              itemCount: options.length,
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    // Prescription List
+                                    Container(
+                                      height: 200,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey.shade300),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: _prescriptions.isEmpty
+                                          ? const Center(
+                                              child: Text(
+                                                'No Medicine Prescribed',
+                                                style: TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            )
+                                          : ListView.builder(
+                                              itemCount: _prescriptions.length,
                                               itemBuilder: (context, index) {
-                                                final disease = options.elementAt(index);
-                                                return ListTile(
-                                                  dense: true,
-                                                  leading: Icon(
-                                                    _getDiseaseIcon(disease.category),
-                                                    size: 20,
-                                                    color: ShadcnColors.accent700,
-                                                  ),
-                                                  title: Text(
-                                                    disease.name,
-                                                    style: const TextStyle(fontSize: 14),
-                                                  ),
-                                                  subtitle: Text(
-                                                    '${disease.category} • ${disease.icdCode}',
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.grey.shade600,
+                                                final prescription = _prescriptions[index];
+                                                return Container(
+                                                  padding: const EdgeInsets.all(8),
+                                                  decoration: BoxDecoration(
+                                                    border: Border(
+                                                      bottom: BorderSide(
+                                                        color: Colors.grey.shade200,
+                                                      ),
                                                     ),
                                                   ),
-                                                  onTap: () {
-                                                    onSelected(disease);
-                                                  },
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: Text(prescription['name'] ?? ''),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 3,
+                                                        child: Text(prescription['instructions'] ?? ''),
+                                                      ),
+                                                      IconButton(
+                                                        onPressed: () {
+                                                          setState(() {
+                                                            _prescriptions.removeAt(index);
+                                                          });
+                                                        },
+                                                        style: IconButton.styleFrom(
+                                                          backgroundColor: Colors.red.shade50,
+                                                          foregroundColor: Colors.red,
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius: BorderRadius.circular(8),
+                                                          ),
+                                                        ),
+                                                        icon: const Icon(Icons.delete),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 );
                                               },
                                             ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 16),
-                                  TextFormField(
-                                    controller: _followupDateController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Followup Date',
-                                      border: OutlineInputBorder(),
-                                      suffixIcon: Icon(Icons.calendar_today),
                                     ),
-                                    readOnly: true,
-                                    onTap: () async {
-                                      final date = await showDatePicker(
-                                        context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime.now(),
-                                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                                      );
-                                      if (date != null) {
-                                        _followupDateController.text = 
-                                            '${date.day}/${date.month}/${date.year}';
-                                      }
-                                    },
-                                  ),
-                                  const SizedBox(height: 16),
-                                  TextFormField(
-                                    controller: _doctorNotesController,
-                                    maxLines: 4,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Doctor\'s Notes',
-                                      border: OutlineInputBorder(),
-                                      alignLabelWithHint: true,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 20),
-                          // Prescription Panel
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.shade300, width: 1.5),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Prescription',
-                                    style: theme.textTheme.headlineSmall?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: ShadcnColors.accent700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  // Prescription Table Headers
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          'Name',
-                                          style: theme.textTheme.titleMedium?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 3,
-                                        child: Text(
-                                          'Instructions',
-                                          style: theme.textTheme.titleMedium?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  // Prescription List
-                                  Container(
-                                    height: 200,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey.shade300),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: _prescriptions.isEmpty
-                                        ? const Center(
-                                            child: Text(
-                                              'No Medicine Prescribed',
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 16,
-                                              ),
+                                    const SizedBox(height: 16),
+                                    // Add Medicine Form
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 2,
+                                          child: DropdownButtonFormField<String>(
+                                            value: _selectedMedicine,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Select Medicine',
+                                              border: OutlineInputBorder(),
+                                              isDense: true,
                                             ),
-                                          )
-                                        : ListView.builder(
-                                            itemCount: _prescriptions.length,
-                                            itemBuilder: (context, index) {
-                                              final prescription = _prescriptions[index];
-                                              return Container(
-                                                padding: const EdgeInsets.all(8),
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    bottom: BorderSide(
-                                                      color: Colors.grey.shade200,
-                                                    ),
-                                                  ),
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    Expanded(
-                                                      flex: 2,
-                                                      child: Text(prescription['name'] ?? ''),
-                                                    ),
-                                                    Expanded(
-                                                      flex: 3,
-                                                      child: Text(prescription['instructions'] ?? ''),
-                                                    ),
-                                                    IconButton(
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          _prescriptions.removeAt(index);
-                                                        });
-                                                      },
-                                                      style: IconButton.styleFrom(
-                                                        backgroundColor: Colors.red.shade50,
-                                                        foregroundColor: Colors.red,
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(8),
-                                                        ),
-                                                      ),
-                                                      icon: const Icon(Icons.delete),
-                                                    ),
-                                                  ],
+                                            items: _availableMedicines.map((String medicine) {
+                                              return DropdownMenuItem<String>(
+                                                value: medicine,
+                                                child: Text(
+                                                  medicine,
+                                                  style: const TextStyle(fontSize: 14),
                                                 ),
                                               );
+                                            }).toList(),
+                                            onChanged: (String? newValue) {
+                                              setState(() {
+                                                _selectedMedicine = newValue;
+                                                _medicineNameController.text = newValue ?? '';
+                                              });
+                                            },
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'Please select a medicine';
+                                              }
+                                              return null;
                                             },
                                           ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  // Add Medicine Form
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 2,
-                                        child: DropdownButtonFormField<String>(
-                                          value: _selectedMedicine,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Select Medicine',
-                                            border: OutlineInputBorder(),
-                                            isDense: true,
-                                          ),
-                                          items: _availableMedicines.map((String medicine) {
-                                            return DropdownMenuItem<String>(
-                                              value: medicine,
-                                              child: Text(
-                                                medicine,
-                                                style: const TextStyle(fontSize: 14),
-                                              ),
-                                            );
-                                          }).toList(),
-                                          onChanged: (String? newValue) {
-                                            setState(() {
-                                              _selectedMedicine = newValue;
-                                              _medicineNameController.text = newValue ?? '';
-                                            });
-                                          },
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please select a medicine';
-                                            }
-                                            return null;
-                                          },
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        flex: 3,
-                                        child: TextFormField(
-                                          controller: _medicineInstructionsController,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Instructions',
-                                            border: OutlineInputBorder(),
-                                            isDense: true,
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          flex: 3,
+                                          child: TextFormField(
+                                            controller: _medicineInstructionsController,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Instructions',
+                                              border: OutlineInputBorder(),
+                                              isDense: true,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      FilledButton(
-                                        onPressed: _addPrescription,
-                                        style: FilledButton.styleFrom(
-                                          backgroundColor: ShadcnColors.accent,
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                        const SizedBox(width: 8),
+                                        FilledButton(
+                                          onPressed: _addPrescription,
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: ShadcnColors.accent,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'ADD',
+                                            style: TextStyle(fontWeight: FontWeight.bold),
                                           ),
                                         ),
-                                        child: const Text(
-                                          'ADD',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        // Action Buttons
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      // Action Buttons
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade300, width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                          child:                         Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Refer Patient Button
+                              SizedBox(
+                                width: 120,
+                                height: 56,
+                                child: FilledButton(
+                                  onPressed: () {
+                                    // TODO: Implement refer functionality
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Refer feature coming soon')),
+                                    );
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.amber,
+                                    foregroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Refer Patient',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                              // Lab Reports Button
+                              SizedBox(
+                                width: 120,
+                                height: 56,
+                                child: FilledButton(
+                                  onPressed: () {
+                                    _showLabReportsModal(context);
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.purple,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Lab Reports',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                              // Save Diagnosis Button
+                              SizedBox(
+                                width: 120,
+                                height: 56,
+                                child: FilledButton(
+                                  onPressed: _saveDiagnosis,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Save Diagnosis',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        child:                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Refer Patient Button
-                            SizedBox(
-                              width: 120,
-                              height: 56,
-                              child: FilledButton(
-                                onPressed: () {
-                                  // TODO: Implement refer functionality
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Refer feature coming soon')),
-                                  );
-                                },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.amber,
-                                  foregroundColor: Colors.black,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Refer Patient',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                            // Lab Reports Button
-                            SizedBox(
-                              width: 120,
-                              height: 56,
-                              child: FilledButton(
-                                onPressed: () {
-                                  _showLabReportsModal(context);
-                                },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.purple,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Lab Reports',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                            // Save Diagnosis Button
-                            SizedBox(
-                              width: 120,
-                              height: 56,
-                              child: FilledButton(
-                                onPressed: _saveDiagnosis,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Save Diagnosis',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

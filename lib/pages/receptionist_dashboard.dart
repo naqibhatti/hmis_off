@@ -4,6 +4,7 @@ import 'collect_vitals_page.dart';
 import 'login_page.dart';
 import '../models/patient_data.dart';
 import '../theme/shadcn_colors.dart';
+import '../widgets/side_navigation_drawer.dart';
 
 class ReceptionistDashboard extends StatefulWidget {
   const ReceptionistDashboard({super.key});
@@ -38,152 +39,156 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: Column(
-        children: <Widget>[
-          // Main content
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.grey.shade50,
-                    Colors.white,
-                  ],
+      body: SideNavigationDrawer(
+        currentRoute: '/receptionist-dashboard',
+        userType: 'Receptionist',
+        child: Column(
+          children: <Widget>[
+            // Main content
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.grey.shade50,
+                      Colors.white,
+                    ],
+                  ),
                 ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    const SizedBox(height: 20),
-                    // Welcome message
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            ShadcnColors.accent50,
-                            Colors.blue.shade50,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: ShadcnColors.accent100),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: ShadcnColors.accent100,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.person_add,
-                              color: ShadcnColors.accent700,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Welcome, Receptionist!',
-                                  style: theme.textTheme.headlineSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: ShadcnColors.accent800,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Add patients and collect their vital signs',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: ShadcnColors.accent600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Cards grid
-                    Expanded(
-                      child: Container(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      const SizedBox(height: 20),
+                      // Welcome message
+                      Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: ShadcnColors.accent50,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              ShadcnColors.accent50,
+                              Colors.blue.shade50,
+                            ],
+                          ),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.grey.shade300,
-                            width: 1.5,
-                          ),
+                          border: Border.all(color: ShadcnColors.accent100),
                         ),
-                        child: GridView.count(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 1.2,
-                        children: <Widget>[
-                          _buildDashboardCard(
-                            context: context,
-                            title: 'Add Patient',
-                            icon: Icons.person_add,
-                            color: Colors.blue,
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const AddPatientPage(),
-                                ),
-                              );
-                            },
-                            isEnabled: true,
-                          ),
-                          _buildDashboardCard(
-                            context: context,
-                            title: 'Collect Vitals',
-                            icon: Icons.favorite,
-                            color: Colors.red,
-                            onTap: () {
-                              if (PatientManager.hasPatient) {
-                                final patient = PatientManager.currentPatient!;
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => CollectVitalsPage(
-                                      patientName: patient.fullName,
-                                      patientAge: patient.age,
-                                      patientBloodGroup: patient.bloodGroup,
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: ShadcnColors.accent100,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.person_add,
+                                color: ShadcnColors.accent700,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Welcome, Receptionist!',
+                                    style: theme.textTheme.headlineSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: ShadcnColors.accent800,
                                     ),
                                   ),
-                                );
-                              } else {
-                                // Navigate to Collect Vitals without patient data
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => const CollectVitalsPage(),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Add patients and collect their vital signs',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: ShadcnColors.accent600,
+                                    ),
                                   ),
-                                );
-                              }
-                            },
-                            isEnabled: true,
-                          ),
-                        ],
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 24),
+                      // Cards grid
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: ShadcnColors.accent50,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.grey.shade300,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: GridView.count(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 1.2,
+                          children: <Widget>[
+                            _buildDashboardCard(
+                              context: context,
+                              title: 'Add Patient',
+                              icon: Icons.person_add,
+                              color: Colors.blue,
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const AddPatientPage(),
+                                  ),
+                                );
+                              },
+                              isEnabled: true,
+                            ),
+                            _buildDashboardCard(
+                              context: context,
+                              title: 'Collect Vitals',
+                              icon: Icons.favorite,
+                              color: Colors.red,
+                              onTap: () {
+                                if (PatientManager.hasPatient) {
+                                  final patient = PatientManager.currentPatient!;
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => CollectVitalsPage(
+                                        patientName: patient.fullName,
+                                        patientAge: patient.age,
+                                        patientBloodGroup: patient.bloodGroup,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  // Navigate to Collect Vitals without patient data
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => const CollectVitalsPage(),
+                                    ),
+                                  );
+                                }
+                              },
+                              isEnabled: true,
+                            ),
+                          ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
