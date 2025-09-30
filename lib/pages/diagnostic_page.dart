@@ -876,19 +876,6 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 ),
                               ),
                               const Spacer(),
-                              // Save Diagnosis Button
-                              SizedBox(
-                                width: 200,
-                                height: 56,
-                                child: FilledButton(
-                                  onPressed: _saveDiagnosis,
-                                  style: FilledButton.styleFrom(
-                                    textStyle: theme.textTheme.titleMedium,
-                                  ),
-                                  child: const Text('Save Diagnosis'),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
                               // Cancel (Outlined) Button
                               SizedBox(
                                 width: 160,
@@ -899,6 +886,19 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                     textStyle: theme.textTheme.titleMedium,
                                   ),
                                   child: const Text('Cancel'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Save Diagnosis Button
+                              SizedBox(
+                                width: 200,
+                                height: 56,
+                                child: FilledButton(
+                                  onPressed: _saveDiagnosis,
+                                  style: FilledButton.styleFrom(
+                                    textStyle: theme.textTheme.titleMedium,
+                                  ),
+                                  child: const Text('Save Diagnosis'),
                                 ),
                               ),
                             ],

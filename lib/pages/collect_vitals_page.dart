@@ -1228,19 +1228,36 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        // Save button - fixed width and right-aligned
+                        // Save/Cancel buttons - fixed width and right-aligned
                         Align(
                           alignment: Alignment.centerRight,
-                          child: SizedBox(
-                            width: 200,
-                            height: 56,
-                            child: FilledButton(
-                              onPressed: _submit,
-                              style: FilledButton.styleFrom(
-                                textStyle: theme.textTheme.titleMedium,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 160,
+                                height: 56,
+                                child: OutlinedButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  style: OutlinedButton.styleFrom(
+                                    textStyle: theme.textTheme.titleMedium,
+                                  ),
+                                  child: const Text('Cancel'),
+                                ),
                               ),
-                              child: const Text('Save Vitals'),
-                            ),
+                              const SizedBox(width: 12),
+                              SizedBox(
+                                width: 200,
+                                height: 56,
+                                child: FilledButton(
+                                  onPressed: _submit,
+                                  style: FilledButton.styleFrom(
+                                    textStyle: theme.textTheme.titleMedium,
+                                  ),
+                                  child: const Text('Save Vitals'),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],

@@ -457,6 +457,15 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                                 label: Text(_isSearching ? 'Searching...' : 'Search'),
                               ),
                             ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: 160,
+                              height: 48,
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Cancel'),
+                              ),
+                            ),
                           ],
                         ),
                       ),
