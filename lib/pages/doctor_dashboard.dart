@@ -6,6 +6,7 @@ import 'diagnostic_page.dart';
 import 'login_page.dart';
 import '../models/patient_data.dart';
 import '../theme/shadcn_colors.dart';
+import '../widgets/side_navigation_drawer.dart';
 
 class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({super.key});
@@ -40,293 +41,297 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: Column(
-        children: <Widget>[
-          // Main content
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.grey.shade50,
-                    Colors.white,
-                  ],
+      body: SideNavigationDrawer(
+        currentRoute: '/doctor-dashboard',
+        userType: 'Doctor',
+        child: Column(
+          children: <Widget>[
+            // Main content
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.grey.shade50,
+                      Colors.white,
+                    ],
+                  ),
                 ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    const SizedBox(height: 16),
-                    // User Information Section
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: ShadcnColors.accent300, width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: ShadcnColors.accent100,
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          // Header
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  ShadcnColors.accent50,
-                                  ShadcnColors.accent100,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      const SizedBox(height: 16),
+                      // User Information Section
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: ShadcnColors.accent300, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: ShadcnColors.accent100,
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            // Header
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    ShadcnColors.accent50,
+                                    ShadcnColors.accent100,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: ShadcnColors.accent200,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      Icons.local_hospital,
+                                      color: ShadcnColors.accent700,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'HMIS (PRIMARY HEALTH FACILITIES)',
+                                      style: theme.textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: ShadcnColors.accent700,
+                                        fontSize: 18,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(16),
                             ),
-                            child: Row(
+                            const SizedBox(height: 15),
+                            // User Details
+                            Row(
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: ShadcnColors.accent200,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(
-                                    Icons.local_hospital,
-                                    color: ShadcnColors.accent700,
-                                    size: 24,
+                                // Left Column - Name & Connection Status
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      _buildInfoCard(
+                                        'Name',
+                                        'Dr. Muhammad Ali',
+                                        ShadcnColors.accent700,
+                                        Colors.red.shade600,
+                                        Icons.person,
+                                        isBold: true,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      _buildInfoCard(
+                                        'Connection Status',
+                                        'Connected',
+                                        ShadcnColors.accent700,
+                                        Colors.grey.shade600,
+                                        Icons.wifi,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 16),
+                                // Middle Column - Designation & User ID
                                 Expanded(
-                                  child: Text(
-                                    'HMIS (PRIMARY HEALTH FACILITIES)',
-                                    style: theme.textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: ShadcnColors.accent700,
-                                      fontSize: 18,
-                                    ),
-                                    textAlign: TextAlign.center,
+                                  child: Column(
+                                    children: [
+                                      _buildInfoCard(
+                                        'Designation',
+                                        'Doctor',
+                                        ShadcnColors.accent700,
+                                        Colors.red.shade600,
+                                        Icons.medical_services,
+                                        isBold: true,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      _buildInfoCard(
+                                        'User ID',
+                                        'MDU-01',
+                                        ShadcnColors.accent700,
+                                        Colors.grey.shade600,
+                                        Icons.badge,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                // Right Column - Facility & Timestamp
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      _buildInfoCard(
+                                        'Facility Name',
+                                        'Basic Health Unit HISDU, Lahore City, Lahore',
+                                        ShadcnColors.accent700,
+                                        Colors.grey.shade600,
+                                        Icons.location_on,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      _buildInfoCard(
+                                        'Last Login',
+                                        '02-07-2024 06:40:20',
+                                        ShadcnColors.accent700,
+                                        Colors.grey.shade600,
+                                        Icons.access_time,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      // Cards grid
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: ShadcnColors.accent50,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.grey.shade300,
+                              width: 1.5,
+                            ),
                           ),
-                          const SizedBox(height: 15),
-                          // User Details
-                          Row(
-                            children: [
-                              // Left Column - Name & Connection Status
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    _buildInfoCard(
-                                      'Name',
-                                      'Dr. Muhammad Ali',
-                                      ShadcnColors.accent700,
-                                      Colors.red.shade600,
-                                      Icons.person,
-                                      isBold: true,
+                          child: GridView.count(
+                            crossAxisCount: 4,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 1.2,
+                            children: <Widget>[
+                              _buildDashboardCard(
+                                context: context,
+                                title: 'Add Family',
+                                icon: Icons.family_restroom,
+                                color: Colors.purple,
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => const AddFamilyPage(),
                                     ),
-                                    const SizedBox(height: 10),
-                                    _buildInfoCard(
-                                      'Connection Status',
-                                      'Connected',
-                                      ShadcnColors.accent700,
-                                      Colors.grey.shade600,
-                                      Icons.wifi,
-                                    ),
-                                  ],
-                                ),
+                                  );
+                                },
+                                isEnabled: true,
                               ),
-                              const SizedBox(width: 16),
-                              // Middle Column - Designation & User ID
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    _buildInfoCard(
-                                      'Designation',
-                                      'Doctor',
-                                      ShadcnColors.accent700,
-                                      Colors.red.shade600,
-                                      Icons.medical_services,
-                                      isBold: true,
-                                    ),
-                                    const SizedBox(height: 10),
-                                    _buildInfoCard(
-                                      'User ID',
-                                      'MDU-01',
-                                      ShadcnColors.accent700,
-                                      Colors.grey.shade600,
-                                      Icons.badge,
-                                    ),
-                                  ],
-                                ),
+                              _buildDashboardCard(
+                                context: context,
+                                title: 'Collect Vitals',
+                                icon: Icons.favorite,
+                                color: Colors.red,
+                                onTap: () {
+                                  if (PatientManager.hasPatient) {
+                                    final patient = PatientManager.currentPatient!;
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => CollectVitalsPage(
+                                          patientName: patient.fullName,
+                                          patientAge: patient.age,
+                                          patientBloodGroup: patient.bloodGroup,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    // Navigate to Collect Vitals without patient data
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => const CollectVitalsPage(),
+                                      ),
+                                    );
+                                  }
+                                },
+                                isEnabled: true,
                               ),
-                              const SizedBox(width: 16),
-                              // Right Column - Facility & Timestamp
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    _buildInfoCard(
-                                      'Facility Name',
-                                      'Basic Health Unit HISDU, Lahore City, Lahore',
-                                      ShadcnColors.accent700,
-                                      Colors.grey.shade600,
-                                      Icons.location_on,
+                              _buildDashboardCard(
+                                context: context,
+                                title: 'Diagnosis & Prescription',
+                                icon: Icons.medical_services,
+                                color: ShadcnColors.accent,
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => const DiagnosticPage(),
                                     ),
-                                    const SizedBox(height: 12),
-                                    _buildInfoCard(
-                                      'Last Login',
-                                      '02-07-2024 06:40:20',
-                                      ShadcnColors.accent700,
-                                      Colors.grey.shade600,
-                                      Icons.access_time,
-                                    ),
-                                  ],
-                                ),
+                                  );
+                                },
+                                isEnabled: true,
+                              ),
+                              _buildDashboardCard(
+                                context: context,
+                                title: 'LHV',
+                                icon: Icons.pregnant_woman,
+                                color: Colors.purple,
+                                onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('LHV feature coming soon')),
+                                  );
+                                },
+                                isEnabled: true,
+                              ),
+                              _buildDashboardCard(
+                                context: context,
+                                title: 'Family Planning',
+                                icon: Icons.family_restroom,
+                                color: Colors.orange,
+                                onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Family Planning feature coming soon')),
+                                  );
+                                },
+                                isEnabled: true,
+                              ),
+                              _buildDashboardCard(
+                                context: context,
+                                title: 'Integrated Screening',
+                                icon: Icons.search,
+                                color: Colors.teal,
+                                onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Integrated Screening feature coming soon')),
+                                  );
+                                },
+                                isEnabled: true,
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    // Cards grid
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: ShadcnColors.accent50,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.grey.shade300,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: GridView.count(
-                          crossAxisCount: 4,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 1.2,
-                    children: <Widget>[
-                    _buildDashboardCard(
-                      context: context,
-                      title: 'Add Family',
-                      icon: Icons.family_restroom,
-                      color: Colors.purple,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const AddFamilyPage(),
-                          ),
-                        );
-                      },
-                      isEnabled: true,
-                    ),
-                    _buildDashboardCard(
-                      context: context,
-                      title: 'Collect Vitals',
-                      icon: Icons.favorite,
-                      color: Colors.red,
-                      onTap: () {
-                        if (PatientManager.hasPatient) {
-                          final patient = PatientManager.currentPatient!;
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => CollectVitalsPage(
-                                patientName: patient.fullName,
-                                patientAge: patient.age,
-                                patientBloodGroup: patient.bloodGroup,
-                              ),
-                            ),
-                          );
-                        } else {
-                          // Navigate to Collect Vitals without patient data
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const CollectVitalsPage(),
-                            ),
-                          );
-                        }
-                      },
-                      isEnabled: true,
-                    ),
-                    _buildDashboardCard(
-                      context: context,
-                      title: 'Diagnosis & Prescription',
-                      icon: Icons.medical_services,
-                      color: ShadcnColors.accent,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const DiagnosticPage(),
-                          ),
-                        );
-                      },
-                      isEnabled: true,
-                    ),
-                    _buildDashboardCard(
-                      context: context,
-                      title: 'LHV',
-                      icon: Icons.pregnant_woman,
-                      color: Colors.purple,
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('LHV feature coming soon')),
-                        );
-                      },
-                      isEnabled: true,
-                    ),
-                    _buildDashboardCard(
-                      context: context,
-                      title: 'Family Planning',
-                      icon: Icons.family_restroom,
-                      color: Colors.orange,
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Family Planning feature coming soon')),
-                        );
-                      },
-                      isEnabled: true,
-                    ),
-                    _buildDashboardCard(
-                      context: context,
-                      title: 'Integrated Screening',
-                      icon: Icons.search,
-                      color: Colors.teal,
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Integrated Screening feature coming soon')),
-                        );
-                      },
-                      isEnabled: true,
-                    ),
-                        ],
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
