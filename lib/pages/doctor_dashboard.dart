@@ -220,7 +220,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: Colors.grey.shade300,
-                              width: 1.5,
+                              width: 1.8,
                             ),
                           ),
                           child: GridView.count(

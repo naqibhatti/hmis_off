@@ -18,7 +18,7 @@ class SideNavigationDrawer extends StatefulWidget {
 }
 
 class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
-  bool _isExpanded = true;
+  bool _isExpanded = false; // Always minimized by default
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          width: _isExpanded ? 280 : 80,
+          width: _isExpanded ? 200 : 80,
           height: double.infinity,
           decoration: BoxDecoration(
             color: ShadcnColors.background,
@@ -50,7 +50,7 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
             children: [
               // Header
               Container(
-                padding: EdgeInsets.all(_isExpanded ? 24 : 16),
+                padding: EdgeInsets.all(_isExpanded ? 16 : 8),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -63,16 +63,16 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
                   children: [
                     // Logo/Icon
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: _isExpanded ? 40 : 32,
+                      height: _isExpanded ? 40 : 32,
                       decoration: BoxDecoration(
                         color: ShadcnColors.accent,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.local_hospital,
                         color: Colors.white,
-                        size: 24,
+                        size: _isExpanded ? 24 : 20,
                       ),
                     ),
                     if (_isExpanded) ...[
@@ -101,6 +101,7 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
                       ),
                     ],
                     // Toggle Button
+                    if (!_isExpanded) const Spacer(),
                     IconButton(
                       onPressed: () {
                         setState(() {
@@ -110,12 +111,15 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
                       icon: Icon(
                         _isExpanded ? Icons.chevron_left : Icons.chevron_right,
                         color: ShadcnColors.mutedForeground,
+                        size: _isExpanded ? 16 : 16,
                       ),
                       style: IconButton.styleFrom(
                         backgroundColor: ShadcnColors.muted,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(6),
                         ),
+                        minimumSize: const Size(24, 24),
+                        padding: const EdgeInsets.all(4),
                       ),
                     ),
                   ],
@@ -125,7 +129,7 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
               // User Info
               if (_isExpanded)
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
                       CircleAvatar(
@@ -208,7 +212,7 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
               
               // Footer
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(_isExpanded ? 12 : 10),
                 decoration: BoxDecoration(
                   border: Border(
                     top: BorderSide(
@@ -257,11 +261,11 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
             }
           },
           borderRadius: BorderRadius.circular(8),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: _isExpanded ? 16 : 8,
-              vertical: 12,
-            ),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: _isExpanded ? 12 : 8,
+                vertical: _isExpanded ? 8 : 10,
+              ),
             decoration: BoxDecoration(
               color: isActive 
                   ? ShadcnColors.accent50 
@@ -278,18 +282,18 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
               children: [
                 Icon(
                   icon,
-                  size: 20,
+                  size: _isExpanded ? 18 : 18,
                   color: isActive 
                       ? ShadcnColors.accent700 
                       : (isLogout ? ShadcnColors.destructive : ShadcnColors.mutedForeground),
                 ),
                 if (_isExpanded) ...[
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       label,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                         color: isActive 
                             ? ShadcnColors.accent700 

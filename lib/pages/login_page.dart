@@ -15,9 +15,28 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _cnicController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
+
   bool _obscurePassword = true;
   UserType _selectedUserType = UserType.doctor;
+
+  // Responsive sizing methods
+  double getResponsiveSize(double baseSize) {
+    final screenSize = MediaQuery.of(context).size;
+    final scaleFactor = screenSize.width < 600 ? 0.42 : screenSize.width < 1200 ? 0.64 : 1.0;
+    return baseSize * scaleFactor;
+  }
+
+  double getResponsiveHeight(double baseHeight) {
+    final screenSize = MediaQuery.of(context).size;
+    final scaleFactor = screenSize.height < 800 ? 0.49 : screenSize.height < 1000 ? 0.72 : 1.0;
+    return baseHeight * scaleFactor;
+  }
+
+  double getResponsiveFontSize(double baseFontSize) {
+    final screenSize = MediaQuery.of(context).size;
+    final scaleFactor = screenSize.width < 600 ? 0.49 : screenSize.width < 1200 ? 0.72 : 1.0;
+    return baseFontSize * scaleFactor;
+  }
 
   @override
   void dispose() {
@@ -71,6 +90,7 @@ class _LoginPageState extends State<LoginPage> {
     final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -106,85 +126,98 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
               child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: Padding(
-                    padding: const EdgeInsets.all(40),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        // Logo area with enhanced styling
-                        SizedBox(
-                          height: 120,
-                          child: Image.asset(
-                            'assets/images/punjab.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.local_hospital_rounded,
-                                size: 80,
-                                color: Colors.white.withOpacity(0.9),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        // Welcome text with enhanced typography
-                        Text(
-                          'Welcome back',
-                          style: theme.textTheme.displayMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Sign in to your account',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-                        // Feature highlights
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                              width: 1,
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: EdgeInsets.only(
+                    left: getResponsiveSize(24),
+                    right: getResponsiveSize(24),
+                    top: getResponsiveSize(24),
+                    bottom: getResponsiveSize(24),
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: Padding(
+                      padding: EdgeInsets.all(getResponsiveSize(40)),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          // Logo area with enhanced styling
+                          SizedBox(
+                            height: getResponsiveHeight(120),
+                            child: Image.asset(
+                              'assets/images/punjab.png',
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.local_hospital_rounded,
+                                  size: getResponsiveSize(80),
+                                  color: Colors.white.withOpacity(0.9),
+                                );
+                              },
                             ),
                           ),
-                          child: Column(
-                            children: [
-                              _buildFeatureItem(
-                                Icons.security_rounded,
-                                'Secure Access',
-                                'Your data is protected with enterprise-grade security',
-                                Colors.white.withOpacity(0.9),
-                              ),
-                              const SizedBox(height: 16),
-                              _buildFeatureItem(
-                                Icons.medical_services_rounded,
-                                'Healthcare Management',
-                                'Comprehensive patient and family management system',
-                                Colors.white.withOpacity(0.9),
-                              ),
-                            ],
+                          SizedBox(height: getResponsiveSize(32)),
+                          // Welcome text with enhanced typography
+                          Text(
+                            'Welcome back',
+                            style: theme.textTheme.displayMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: getResponsiveFontSize(32),
+                              letterSpacing: -0.5,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                          SizedBox(height: getResponsiveSize(16)),
+                          Text(
+                            'Sign in to your account',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              color: Colors.white.withOpacity(0.9),
+                              fontWeight: FontWeight.w400,
+                              fontSize: getResponsiveFontSize(18),
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          SizedBox(height: getResponsiveSize(40)),
+                          // Feature highlights
+                          Container(
+                            padding: EdgeInsets.all(getResponsiveSize(24)),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(getResponsiveSize(16)),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                _buildFeatureItem(
+                                  Icons.security_rounded,
+                                  'Secure Access',
+                                  'Your data is protected with enterprise-grade security',
+                                  Colors.white.withOpacity(0.9),
+                                  getResponsiveSize(16),
+                                ),
+                                SizedBox(height: getResponsiveSize(16)),
+                                _buildFeatureItem(
+                                  Icons.medical_services_rounded,
+                                  'Healthcare Management',
+                                  'Comprehensive patient and family management system',
+                                  Colors.white.withOpacity(0.9),
+                                  getResponsiveSize(16),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -204,10 +237,16 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
                 child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 450),
-                    child: Padding(
-                      padding: const EdgeInsets.all(48),
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: EdgeInsets.only(
+                      left: getResponsiveSize(24),
+                      right: getResponsiveSize(24),
+                      top: getResponsiveSize(24),
+                      bottom: MediaQuery.of(context).viewInsets.bottom + getResponsiveSize(24),
+                    ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: getResponsiveSize(450)),
                       child: Form(
                         key: _formKey,
                         child: Column(
@@ -219,24 +258,26 @@ class _LoginPageState extends State<LoginPage> {
                               'Sign In',
                               style: theme.textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
+                                fontSize: getResponsiveFontSize(28),
                                 color: theme.colorScheme.primary,
                                 letterSpacing: -0.5,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: getResponsiveSize(8)),
                             Text(
                               'Enter your credentials to access your account',
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 color: Colors.grey.shade600,
                                 fontWeight: FontWeight.w400,
+                                fontSize: getResponsiveFontSize(16),
                               ),
                             ),
-                            const SizedBox(height: 40),
+                            SizedBox(height: getResponsiveSize(40)),
                             // User type selection tabs
                             Container(
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                               ),
                               child: Row(
                                 children: UserType.values.map((userType) {
@@ -248,25 +289,25 @@ class _LoginPageState extends State<LoginPage> {
                                           _selectedUserType = userType;
                                         });
                                       },
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 16,
-                                          horizontal: 8,
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: getResponsiveSize(16),
+                                          horizontal: getResponsiveSize(8),
                                         ),
                                         decoration: BoxDecoration(
                                           color: isSelected
                                               ? theme.colorScheme.primary
                                               : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                         ),
                                         child: Column(
                                           children: [
                                             Text(
                                               userType.icon,
-                                              style: const TextStyle(fontSize: 24),
+                                              style: TextStyle(fontSize: getResponsiveSize(24)),
                                             ),
-                                            const SizedBox(height: 4),
+                                            SizedBox(height: getResponsiveSize(4)),
                                             Text(
                                               userType.displayName,
                                               style: theme.textTheme.bodyMedium?.copyWith(
@@ -276,6 +317,7 @@ class _LoginPageState extends State<LoginPage> {
                                                 fontWeight: isSelected
                                                     ? FontWeight.w600
                                                     : FontWeight.w400,
+                                                fontSize: getResponsiveFontSize(14),
                                               ),
                                             ),
                                           ],
@@ -286,7 +328,7 @@ class _LoginPageState extends State<LoginPage> {
                                 }).toList(),
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            SizedBox(height: getResponsiveSize(24)),
                             // CNIC field with enhanced styling
                             TextFormField(
                               controller: _cnicController,
@@ -301,25 +343,25 @@ class _LoginPageState extends State<LoginPage> {
                                   color: theme.colorScheme.primary,
                                 ),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                   borderSide: BorderSide(color: Colors.grey.shade300),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                   borderSide: BorderSide(color: Colors.grey.shade300),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                   borderSide: BorderSide(
                                     color: theme.colorScheme.primary,
-                                    width: 2,
+                                    width: getResponsiveSize(2),
                                   ),
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey.shade50,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: getResponsiveSize(16),
+                                  vertical: getResponsiveSize(16),
                                 ),
                               ),
                               inputFormatters: <TextInputFormatter>[
@@ -335,7 +377,7 @@ class _LoginPageState extends State<LoginPage> {
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 24),
+                            SizedBox(height: getResponsiveSize(24)),
                             // Password field with enhanced styling
                             TextFormField(
                               controller: _passwordController,
@@ -356,25 +398,25 @@ class _LoginPageState extends State<LoginPage> {
                                   onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                                 ),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                   borderSide: BorderSide(color: Colors.grey.shade300),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                   borderSide: BorderSide(color: Colors.grey.shade300),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                   borderSide: BorderSide(
                                     color: theme.colorScheme.primary,
-                                    width: 2,
+                                    width: getResponsiveSize(2),
                                   ),
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey.shade50,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: getResponsiveSize(16),
+                                  vertical: getResponsiveSize(16),
                                 ),
                               ),
                               validator: (value) {
@@ -386,10 +428,10 @@ class _LoginPageState extends State<LoginPage> {
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 32),
+                            SizedBox(height: getResponsiveSize(32)),
                             // Enhanced login button
                             Container(
-                              height: 56,
+                              height: getResponsiveSize(56),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
@@ -397,11 +439,11 @@ class _LoginPageState extends State<LoginPage> {
                                     theme.colorScheme.primary.withOpacity(0.8),
                                   ],
                                 ),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                 boxShadow: [
                                   BoxShadow(
                                     color: theme.colorScheme.primary.withOpacity(0.3),
-                                    blurRadius: 8,
+                                    blurRadius: getResponsiveSize(8),
                                     offset: const Offset(0, 4),
                                   ),
                                 ],
@@ -412,7 +454,7 @@ class _LoginPageState extends State<LoginPage> {
                                   backgroundColor: Colors.transparent,
                                   shadowColor: Colors.transparent,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                   ),
                                 ),
                                 child: Text(
@@ -420,19 +462,20 @@ class _LoginPageState extends State<LoginPage> {
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
+                                    fontSize: getResponsiveFontSize(16),
                                     letterSpacing: 0.5,
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            SizedBox(height: getResponsiveSize(24)),
                             // Footer text
                             Text(
                               'By signing in, you agree to our Terms of Service and Privacy Policy',
                               textAlign: TextAlign.center,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: Colors.grey.shade500,
-                                fontSize: 12,
+                                fontSize: getResponsiveFontSize(12),
                               ),
                             ),
                           ],
@@ -449,18 +492,18 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildFeatureItem(IconData icon, String title, String description, Color color) {
+  Widget _buildFeatureItem(IconData icon, String title, String description, Color color, double spacing) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(getResponsiveSize(8)),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(getResponsiveSize(8)),
           ),
-          child: Icon(icon, color: color, size: 20),
+          child: Icon(icon, color: color, size: getResponsiveSize(20)),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: getResponsiveSize(12)),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -470,14 +513,14 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextStyle(
                   color: color,
                   fontWeight: FontWeight.w600,
-                  fontSize: 14,
+                  fontSize: getResponsiveFontSize(14),
                 ),
               ),
               Text(
                 description,
                 style: TextStyle(
                   color: color.withOpacity(0.8),
-                  fontSize: 12,
+                  fontSize: getResponsiveFontSize(12),
                   height: 1.3,
                 ),
               ),
