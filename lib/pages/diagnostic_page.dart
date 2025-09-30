@@ -5,6 +5,7 @@ import '../services/vitals_storage_service.dart';
 import '../services/diseases_service.dart';
 import '../models/patient_data.dart';
 import '../theme/shadcn_colors.dart';
+import '../theme/theme_controller.dart';
 import '../widgets/side_navigation_drawer.dart';
 
 class DiagnosticPage extends StatefulWidget {
@@ -374,20 +375,18 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                       onPressed: () {
                                         // TODO: Implement test reports functionality
                                         ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Test Reports feature coming soon')),
+                                          const SnackBar(content: Text('Coming soon')),
                                         );
                                       },
                                       style: FilledButton.styleFrom(
-                                        backgroundColor: Colors.amber,
-                                        foregroundColor: Colors.black,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
+                                        backgroundColor: ThemeController.instance.useShadcn.value
+                                            ? ShadcnColors.accent
+                                            : Colors.green.shade600,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                       ),
-                                      child: const Text(
-                                        'Test Reports',
-                                        style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
+                                      child: const Text('Test Reports'),
                                     ),
                                   ),
                                 ],
@@ -807,7 +806,9 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                         FilledButton(
                                           onPressed: _addPrescription,
                                           style: FilledButton.styleFrom(
-                                            backgroundColor: ShadcnColors.accent,
+                                            backgroundColor: ThemeController.instance.useShadcn.value
+                                                ? ShadcnColors.accent
+                                                : Colors.green.shade600,
                                             foregroundColor: Colors.white,
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(8),
@@ -843,70 +844,61 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                             ],
                           ),
                           child:                         Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               // Refer Patient Button
                               SizedBox(
-                                width: 120,
+                                width: 200,
                                 height: 56,
                                 child: FilledButton(
                                   onPressed: () {
                                     // TODO: Implement refer functionality
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Refer feature coming soon')),
+                                      const SnackBar(content: Text('Refer coming soon')),
                                     );
                                   },
                                   style: FilledButton.styleFrom(
-                                    backgroundColor: Colors.amber,
-                                    foregroundColor: Colors.black,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                                    textStyle: theme.textTheme.titleMedium,
                                   ),
-                                  child: const Text(
-                                    'Refer Patient',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
+                                  child: const Text('Refer Patient'),
                                 ),
                               ),
-                              // Lab Reports Button
+                              const SizedBox(width: 12),
+                              // Lab Reports Button (moved next to Refer)
                               SizedBox(
-                                width: 120,
+                                width: 200,
                                 height: 56,
                                 child: FilledButton(
-                                  onPressed: () {
-                                    _showLabReportsModal(context);
-                                  },
+                                  onPressed: () => _showLabReportsModal(context),
                                   style: FilledButton.styleFrom(
-                                    backgroundColor: Colors.purple,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                                    textStyle: theme.textTheme.titleMedium,
                                   ),
-                                  child: const Text(
-                                    'Lab Reports',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
+                                  child: const Text('Lab Reports'),
                                 ),
                               ),
+                              const Spacer(),
                               // Save Diagnosis Button
                               SizedBox(
-                                width: 120,
+                                width: 200,
                                 height: 56,
                                 child: FilledButton(
                                   onPressed: _saveDiagnosis,
                                   style: FilledButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                                    textStyle: theme.textTheme.titleMedium,
                                   ),
-                                  child: const Text(
-                                    'Save Diagnosis',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  child: const Text('Save Diagnosis'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Cancel (Outlined) Button
+                              SizedBox(
+                                width: 160,
+                                height: 56,
+                                child: OutlinedButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  style: OutlinedButton.styleFrom(
+                                    textStyle: theme.textTheme.titleMedium,
                                   ),
+                                  child: const Text('Cancel'),
                                 ),
                               ),
                             ],
@@ -1271,16 +1263,13 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                       FilledButton(
                         onPressed: () {
                           // TODO: Implement order lab tests
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Order lab tests feature coming soon')),
-                          );
+                          Navigator.of(context).pop();
                         },
                         style: FilledButton.styleFrom(
-                          backgroundColor: ShadcnColors.accent,
+                          backgroundColor: ThemeController.instance.useShadcn.value
+                              ? ShadcnColors.accent
+                              : Colors.green.shade600,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
                         ),
                         child: const Text('Order Lab Tests'),
                       ),
