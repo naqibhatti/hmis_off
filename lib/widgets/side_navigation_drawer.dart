@@ -5,12 +5,14 @@ class SideNavigationDrawer extends StatefulWidget {
   final String currentRoute;
   final String userType;
   final Widget child;
+  final bool minimal; // when true, show only hamburger and logout
 
   const SideNavigationDrawer({
     super.key,
     required this.currentRoute,
     required this.userType,
     required this.child,
+    this.minimal = false,
   });
 
   @override
@@ -89,8 +91,8 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
                 ),
               ),
               
-              // User Info
-              if (_isExpanded)
+              // User Info (hidden in minimal mode)
+              if (_isExpanded && !widget.minimal)
                 Container(
                   padding: const EdgeInsets.all(12),
                   child: Row(
@@ -133,45 +135,50 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
                   ),
                 ),
               
-              // Navigation Items
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  children: [
-                    _buildNavItem(
-                      icon: Icons.dashboard_outlined,
-                      label: 'Dashboard',
-                      route: widget.userType == 'Doctor' 
-                          ? '/doctor-dashboard' 
-                          : '/receptionist-dashboard',
-                      isActive: widget.currentRoute == '/doctor-dashboard' || 
-                               widget.currentRoute == '/receptionist-dashboard',
-                    ),
-                     if (widget.userType == 'Doctor') ...[
-                       _buildNavItem(
-                         icon: Icons.favorite_outlined,
-                         label: 'Collect Vitals',
-                         route: '/collect-vitals',
-                         isActive: widget.currentRoute == '/collect-vitals',
-                       ),
-                       _buildNavItem(
-                         icon: Icons.medical_services_outlined,
-                         label: 'Diagnosis',
-                         route: '/diagnostic',
-                         isActive: widget.currentRoute == '/diagnostic',
-                       ),
-                     ],
-                     if (widget.userType == 'Receptionist') ...[
-                       _buildNavItem(
-                         icon: Icons.favorite_outlined,
-                         label: 'Collect Vitals',
-                         route: '/collect-vitals',
-                         isActive: widget.currentRoute == '/collect-vitals',
-                       ),
-                     ],
-                  ],
+              // Navigation Items (hidden in minimal mode)
+              if (!widget.minimal)
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    children: [
+                      _buildNavItem(
+                        icon: Icons.dashboard_outlined,
+                        label: 'Dashboard',
+                        route: widget.userType == 'Doctor' 
+                            ? '/doctor-dashboard' 
+                            : '/receptionist-dashboard',
+                        isActive: widget.currentRoute == '/doctor-dashboard' || 
+                                 widget.currentRoute == '/receptionist-dashboard',
+                      ),
+                       if (widget.userType == 'Doctor') ...[
+                         _buildNavItem(
+                           icon: Icons.favorite_outlined,
+                           label: 'Collect Vitals',
+                           route: '/collect-vitals',
+                           isActive: widget.currentRoute == '/collect-vitals',
+                         ),
+                         _buildNavItem(
+                           icon: Icons.medical_services_outlined,
+                           label: 'Diagnosis',
+                           route: '/diagnostic',
+                           isActive: widget.currentRoute == '/diagnostic',
+                         ),
+                       ],
+                       if (widget.userType == 'Receptionist') ...[
+                         _buildNavItem(
+                           icon: Icons.favorite_outlined,
+                           label: 'Collect Vitals',
+                           route: '/collect-vitals',
+                           isActive: widget.currentRoute == '/collect-vitals',
+                         ),
+                       ],
+                    ],
+                  ),
                 ),
-              ),
+              if (widget.minimal)
+                const Expanded(
+                  child: SizedBox.shrink(),
+                ),
               
               // Footer
               Container(

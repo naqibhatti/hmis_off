@@ -3,6 +3,8 @@ import '../models/patient_data.dart';
 import '../models/user_type.dart';
 import '../services/patient_data_service.dart';
 import '../theme/shadcn_colors.dart';
+import '../widgets/side_navigation_drawer.dart';
+import '../theme/theme_controller.dart';
 
 class PatientSelectionPage extends StatefulWidget {
   final UserType userType;
@@ -51,25 +53,167 @@ class _PatientSelectionPageState extends State<PatientSelectionPage> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: Center(
-        child: Container(
-          margin: const EdgeInsets.all(20),
-          padding: const EdgeInsets.all(20),
-          constraints: const BoxConstraints(maxWidth: 1100, maxHeight: 650),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade300, width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
+      body: SideNavigationDrawer(
+        currentRoute: '/patient-selection',
+        userType: widget.userType.displayName,
+        minimal: true,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: ThemeController.instance.useShadcn.value
+                      ? Colors.white
+                      : Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent300
+                        : Colors.green.shade300,
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ThemeController.instance.useShadcn.value
+                          ? ShadcnColors.accent100
+                          : Colors.green.shade100,
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent200
+                                : Colors.green.shade200,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.local_hospital,
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'HMIS (PRIMARY HEALTH FACILITIES)',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: ThemeController.instance.useShadcn.value
+                                  ? ShadcnColors.accent700
+                                  : Colors.green.shade800,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Toggle theme (Shadcn / Green)',
+                          onPressed: () {
+                            ThemeController.instance.toggle();
+                            setState(() {});
+                          },
+                          icon: ValueListenableBuilder<bool>(
+                            valueListenable: ThemeController.instance.useShadcn,
+                            builder: (context, useShadcn, _) {
+                              return Icon(
+                                useShadcn ? Icons.palette : Icons.grass,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildInfoCard(
+                            'Name',
+                            'Dr. Muhammad Ali',
+                            ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                            Colors.grey.shade600,
+                            Icons.person,
+                            isBold: true,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildInfoCard(
+                            'Designation',
+                            'Doctor',
+                            ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                            Colors.grey.shade600,
+                            Icons.medical_services,
+                            isBold: true,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildInfoCard(
+                            'Facility Name',
+                            'Basic Health Unit HISDU, Lahore City, Lahore',
+                            ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                            Colors.grey.shade600,
+                            Icons.location_on,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildInfoCard(
+                            'User ID',
+                            'MDU-01',
+                            ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                            Colors.grey.shade600,
+                            Icons.badge,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-          child: Row(
-            children: [
+            ),
+            Expanded(
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
+                  constraints: const BoxConstraints(maxWidth: 1100, maxHeight: 650),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
               // Left pane: search field
               SizedBox(
                 width: 320,
@@ -224,6 +368,74 @@ class _PatientSelectionPageState extends State<PatientSelectionPage> {
             ],
           ),
         ),
+      ),
+    ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(
+    String label,
+    String value,
+    Color labelColor,
+    Color valueColor,
+    IconData icon, {
+    bool isBold = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: labelColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: labelColor.withOpacity(0.2),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: labelColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: labelColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: labelColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: valueColor,
+                    fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+                    fontSize: isBold ? 16 : 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
