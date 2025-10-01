@@ -442,29 +442,37 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                               onFieldSubmitted: (_) => _searchByCNIC(),
                             ),
                             const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 48,
-                              child: FilledButton.icon(
-                                onPressed: _isSearching ? null : _searchByCNIC,
-                                icon: _isSearching 
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
-                                      )
-                                    : const Icon(Icons.search),
-                                label: Text(_isSearching ? 'Searching...' : 'Search'),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: 160,
-                              height: 48,
-                              child: OutlinedButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Cancel'),
-                              ),
+                            Row(
+                              children: [
+                                // Cancel - half width
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 48,
+                                    child: OutlinedButton(
+                                      onPressed: () => Navigator.of(context).pop(),
+                                      child: const Text('Cancel'),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                // Search - half width
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 48,
+                                    child: FilledButton.icon(
+                                      onPressed: _isSearching ? null : _searchByCNIC,
+                                      icon: _isSearching
+                                          ? const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                            )
+                                          : const Icon(Icons.search),
+                                      label: Text(_isSearching ? 'Searching...' : 'Search'),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
