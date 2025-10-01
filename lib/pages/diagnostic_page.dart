@@ -338,75 +338,25 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 ],
                               ),
                               const SizedBox(height: 20),
-                              // Patient Selection Dropdown
-                              // Selected Patient display
-                              Builder(
-                                builder: (_) {
-                                  final p = _selectedPatient ?? PatientManager.currentPatient;
-                                  return Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue.shade50,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: Colors.blue.shade200),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.person, color: Colors.blue.shade700, size: 20),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Selected Patient',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.blue.shade700,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        if (p != null) ...[
-                                          CircleAvatar(
-                                            radius: 18,
-                                            backgroundColor: Colors.blue.shade100,
-                                            child: Text(p.fullName.isNotEmpty ? p.fullName[0].toUpperCase() : '?',
-                                                style: TextStyle(color: Colors.blue.shade700)),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Text(
-                                              '${p.fullName} • ${p.age}y • ${p.gender} • ${p.cnic}',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(fontWeight: FontWeight.w600),
-                                            ),
-                                          ),
-                                        ] else ...[
-                                          const Expanded(
-                                            child: Text('No patient selected. Use the dashboard to select a patient.'),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                              if (_selectedPatient != null) ...[
-                                const SizedBox(height: 20),
-                                // Patient Info Card (styled similar to Collect Vitals)
+                              // Selected Patient (match Collect Vitals style)
+                              if ((_selectedPatient ?? PatientManager.currentPatient) != null)
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: ShadcnColors.accent50,
                                     border: Border.all(color: ShadcnColors.accent200),
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
-                                    children: [
+                                    children: <Widget>[
                                       CircleAvatar(
-                                        radius: 30,
+                                        radius: 24,
                                         backgroundColor: ShadcnColors.accent100,
                                         child: Text(
-                                          _selectedPatient!.fullName[0].toUpperCase(),
+                                          ((_selectedPatient ?? PatientManager.currentPatient)!.fullName[0]).toUpperCase(),
                                           style: TextStyle(
                                             color: ShadcnColors.accent700,
-                                            fontSize: 24,
+                                            fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -415,18 +365,36 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
+                                          children: <Widget>[
                                             Text(
-                                              _selectedPatient!.fullName,
-                                              style: theme.textTheme.titleLarge?.copyWith(
+                                              'Patient: ${(_selectedPatient ?? PatientManager.currentPatient)!.fullName}',
+                                              style: TextStyle(
+                                                fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: ShadcnColors.accent800,
+                                                color: ShadcnColors.accent700,
                                               ),
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              '${_selectedPatient!.age} years • ${_selectedPatient!.bloodGroup} • ${_selectedPatient!.cnic}',
-                                              style: theme.textTheme.bodyMedium?.copyWith(
+                                              'Age: ${(_selectedPatient ?? PatientManager.currentPatient)!.age} years • ${(_selectedPatient ?? PatientManager.currentPatient)!.gender}',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: ShadcnColors.accent600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Blood Group: ${(_selectedPatient ?? PatientManager.currentPatient)!.bloodGroup} • CNIC: ${(_selectedPatient ?? PatientManager.currentPatient)!.cnic}',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: ShadcnColors.accent600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Phone: ${(_selectedPatient ?? PatientManager.currentPatient)!.phone}',
+                                              style: TextStyle(
+                                                fontSize: 14,
                                                 color: ShadcnColors.accent600,
                                               ),
                                             ),
@@ -435,7 +403,31 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                       ),
                                     ],
                                   ),
+                                )
+                              else
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.shade50,
+                                    border: Border.all(color: Colors.orange.shade200),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.info_outline,
+                                        color: Colors.orange.shade700,
+                                        size: 32,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      const Expanded(
+                                        child: Text('No patient selected. Vitals will be recorded without patient information.'),
+                                      ),
+                                    ],
+                                  ),
                                 ),
+                              const SizedBox(height: 20),
+                              if (_selectedPatient != null) ...[
                                 const SizedBox(height: 20),
                                 // Latest Vitals Display
                                 if (_patientVitals.isNotEmpty) ...[
