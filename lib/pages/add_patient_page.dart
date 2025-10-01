@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 import '../models/patient_data.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import '../theme/shadcn_colors.dart';
 
 class AddPatientPage extends StatefulWidget {
@@ -28,6 +32,10 @@ class _AddPatientPageState extends State<AddPatientPage> {
   String? _bloodGroup; // dropdown
   String? _registrationType; // 'Self' or 'Others'
   String? _parentType; // 'Father' or 'Mother'
+  int _tabIndex = 0; // 0 = manual, 1 = from CNIC
+  XFile? _capturedImage;
+  Uint8List? _capturedBytes; // for web preview
+  bool _isOcrRunning = false;
 
   @override
   void dispose() {
@@ -99,6 +107,183 @@ class _AddPatientPageState extends State<AddPatientPage> {
     }
   }
 
+  Widget _buildTabButton(String label, int index) {
+    final bool selected = _tabIndex == index;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _tabIndex = index),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? Colors.grey.shade100 : Colors.white,
+            borderRadius: BorderRadius.horizontal(
+              left: Radius.circular(index == 0 ? 12 : 0),
+              right: Radius.circular(index == 1 ? 12 : 0),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: selected ? Colors.black : Colors.grey.shade700,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCnicCaptureSection(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.camera_alt, color: Colors.grey.shade700),
+              const SizedBox(width: 8),
+              Text(
+                'Capture CNIC',
+                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const Spacer(),
+              FilledButton(
+                onPressed: _captureFromCamera,
+                child: const Text('Open Camera'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_capturedImage != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.memory(
+                _capturedBytes ?? Uint8List(0),
+                height: 180,
+                fit: BoxFit.cover,
+              ),
+            )
+          else
+            Container(
+              height: 180,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: _isOcrRunning
+                  ? const CircularProgressIndicator()
+                  : Text(
+                      'No image captured',
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _captureFromCamera() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.rear);
+      if (image != null) {
+        setState(() {
+          _capturedImage = image;
+        });
+        try {
+          final bytes = await image.readAsBytes();
+          setState(() {
+            _capturedBytes = bytes;
+          });
+        } catch (_) {}
+        if (!kIsWeb) {
+          await _runOcrOnImage(image);
+        }
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  Future<void> _runOcrOnImage(XFile image) async {
+    setState(() {
+      _isOcrRunning = true;
+    });
+    try {
+      final inputImage = InputImage.fromFilePath(image.path);
+      final textRecognizer = TextRecognizer();
+      final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+      await textRecognizer.close();
+
+      final String fullText = recognizedText.text;
+      _populateFieldsFromCnicText(fullText);
+    } catch (_) {
+      // ignore errors silently for now
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isOcrRunning = false;
+        });
+      }
+    }
+  }
+
+  void _populateFieldsFromCnicText(String text) {
+    // CNIC pattern 12345-1234567-1
+    final RegExp cnicPattern = RegExp(r'(\d{5}-\d{7}-\d)');
+    final RegExp datePattern = RegExp(r'(\d{2})[\/-](\d{2})[\/-](\d{4})'); // DD/MM/YYYY or DD-MM-YYYY
+    final RegExp namePattern = RegExp(r'Name\s*:?\s*([A-Za-z ]{3,})', caseSensitive: false);
+
+    final cnicMatch = cnicPattern.firstMatch(text);
+    if (cnicMatch != null) {
+      _cnicController.text = _formatCnic(cnicMatch.group(1)!);
+    }
+
+    final dateMatch = datePattern.firstMatch(text);
+    if (dateMatch != null) {
+      final String day = dateMatch.group(1)!;
+      final String month = dateMatch.group(2)!;
+      final String year = dateMatch.group(3)!;
+      final int d = int.tryParse(day) ?? 1;
+      final int m = int.tryParse(month) ?? 1;
+      final int y = int.tryParse(year) ?? 2000;
+      DateTime? parsed;
+      try {
+        parsed = DateTime(y, m, d);
+      } catch (_) {}
+      if (parsed != null) {
+        _dateOfBirth = parsed;
+      }
+    }
+
+    final nameMatch = namePattern.firstMatch(text);
+    if (nameMatch != null) {
+      final String name = nameMatch.group(1)!.trim();
+      if (name.length >= 3) {
+        _fullNameController.text = name;
+      }
+    }
+
+    // Heuristics for gender
+    if (RegExp(r'\b(MALE|GENDER\s*:\s*MALE)\b', caseSensitive: false).hasMatch(text)) {
+      _gender = 'Male';
+    } else if (RegExp(r'\b(FEMALE|GENDER\s*:\s*FEMALE)\b', caseSensitive: false).hasMatch(text)) {
+      _gender = 'Female';
+    }
+
+    setState(() {});
+  }
+
   String? _requiredValidator(String? value, {String fieldName = 'This field'}) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName is required';
@@ -140,6 +325,21 @@ class _AddPatientPageState extends State<AddPatientPage> {
     return Scaffold(
       body: Column(
         children: <Widget>[
+          // Tabs
+          Container(
+            margin: const EdgeInsets.only(top: 16, left: 40, right: 40),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              children: [
+                _buildTabButton('Enter Data Manually', 0),
+                _buildTabButton('Enter from CNIC', 1),
+              ],
+            ),
+          ),
           // Main content
           Expanded(
             child: Padding(
@@ -150,6 +350,11 @@ class _AddPatientPageState extends State<AddPatientPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
+                      if (_tabIndex == 1) ...[
+                        const SizedBox(height: 16),
+                        _buildCnicCaptureSection(theme),
+                        const SizedBox(height: 16),
+                      ],
                       // Registration type radio buttons
                       Container(
                         padding: const EdgeInsets.all(16),
