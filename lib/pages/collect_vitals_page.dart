@@ -121,6 +121,13 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
   }
 
   void _submit() {
+    // If any values are outside acceptable ranges, show error popup and block submit
+    final List<String> outOfRange = _collectOutOfRangeErrors();
+    if (outOfRange.isNotEmpty) {
+      _showOutOfRangeErrorsDialog(outOfRange);
+      return;
+    }
+
     if (_formKey.currentState?.validate() ?? false) {
       // Create vitals data
       final vitals = VitalsData(
@@ -249,20 +256,82 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
   }
 
   void _onFieldSubmitted(TextEditingController controller, int min, int max, String fieldName) {
-    final String value = controller.text;
-    if (value.isNotEmpty) {
-      final double? numValue = double.tryParse(value);
-      if (numValue != null) {
-        if (numValue < min) {
-          controller.text = min.toString();
-        } else if (numValue > max) {
-          controller.text = max.toString();
+    final String value = controller.text.trim();
+    if (value.isEmpty) return;
+    final double? numValue = double.tryParse(value);
+    if (numValue == null) return;
+    if (numValue < min || numValue > max) {
+      _showOutOfRangeError(fieldName, '$min-$max');
+      controller.selection = TextSelection(baseOffset: 0, extentOffset: controller.text.length);
+      return;
+    }
+    _formKey.currentState?.validate();
+    setState(() {});
+  }
+
+  List<String> _collectOutOfRangeErrors() {
+    final List<String> errors = [];
+    void check(TextEditingController c, int min, int max, String label, {bool optional = false}) {
+      final String t = c.text.trim();
+      if (t.isEmpty) {
+        if (!optional) {
+          // Let validator handle required state
         }
-        // Trigger validation and UI update
-        _formKey.currentState?.validate();
-        setState(() {}); // Update UI to show color changes
+        return;
+      }
+      final double? v = double.tryParse(t);
+      if (v == null) return;
+      if (v < min || v > max) {
+        errors.add('$label must be in $min-$max');
       }
     }
+
+    check(_systolicController, 50, 250, 'Systolic');
+    check(_diastolicController, 30, 200, 'Diastolic');
+    check(_weightController, 1, 220, 'Weight');
+    check(_heightController, 50, 250, 'Height');
+    check(_temperatureController, 96, 106, 'Temperature', optional: true);
+    check(_pulseController, 60, 100, 'Pulse', optional: true);
+    return errors;
+  }
+
+  void _showOutOfRangeError(String fieldName, String range) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Invalid Value'),
+        content: Text('$fieldName is outside the allowed range ($range). Please correct the value.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showOutOfRangeErrorsDialog(List<String> errors) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Please correct these fields'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: errors.map((e) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Text('• $e'),
+          )).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   // Get color for vital sign value
@@ -300,11 +369,24 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
 
   // Build status chip for vital sign summary
   Widget _buildVitalStatusChip(String label, String value, String vitalType) {
+    // Neutral styling for Weight and Height
     if (value.isEmpty) {
       return Chip(
         label: Text('$label: --'),
         backgroundColor: Colors.grey.shade200,
         labelStyle: const TextStyle(color: Colors.grey),
+      );
+    }
+
+    if (vitalType == 'weight' || vitalType == 'height') {
+      return Chip(
+        label: Text('$label: $value'),
+        backgroundColor: Colors.grey.shade200,
+        side: BorderSide(color: Colors.grey.shade400, width: 1),
+        labelStyle: TextStyle(
+          color: Colors.grey.shade700,
+          fontWeight: FontWeight.w600,
+        ),
       );
     }
 
@@ -422,8 +504,9 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
 
   // Build vital card for history display
   Widget _buildVitalCardForHistory(String label, String value, IconData icon, Color color, String vitalType, String valueString) {
-    final vitalColor = _getVitalColor(vitalType, valueString);
-    final isAbnormal = _isVitalAbnormal(vitalType, valueString);
+    final bool isNeutral = vitalType == 'weight' || vitalType == 'height';
+    final vitalColor = isNeutral ? Colors.grey.shade700 : _getVitalColor(vitalType, valueString);
+    final isAbnormal = isNeutral ? false : _isVitalAbnormal(vitalType, valueString);
     
     return Container(
       padding: const EdgeInsets.all(6),
@@ -542,8 +625,9 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
 
   // Build compact vital row for history cards
   Widget _buildCompactVitalRow(String label, String value, String vitalType, String valueString) {
-    final color = _getVitalColor(vitalType, valueString);
-    final isAbnormal = _isVitalAbnormal(vitalType, valueString);
+    final bool isNeutral = vitalType == 'weight' || vitalType == 'height';
+    final color = isNeutral ? Colors.grey.shade700 : _getVitalColor(vitalType, valueString);
+    final isAbnormal = isNeutral ? false : _isVitalAbnormal(vitalType, valueString);
     
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 1),
@@ -584,8 +668,9 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
 
   // Build individual vital row in history card
   Widget _buildVitalRow(String label, String value, String vitalType, String valueString) {
-    final color = _getVitalColor(vitalType, valueString);
-    final isAbnormal = _isVitalAbnormal(vitalType, valueString);
+    final bool isNeutral = vitalType == 'weight' || vitalType == 'height';
+    final color = isNeutral ? Colors.grey.shade700 : _getVitalColor(vitalType, valueString);
+    final isAbnormal = isNeutral ? false : _isVitalAbnormal(vitalType, valueString);
     
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -945,33 +1030,13 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                 controller: _weightController,
                                 keyboardType: TextInputType.number,
                                 textInputAction: TextInputAction.next,
-                                style: TextStyle(
-                                  color: _getVitalColor('weight', _weightController.text),
-                                  fontWeight: _isVitalAbnormal('weight', _weightController.text) 
-                                      ? FontWeight.bold 
-                                      : FontWeight.normal,
-                                ),
-                                decoration: InputDecoration(
-                                  labelText: 'Weight (1-220) (kg) *',
+                                decoration: const InputDecoration(
+                                  labelText: 'Weight (kg) *',
                                   border: OutlineInputBorder(),
-                                  suffixIcon: _isVitalAbnormal('weight', _weightController.text)
-                                      ? Icon(
-                                          Icons.warning,
-                                          color: _getVitalColor('weight', _weightController.text),
-                                          size: 20,
-                                        )
-                                      : null,
-                                  helperText: _isVitalAbnormal('weight', _weightController.text)
-                                      ? '${_getVitalSeverity('weight', _weightController.text).label} - Outside normal range'
-                                      : 'Normal range: 50-100 kg',
-                                  helperStyle: TextStyle(
-                                    color: _getVitalColor('weight', _weightController.text),
-                                    fontSize: 12,
-                                  ),
                                 ),
                                 validator: (value) => _rangeValidator(value, 1, 220, 'Weight'),
                                 onFieldSubmitted: (value) => _onFieldSubmitted(_weightController, 1, 220, 'Weight'),
-                                onChanged: (value) => setState(() {}), // Update UI on change
+                                onChanged: (value) => setState(() {}),
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -1073,33 +1138,13 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                 controller: _heightController,
                                 keyboardType: TextInputType.number,
                                 textInputAction: TextInputAction.done,
-                                style: TextStyle(
-                                  color: _getVitalColor('height', _heightController.text),
-                                  fontWeight: _isVitalAbnormal('height', _heightController.text) 
-                                      ? FontWeight.bold 
-                                      : FontWeight.normal,
-                                ),
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   labelText: 'Height (cm) *',
                                   border: OutlineInputBorder(),
-                                  suffixIcon: _isVitalAbnormal('height', _heightController.text)
-                                      ? Icon(
-                                          Icons.warning,
-                                          color: _getVitalColor('height', _heightController.text),
-                                          size: 20,
-                                        )
-                                      : null,
-                                  helperText: _isVitalAbnormal('height', _heightController.text)
-                                      ? '${_getVitalSeverity('height', _heightController.text).label} - Outside normal range'
-                                      : 'Normal range: 150-190 cm',
-                                  helperStyle: TextStyle(
-                                    color: _getVitalColor('height', _heightController.text),
-                                    fontSize: 12,
-                                  ),
                                 ),
                                 validator: (value) => _rangeValidator(value, 50, 250, 'Height'),
                                 onFieldSubmitted: (value) => _onFieldSubmitted(_heightController, 50, 250, 'Height'),
-                                onChanged: (value) => setState(() {}), // Update UI on change
+                                onChanged: (value) => setState(() {}),
                               ),
                             ),
                           ],

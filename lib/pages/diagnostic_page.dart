@@ -338,25 +338,121 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 ],
                               ),
                               const SizedBox(height: 20),
-                              // Selected Patient (match Collect Vitals style)
-                              if ((_selectedPatient ?? PatientManager.currentPatient) != null)
+                              // Selected Patient section (mirrors Collect Vitals page)
+                              Builder(
+                                builder: (_) {
+                                  final p = _selectedPatient ?? PatientManager.currentPatient;
+                                  if (p == null) {
+                                    return Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.shade50,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.orange.shade200),
+                                      ),
+                                      child: Row(
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.info_outline,
+                                            color: Colors.orange.shade700,
+                                            size: 32,
+                                          ),
+                                          const SizedBox(width: 16),
+                                          const Expanded(
+                                            child: Text(
+                                              'No patient selected. Vitals will be recorded without patient information.',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                  return Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: ShadcnColors.accent50,
+                                      border: Border.all(color: ShadcnColors.accent200),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      children: <Widget>[
+                                        CircleAvatar(
+                                          radius: 24,
+                                          backgroundColor: ShadcnColors.accent100,
+                                          child: Text(
+                                            p.fullName.isNotEmpty ? p.fullName[0].toUpperCase() : '?',
+                                            style: TextStyle(
+                                              color: ShadcnColors.accent700,
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              Text(
+                                                'Patient: ${p.fullName}',
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: ShadcnColors.accent700,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Age: ${p.age} years • ${p.gender}',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: ShadcnColors.accent600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                'Blood Group: ${p.bloodGroup} • CNIC: ${p.cnic}',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: ShadcnColors.accent600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                'Phone: ${p.phone}',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: ShadcnColors.accent600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                              if (_selectedPatient != null) ...[
+                                const SizedBox(height: 20),
+                                // Patient Info Card (styled similar to Collect Vitals)
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: ShadcnColors.accent50,
                                     border: Border.all(color: ShadcnColors.accent200),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Row(
-                                    children: <Widget>[
+                                    children: [
                                       CircleAvatar(
-                                        radius: 24,
+                                        radius: 30,
                                         backgroundColor: ShadcnColors.accent100,
                                         child: Text(
-                                          ((_selectedPatient ?? PatientManager.currentPatient)!.fullName[0]).toUpperCase(),
+                                          _selectedPatient!.fullName[0].toUpperCase(),
                                           style: TextStyle(
                                             color: ShadcnColors.accent700,
-                                            fontSize: 20,
+                                            fontSize: 24,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -365,36 +461,18 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: <Widget>[
+                                          children: [
                                             Text(
-                                              'Patient: ${(_selectedPatient ?? PatientManager.currentPatient)!.fullName}',
-                                              style: TextStyle(
-                                                fontSize: 18,
+                                              _selectedPatient!.fullName,
+                                              style: theme.textTheme.titleLarge?.copyWith(
                                                 fontWeight: FontWeight.bold,
-                                                color: ShadcnColors.accent700,
+                                                color: ShadcnColors.accent800,
                                               ),
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              'Age: ${(_selectedPatient ?? PatientManager.currentPatient)!.age} years • ${(_selectedPatient ?? PatientManager.currentPatient)!.gender}',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: ShadcnColors.accent600,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              'Blood Group: ${(_selectedPatient ?? PatientManager.currentPatient)!.bloodGroup} • CNIC: ${(_selectedPatient ?? PatientManager.currentPatient)!.cnic}',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: ShadcnColors.accent600,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              'Phone: ${(_selectedPatient ?? PatientManager.currentPatient)!.phone}',
-                                              style: TextStyle(
-                                                fontSize: 14,
+                                              '${_selectedPatient!.age} years • ${_selectedPatient!.bloodGroup} • ${_selectedPatient!.cnic}',
+                                              style: theme.textTheme.bodyMedium?.copyWith(
                                                 color: ShadcnColors.accent600,
                                               ),
                                             ),
@@ -403,31 +481,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                       ),
                                     ],
                                   ),
-                                )
-                              else
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.shade50,
-                                    border: Border.all(color: Colors.orange.shade200),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    children: <Widget>[
-                                      Icon(
-                                        Icons.info_outline,
-                                        color: Colors.orange.shade700,
-                                        size: 32,
-                                      ),
-                                      const SizedBox(width: 16),
-                                      const Expanded(
-                                        child: Text('No patient selected. Vitals will be recorded without patient information.'),
-                                      ),
-                                    ],
-                                  ),
                                 ),
-                              const SizedBox(height: 20),
-                              if (_selectedPatient != null) ...[
                                 const SizedBox(height: 20),
                                 // Latest Vitals Display
                                 if (_patientVitals.isNotEmpty) ...[
