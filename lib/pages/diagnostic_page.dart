@@ -46,6 +46,8 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
   // Lab reports modal state
   String _searchQuery = '';
   String _selectedTestType = 'individual';
+  int _labListVisibleCount = 5;
+  final Set<String> _selectedLabTests = <String>{};
   
   // Lab tests data
   static const List<String> _packageTests = [
@@ -1055,6 +1057,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
   }
 
   void _showLabReportsModal(BuildContext context) {
+    _labListVisibleCount = 5;
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -1063,14 +1066,22 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
           builder: (context, setModalState) {
             return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Container(
             width: MediaQuery.of(context).size.width * 0.9,
             height: MediaQuery.of(context).size.height * 0.8,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
               color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade300, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
@@ -1078,24 +1089,23 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        ShadcnColors.accent600,
-                        ShadcnColors.accent400,
-                      ],
-                    ),
+                    color: Colors.white,
                     borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.grey.shade300,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         Icons.science,
-                        color: Colors.white,
+                        color: ShadcnColors.accent700,
                         size: 28,
                       ),
                       const SizedBox(width: 12),
@@ -1103,7 +1113,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                         child: Text(
                           'Laboratory Reports',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: ShadcnColors.accent700,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1113,7 +1123,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                         onPressed: () => Navigator.of(context).pop(),
                         icon: const Icon(
                           Icons.close,
-                          color: Colors.white,
+                          color: ShadcnColors.accent700,
                           size: 24,
                         ),
                       ),
@@ -1186,6 +1196,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                           onChanged: (value) {
                             setModalState(() {
                               _searchQuery = value;
+                              _labListVisibleCount = 5;
                             });
                           },
                         ),
@@ -1194,47 +1205,65 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                         Row(
                           children: [
                             Expanded(
-                              child: FilledButton(
-                                onPressed: () {
-                                  setModalState(() {
-                                    _selectedTestType = 'individual';
-                                  });
-                                },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: _selectedTestType == 'individual' 
-                                      ? ShadcnColors.accent 
-                                      : Colors.grey.shade300,
-                                  foregroundColor: _selectedTestType == 'individual' 
-                                      ? Colors.white 
-                                      : Colors.grey.shade600,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Text('Individual Tests'),
-                              ),
+                              child: _selectedTestType == 'individual'
+                                  ? FilledButton(
+                                      onPressed: () {},
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: ShadcnColors.accent,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: const Text('Individual Tests'),
+                                    )
+                                  : OutlinedButton(
+                                      onPressed: () {
+                                        setModalState(() {
+                                          _selectedTestType = 'individual';
+                                          _labListVisibleCount = 5;
+                                        });
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.grey.shade700,
+                                        side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: const Text('Individual Tests'),
+                                    ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: FilledButton(
-                                onPressed: () {
-                                  setModalState(() {
-                                    _selectedTestType = 'package';
-                                  });
-                                },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: _selectedTestType == 'package' 
-                                      ? ShadcnColors.accent 
-                                      : Colors.grey.shade300,
-                                  foregroundColor: _selectedTestType == 'package' 
-                                      ? Colors.white 
-                                      : Colors.grey.shade600,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Text('Package Tests'),
-                              ),
+                              child: _selectedTestType == 'package'
+                                  ? FilledButton(
+                                      onPressed: () {},
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: ShadcnColors.accent,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: const Text('Package Tests'),
+                                    )
+                                  : OutlinedButton(
+                                      onPressed: () {
+                                        setModalState(() {
+                                          _selectedTestType = 'package';
+                                          _labListVisibleCount = 5;
+                                        });
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.grey.shade700,
+                                        side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: const Text('Package Tests'),
+                                    ),
                             ),
                           ],
                         ),
@@ -1257,7 +1286,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 ),
                                 const SizedBox(height: 16),
                                 // Lab Tests List
-                                _buildLabTestsList(),
+                                _buildLabTestsList(setModalState),
                               ],
                             ),
                           ),
@@ -1272,29 +1301,42 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
                     borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(20),
-                      bottomRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
                     ),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      FilledButton(
-                        onPressed: () {
-                          // TODO: Implement order lab tests
-                          Navigator.of(context).pop();
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: ThemeController.instance.useShadcn.value
-                              ? ShadcnColors.accent
-                              : Colors.green.shade600,
-                          foregroundColor: Colors.white,
+                      SizedBox(
+                        width: 160,
+                        height: 56,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: OutlinedButton.styleFrom(
+                            textStyle: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          child: const Text('Close'),
                         ),
-                        child: const Text('Order Lab Tests'),
                       ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Close'),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 200,
+                        height: 56,
+                        child: FilledButton(
+                          onPressed: () {
+                            // TODO: Implement order lab tests
+                            Navigator.of(context).pop();
+                          },
+                          style: FilledButton.styleFrom(
+                            textStyle: Theme.of(context).textTheme.titleMedium,
+                            backgroundColor: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent
+                                : Colors.green.shade600,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Order Lab Tests'),
+                        ),
                       ),
                     ],
                   ),
@@ -1347,7 +1389,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
     );
   }
 
-  Widget _buildLabTestsList() {
+  Widget _buildLabTestsList(StateSetter setModalState) {
     final tests = _selectedTestType == 'individual' ? _individualTests : _packageTests;
     final filteredTests = _searchQuery.isEmpty 
         ? tests 
@@ -1392,77 +1434,130 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
       );
     }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: filteredTests.length,
-      itemBuilder: (context, index) {
-        final test = filteredTests[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade300),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.shade200,
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            leading: CircleAvatar(
-              backgroundColor: _selectedTestType == 'individual' 
-                  ? Colors.blue.shade100 
-                  : ShadcnColors.accent100,
-              child: Icon(
-                _selectedTestType == 'individual' 
-                    ? Icons.science 
-                    : Icons.inventory,
-                color: _selectedTestType == 'individual' 
-                    ? Colors.blue.shade700 
-                    : ShadcnColors.accent700,
-                size: 20,
-              ),
-            ),
-            title: Text(
-              test,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade800,
-              ),
-            ),
-            subtitle: Text(
-              _selectedTestType == 'individual' 
-                  ? 'Individual Test' 
-                  : 'Package Test',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            trailing: IconButton(
-              onPressed: () {
-                // TODO: Add test to order
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Added $test to order'),
-                    backgroundColor: ShadcnColors.accent,
+    final int itemCount = _labListVisibleCount < filteredTests.length 
+        ? _labListVisibleCount 
+        : filteredTests.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: itemCount,
+          itemBuilder: (context, index) {
+            final test = filteredTests[index];
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade200,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
                   ),
-                );
-              },
-              icon: Icon(
-                Icons.add_circle_outline,
-                color: ShadcnColors.accent600,
+                ],
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                leading: CircleAvatar(
+                  backgroundColor: _selectedTestType == 'individual' 
+                      ? Colors.blue.shade100 
+                      : ShadcnColors.accent100,
+                  child: Icon(
+                    _selectedTestType == 'individual' 
+                        ? Icons.science 
+                        : Icons.inventory,
+                    color: _selectedTestType == 'individual' 
+                        ? Colors.blue.shade700 
+                        : ShadcnColors.accent700,
+                    size: 20,
+                  ),
+                ),
+                title: Text(
+                  test,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+                subtitle: Text(
+                  _selectedTestType == 'individual' 
+                      ? 'Individual Test' 
+                      : 'Package Test',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                trailing: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+                  child: _selectedLabTests.contains(test)
+                      ? IconButton(
+                          key: ValueKey('check_$test'),
+                          onPressed: () {
+                            setModalState(() {
+                              _selectedLabTests.remove(test);
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Removed $test from order'),
+                                backgroundColor: Colors.grey.shade700,
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.check_circle,
+                            color: ShadcnColors.accent600,
+                          ),
+                        )
+                      : IconButton(
+                          key: ValueKey('add_$test'),
+                          onPressed: () {
+                            setModalState(() {
+                              _selectedLabTests.add(test);
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Added $test to order'),
+                                backgroundColor: ShadcnColors.accent,
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.add_circle_outline,
+                            color: ShadcnColors.accent600,
+                          ),
+                        ),
+                ),
+              ),
+            );
+          },
+        ),
+        if (filteredTests.length > itemCount) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: 160,
+              height: 40,
+              child: OutlinedButton(
+                onPressed: () {
+                  setModalState(() {
+                    _labListVisibleCount += 5;
+                  });
+                },
+                child: const Text('Load more'),
               ),
             ),
           ),
-        );
-      },
+        ],
+      ],
     );
   }
 }

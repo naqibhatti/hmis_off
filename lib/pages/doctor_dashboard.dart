@@ -293,12 +293,12 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                               ),
                               _buildDashboardCard(
                                 context: context,
-                                title: 'LHV',
+                                title: 'Pregnancy',
                                 icon: Icons.pregnant_woman,
-                                color: Colors.purple,
+                                color: Colors.pink,
                                 onTap: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('LHV feature coming soon')),
+                                    const SnackBar(content: Text('Pregnancy feature coming soon')),
                                   );
                                 },
                                 isEnabled: true,
@@ -315,18 +315,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                 },
                                 isEnabled: true,
                               ),
-                              _buildDashboardCard(
-                                context: context,
-                                title: 'Integrated Screening',
-                                icon: Icons.search,
-                                color: Colors.teal,
-                                onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Integrated Screening feature coming soon')),
-                                  );
-                                },
-                                isEnabled: true,
-                              ),
+                              // Removed Integrated Screening per requirement
                             ],
                           ),
                         ),
@@ -442,12 +431,10 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         return 'حیاتیاتی علامات جمع کریں';
       case 'Diagnosis & Prescription':
         return 'تشخیص اور نسخہ';
-      case 'LHV':
-        return 'لیڈی ہیلتھ ورکر';
       case 'Family Planning':
         return 'خاندانی منصوبہ بندی';
-      case 'Integrated Screening':
-        return 'مربوط اسکریننگ';
+      case 'Pregnancy':
+        return 'حمل';
       default:
         return title;
     }
