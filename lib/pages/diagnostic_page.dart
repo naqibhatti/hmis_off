@@ -339,79 +339,73 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                               ),
                               const SizedBox(height: 20),
                               // Patient Selection Dropdown
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: DropdownButtonFormField<PatientData>(
-                                      value: _selectedPatient,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Select Patient',
-                                        border: OutlineInputBorder(),
-                                        prefixIcon: Icon(Icons.search),
-                                      ),
-                                      items: _allPatients.map((patient) {
-                                        return DropdownMenuItem<PatientData>(
-                                          value: patient,
-                                          child: Text('${patient.fullName} (${patient.cnic})'),
-                                        );
-                                      }).toList(),
-                                      onChanged: (PatientData? newValue) {
-                                        setState(() {
-                                          _selectedPatient = newValue;
-                                          _loadPatientVitals();
-                                        });
-                                      },
-                                      validator: (value) {
-                                        if (value == null) {
-                                          return 'Please select a patient';
-                                        }
-                                        return null;
-                                      },
+                              // Selected Patient display
+                              Builder(
+                                builder: (_) {
+                                  final p = _selectedPatient ?? PatientManager.currentPatient;
+                                  return Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.shade50,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.blue.shade200),
                                     ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  SizedBox(
-                                    width: 120,
-                                    height: 56,
-                                    child: FilledButton(
-                                      onPressed: () {
-                                        // TODO: Implement test reports functionality
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Coming soon')),
-                                        );
-                                      },
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor: ThemeController.instance.useShadcn.value
-                                            ? ShadcnColors.accent
-                                            : Colors.green.shade600,
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                      child: const Text('Test Reports'),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.person, color: Colors.blue.shade700, size: 20),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Selected Patient',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blue.shade700,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        if (p != null) ...[
+                                          CircleAvatar(
+                                            radius: 18,
+                                            backgroundColor: Colors.blue.shade100,
+                                            child: Text(p.fullName.isNotEmpty ? p.fullName[0].toUpperCase() : '?',
+                                                style: TextStyle(color: Colors.blue.shade700)),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              '${p.fullName} • ${p.age}y • ${p.gender} • ${p.cnic}',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(fontWeight: FontWeight.w600),
+                                            ),
+                                          ),
+                                        ] else ...[
+                                          const Expanded(
+                                            child: Text('No patient selected. Use the dashboard to select a patient.'),
+                                          ),
+                                        ],
+                                      ],
                                     ),
-                                  ),
-                                ],
+                                  );
+                                },
                               ),
                               if (_selectedPatient != null) ...[
                                 const SizedBox(height: 20),
-                                // Patient Info Card
+                                // Patient Info Card (styled similar to Collect Vitals)
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.blue.shade50,
+                                    color: ShadcnColors.accent50,
+                                    border: Border.all(color: ShadcnColors.accent200),
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.blue.shade200),
                                   ),
                                   child: Row(
                                     children: [
                                       CircleAvatar(
                                         radius: 30,
-                                        backgroundColor: Colors.blue.shade100,
+                                        backgroundColor: ShadcnColors.accent100,
                                         child: Text(
                                           _selectedPatient!.fullName[0].toUpperCase(),
                                           style: TextStyle(
-                                            color: Colors.blue.shade700,
+                                            color: ShadcnColors.accent700,
                                             fontSize: 24,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -426,14 +420,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                               _selectedPatient!.fullName,
                                               style: theme.textTheme.titleLarge?.copyWith(
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.blue.shade800,
+                                                color: ShadcnColors.accent800,
                                               ),
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
                                               '${_selectedPatient!.age} years • ${_selectedPatient!.bloodGroup} • ${_selectedPatient!.cnic}',
                                               style: theme.textTheme.bodyMedium?.copyWith(
-                                                color: Colors.blue.shade600,
+                                                color: ShadcnColors.accent600,
                                               ),
                                             ),
                                           ],

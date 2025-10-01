@@ -5,6 +5,7 @@ import '../services/patient_data_service.dart';
 import '../services/vitals_storage_service.dart';
 import '../theme/shadcn_colors.dart';
 import '../widgets/side_navigation_drawer.dart';
+import '../models/patient_data.dart' show PatientManager;
 
 class CollectVitalsPage extends StatefulWidget {
   final String? patientName;
@@ -659,134 +660,10 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        // Patient Selection Dropdown
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            border: Border.all(color: Colors.blue.shade200),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.person_search,
-                                    color: Colors.blue.shade700,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Select Patient',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue.shade700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Autocomplete<PatientData>(
-                                optionsBuilder: (TextEditingValue textEditingValue) {
-                                  if (textEditingValue.text.isEmpty) {
-                                    return _allPatients.take(10);
-                                  }
-                                  return _filteredPatients.take(10);
-                                },
-                                displayStringForOption: (PatientData patient) => 
-                                    '${patient.fullName} (${patient.cnic}) - ${patient.age} years',
-                                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                                  _patientSearchController.addListener(() {
-                                    controller.text = _patientSearchController.text;
-                                  });
-                                  return TextFormField(
-                                    controller: controller,
-                                    focusNode: focusNode,
-                                    decoration: InputDecoration(
-                                      hintText: 'Search by name, CNIC, or phone...',
-                                      border: const OutlineInputBorder(),
-                                      prefixIcon: const Icon(Icons.search),
-                                      suffixIcon: _selectedPatient != null
-                                          ? IconButton(
-                                              icon: const Icon(Icons.clear),
-                                              onPressed: () {
-                                                setState(() {
-                                                  _selectedPatient = null;
-                                                  _patientSearchController.clear();
-                                                });
-                                              },
-                                            )
-                                          : null,
-                                    ),
-                                    onChanged: (value) {
-                                      _patientSearchController.text = value;
-                                    },
-                                  );
-                                },
-                                onSelected: (PatientData patient) {
-                                  setState(() {
-                                    _selectedPatient = patient;
-                                    _patientSearchController.text = '${patient.fullName} (${patient.cnic})';
-                                    _loadPatientVitals();
-                                  });
-                                },
-                                optionsViewBuilder: (context, onSelected, options) {
-                                  return Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Material(
-                                      elevation: 4.0,
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: ConstrainedBox(
-                                        constraints: const BoxConstraints(maxHeight: 200),
-                                        child: ListView.builder(
-                                          padding: EdgeInsets.zero,
-                                          shrinkWrap: true,
-                                          itemCount: options.length,
-                                          itemBuilder: (context, index) {
-                                            final patient = options.elementAt(index);
-                                            return ListTile(
-                                              dense: true,
-                                              leading: CircleAvatar(
-                                                radius: 16,
-                                                backgroundColor: Colors.blue.shade100,
-                                                child: Text(
-                                                  patient.fullName[0].toUpperCase(),
-                                                  style: TextStyle(
-                                                    color: Colors.blue.shade700,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                              title: Text(
-                                                patient.fullName,
-                                                style: const TextStyle(fontSize: 14),
-                                              ),
-                                              subtitle: Text(
-                                                '${patient.cnic} • ${patient.age} years • ${patient.bloodGroup}',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey.shade600,
-                                                ),
-                                              ),
-                                              onTap: () => onSelected(patient),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
+                        // Removed duplicate Selected Patient display to avoid repetition
                         const SizedBox(height: 16),
                         // Patient Information Card
-                        if (_selectedPatient != null) ...[
+                        if ((_selectedPatient ?? PatientManager.currentPatient) != null) ...[
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -800,7 +677,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                   radius: 24,
                                   backgroundColor: ShadcnColors.accent100,
                                   child: Text(
-                                    _selectedPatient!.fullName[0].toUpperCase(),
+                                    ((_selectedPatient ?? PatientManager.currentPatient)!.fullName[0]).toUpperCase(),
                                     style: TextStyle(
                                       color: ShadcnColors.accent700,
                                       fontSize: 20,
@@ -814,7 +691,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: <Widget>[
                                       Text(
-                                        'Patient: ${_selectedPatient!.fullName}',
+                                        'Patient: ${(_selectedPatient ?? PatientManager.currentPatient)!.fullName}',
                                         style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -823,7 +700,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        'Age: ${_selectedPatient!.age} years • ${_selectedPatient!.gender}',
+                                        'Age: ${(_selectedPatient ?? PatientManager.currentPatient)!.age} years • ${(_selectedPatient ?? PatientManager.currentPatient)!.gender}',
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: ShadcnColors.accent600,
@@ -831,7 +708,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        'Blood Group: ${_selectedPatient!.bloodGroup} • CNIC: ${_selectedPatient!.cnic}',
+                                        'Blood Group: ${(_selectedPatient ?? PatientManager.currentPatient)!.bloodGroup} • CNIC: ${(_selectedPatient ?? PatientManager.currentPatient)!.cnic}',
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: ShadcnColors.accent600,
@@ -839,7 +716,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        'Phone: ${_selectedPatient!.phone}',
+                                        'Phone: ${(_selectedPatient ?? PatientManager.currentPatient)!.phone}',
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: ShadcnColors.accent600,

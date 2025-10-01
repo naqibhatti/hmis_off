@@ -9,6 +9,8 @@ import '../services/patient_data_service.dart';
 import '../theme/shadcn_colors.dart';
 import '../widgets/side_navigation_drawer.dart';
 import '../theme/theme_controller.dart';
+import 'patient_selection_page.dart';
+import '../models/user_type.dart';
 
 class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({super.key});
@@ -129,7 +131,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    // Patient selector card
+                    // Selected patient card
                     Container(
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.all(16),
@@ -143,75 +145,72 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                         children: [
                           Row(
                             children: [
-                              Icon(
-                                Icons.search,
-                                color: ShadcnColors.accent700,
-                                size: 20,
-                              ),
+                              Icon(Icons.person, color: ShadcnColors.accent700, size: 20),
                               const SizedBox(width: 8),
                               Text(
-                                'Select Patient',
+                                'Selected Patient',
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: ShadcnColors.accent700,
                                 ),
                               ),
+                              const Spacer(),
+                              IconButton(
+                                tooltip: 'Change patient',
+                                onPressed: () {
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (_) => const PatientSelectionPage(userType: UserType.doctor),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.swap_horiz),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 12),
-                          Autocomplete<PatientData>(
-                            optionsBuilder: (TextEditingValue value) {
-                              return PatientDataService.searchPatients(value.text).take(10);
-                            },
-                            displayStringForOption: (p) => '${p.fullName} • ${p.age}y • ${p.gender} (${p.cnic})',
-                            fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
-                              return TextField(
-                                controller: controller,
-                                focusNode: focusNode,
-                                decoration: InputDecoration(
-                                  labelText: 'Search patient name or CNIC',
-                                  border: const OutlineInputBorder(),
-                                  prefixIcon: const Icon(Icons.search),
-                                  suffixIcon: controller.text.isEmpty
-                                      ? null
-                                      : IconButton(
-                                          tooltip: 'Clear',
-                                          icon: const Icon(Icons.close),
-                                          onPressed: () {
-                                            controller.clear();
-                                            setState(() {});
-                                            focusNode.requestFocus();
-                                          },
-                                        ),
-                                ),
-                                onChanged: (_) {
-                                  setState(() {});
-                                },
-                              );
-                            },
-                            onSelected: (p) {
-                              PatientManager.setPatient(p);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Selected ${p.fullName} (${p.age}y, ${p.gender})')),
+                          Builder(
+                            builder: (_) {
+                              final p = PatientManager.currentPatient;
+                              if (p == null) {
+                                return Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.orange.shade200),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.info_outline, color: Colors.orange.shade700, size: 18),
+                                      const SizedBox(width: 8),
+                                      const Expanded(
+                                        child: Text('No patient selected. Tap the change icon to select a patient.'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: ShadcnColors.accent100,
+                                    child: Text(p.fullName.isNotEmpty ? p.fullName[0].toUpperCase() : '?',
+                                        style: TextStyle(color: ShadcnColors.accent700)),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      '${p.fullName} • ${p.age}y • ${p.gender} • ${p.cnic}',
+                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               );
                             },
                           ),
-                          if (PatientManager.currentPatient != null) ...[
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Icon(Icons.info_outline, size: 16),
-                                const SizedBox(width: 6),
-                                Flexible(
-                                  child: Text(
-                                    'Current: ${PatientManager.currentPatient!.fullName} (${PatientManager.currentPatient!.cnic})',
-                                    style: const TextStyle(fontSize: 12),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
                         ],
                       ),
                     ),
@@ -299,7 +298,6 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // duplicate HMIS section removed
-                      const SizedBox(height: 18),
                       // Cards grid
                       Expanded(
                         child: Container(
