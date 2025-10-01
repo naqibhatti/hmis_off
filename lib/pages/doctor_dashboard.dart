@@ -127,30 +127,58 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    // Selected patient card
+                    // Selected patient (compact)
                     Container(
                       margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: Colors.grey.shade300, width: 1.5),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                      child: Builder(
+                        builder: (_) {
+                          final p = PatientManager.currentPatient;
+                          if (p == null) {
+                            return Row(
+                              children: [
+                                Icon(Icons.info_outline, color: Colors.orange.shade700, size: 18),
+                                const SizedBox(width: 8),
+                                const Expanded(
+                                  child: Text('No patient selected. Tap the change icon to select a patient.'),
+                                ),
+                                IconButton(
+                                  tooltip: 'Change patient',
+                                  onPressed: () {
+                                    Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                        builder: (_) => const PatientSelectionPage(userType: UserType.doctor),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.swap_horiz),
+                                ),
+                              ],
+                            );
+                          }
+                          return Row(
                             children: [
-                              Icon(Icons.person, color: ShadcnColors.accent700, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Selected Patient',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: ShadcnColors.accent700,
+                              CircleAvatar(
+                                radius: 18,
+                                backgroundColor: ShadcnColors.accent100,
+                                child: Text(
+                                  p.fullName.isNotEmpty ? p.fullName[0].toUpperCase() : '?',
+                                  style: TextStyle(color: ShadcnColors.accent700),
                                 ),
                               ),
-                              const Spacer(),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  '${p.fullName} • ${p.age}y • ${p.gender} • ${p.cnic}',
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                               IconButton(
                                 tooltip: 'Change patient',
                                 onPressed: () {
@@ -163,51 +191,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                 icon: const Icon(Icons.swap_horiz),
                               ),
                             ],
-                          ),
-                          const SizedBox(height: 12),
-                          Builder(
-                            builder: (_) {
-                              final p = PatientManager.currentPatient;
-                              if (p == null) {
-                                return Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.shade50,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.orange.shade200),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.info_outline, color: Colors.orange.shade700, size: 18),
-                                      const SizedBox(width: 8),
-                                      const Expanded(
-                                        child: Text('No patient selected. Tap the change icon to select a patient.'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                              return Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 18,
-                                    backgroundColor: ShadcnColors.accent100,
-                                    child: Text(p.fullName.isNotEmpty ? p.fullName[0].toUpperCase() : '?',
-                                        style: TextStyle(color: ShadcnColors.accent700)),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      '${p.fullName} • ${p.age}y • ${p.gender} • ${p.cnic}',
-                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ],
+                          );
+                        },
                       ),
                     ),
                     // Compact details row
