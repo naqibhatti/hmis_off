@@ -123,7 +123,7 @@ class _ReceptionistDashboardState extends State<ReceptionistDashboard> {
                         child: Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: ShadcnColors.accent50,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: Colors.grey.shade300,

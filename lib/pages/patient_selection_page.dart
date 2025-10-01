@@ -69,16 +69,12 @@ class _PatientSelectionPageState extends State<PatientSelectionPage> {
                       : Colors.green.shade50,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: ThemeController.instance.useShadcn.value
-                        ? ShadcnColors.accent300
-                        : Colors.green.shade300,
+                    color: Colors.grey.shade300,
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: ThemeController.instance.useShadcn.value
-                          ? ShadcnColors.accent100
-                          : Colors.green.shade100,
+                      color: Colors.grey.withOpacity(0.15),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
