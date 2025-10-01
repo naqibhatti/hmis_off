@@ -458,20 +458,36 @@ class _AddPatientPageState extends State<AddPatientPage> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      // Save button - fixed width and right-aligned
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: SizedBox(
-                          width: 200,
-                          height: 56,
-                          child: FilledButton(
-                            onPressed: _submit,
-                            style: FilledButton.styleFrom(
-                              textStyle: theme.textTheme.titleMedium,
+                      // Action buttons: Cancel and Save
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          SizedBox(
+                            width: 160,
+                            height: 56,
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.of(context).maybePop();
+                              },
+                              style: OutlinedButton.styleFrom(
+                                textStyle: theme.textTheme.titleMedium,
+                              ),
+                              child: const Text('Cancel'),
                             ),
-                            child: const Text('Save Patient'),
                           ),
-                        ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 200,
+                            height: 56,
+                            child: FilledButton(
+                              onPressed: _submit,
+                              style: FilledButton.styleFrom(
+                                textStyle: theme.textTheme.titleMedium,
+                              ),
+                              child: const Text('Save Patient'),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

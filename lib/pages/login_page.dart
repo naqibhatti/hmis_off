@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'doctor_dashboard.dart';
 import 'receptionist_dashboard.dart';
+import 'patient_selection_page.dart';
 import '../models/user_type.dart';
 import '../theme/theme_controller.dart';
 
@@ -48,19 +49,20 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Navigate to appropriate dashboard based on user type
-      Widget dashboard;
+      // Navigate: doctors -> intermediate selection; receptionists -> dashboard directly
       if (_selectedUserType == UserType.doctor) {
-        dashboard = const DoctorDashboard();
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => PatientSelectionPage(userType: _selectedUserType),
+          ),
+        );
       } else {
-        dashboard = const ReceptionistDashboard();
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const ReceptionistDashboard(),
+          ),
+        );
       }
-      
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => dashboard,
-        ),
-      );
     }
   }
 

@@ -16,6 +16,40 @@ class PatientDataService {
       gender: 'Male',
       dateOfBirth: DateTime(1979, 3, 15),
     ),
+    // Edge ages for pregnancy/FP logic
+    PatientData(
+      fullName: 'Young Teen Male',
+      age: 13,
+      bloodGroup: 'A+',
+      email: 'teen.male13@email.com',
+      phone: '0301-1111113',
+      address: 'Sector A, City',
+      cnic: '13131-1313131-3',
+      gender: 'Male',
+      dateOfBirth: DateTime(DateTime.now().year - 13, 1, 1),
+    ),
+    PatientData(
+      fullName: 'Teen Female Fourteen',
+      age: 14,
+      bloodGroup: 'B+',
+      email: 'teen.female14@email.com',
+      phone: '0301-1111114',
+      address: 'Sector B, City',
+      cnic: '14141-1414141-4',
+      gender: 'Female',
+      dateOfBirth: DateTime(DateTime.now().year - 14, 2, 2),
+    ),
+    PatientData(
+      fullName: 'Teen Female Fifteen',
+      age: 15,
+      bloodGroup: 'O+',
+      email: 'teen.female15@email.com',
+      phone: '0301-1111115',
+      address: 'Sector C, City',
+      cnic: '15151-1515151-5',
+      gender: 'Female',
+      dateOfBirth: DateTime(DateTime.now().year - 15, 3, 3),
+    ),
     PatientData(
       fullName: 'Fatima Ali',
       age: 38,
@@ -263,9 +297,12 @@ class PatientDataService {
     
     final lowerQuery = query.toLowerCase();
     return _dummyPatients.where((patient) {
-      return patient.fullName.toLowerCase().contains(lowerQuery) ||
-             patient.cnic.contains(query) ||
-             patient.phone.contains(query);
+      final matchesName = patient.fullName.toLowerCase().contains(lowerQuery);
+      final matchesCNIC = patient.cnic.contains(query);
+      final matchesPhone = patient.phone.contains(query);
+      final matchesGender = patient.gender.toLowerCase().startsWith(lowerQuery);
+      final matchesAge = int.tryParse(lowerQuery) != null && patient.age == int.parse(lowerQuery);
+      return matchesName || matchesCNIC || matchesPhone || matchesGender || matchesAge;
     }).toList();
   }
 

@@ -5,6 +5,7 @@ import 'add_family_page.dart';
 import 'diagnostic_page.dart';
 import 'login_page.dart';
 import '../models/patient_data.dart';
+import '../services/patient_data_service.dart';
 import '../theme/shadcn_colors.dart';
 import '../widgets/side_navigation_drawer.dart';
 import '../theme/theme_controller.dart';
@@ -128,6 +129,92 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       ],
                     ),
                     const SizedBox(height: 10),
+                    // Patient selector card
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.search,
+                                color: ShadcnColors.accent700,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Select Patient',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: ShadcnColors.accent700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Autocomplete<PatientData>(
+                            optionsBuilder: (TextEditingValue value) {
+                              return PatientDataService.searchPatients(value.text).take(10);
+                            },
+                            displayStringForOption: (p) => '${p.fullName} • ${p.age}y • ${p.gender} (${p.cnic})',
+                            fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
+                              return TextField(
+                                controller: controller,
+                                focusNode: focusNode,
+                                decoration: InputDecoration(
+                                  labelText: 'Search patient name or CNIC',
+                                  border: const OutlineInputBorder(),
+                                  prefixIcon: const Icon(Icons.search),
+                                  suffixIcon: controller.text.isEmpty
+                                      ? null
+                                      : IconButton(
+                                          tooltip: 'Clear',
+                                          icon: const Icon(Icons.close),
+                                          onPressed: () {
+                                            controller.clear();
+                                            setState(() {});
+                                            focusNode.requestFocus();
+                                          },
+                                        ),
+                                ),
+                                onChanged: (_) {
+                                  setState(() {});
+                                },
+                              );
+                            },
+                            onSelected: (p) {
+                              PatientManager.setPatient(p);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Selected ${p.fullName} (${p.age}y, ${p.gender})')),
+                              );
+                            },
+                          ),
+                          if (PatientManager.currentPatient != null) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(Icons.info_outline, size: 16),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    'Current: ${PatientManager.currentPatient!.fullName} (${PatientManager.currentPatient!.cnic})',
+                                    style: const TextStyle(fontSize: 12),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                     // Compact details row
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,89 +321,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
                             childAspectRatio: 1.2,
-                            children: <Widget>[
-                              _buildDashboardCard(
-                                context: context,
-                                title: 'Add Family',
-                                icon: Icons.family_restroom,
-                                color: Colors.purple,
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => const AddFamilyPage(),
-                                    ),
-                                  );
-                                },
-                                isEnabled: true,
-                              ),
-                              _buildDashboardCard(
-                                context: context,
-                                title: 'Collect Vitals',
-                                icon: Icons.favorite,
-                                color: Colors.red,
-                                onTap: () {
-                                  if (PatientManager.hasPatient) {
-                                    final patient = PatientManager.currentPatient!;
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => CollectVitalsPage(
-                                          patientName: patient.fullName,
-                                          patientAge: patient.age,
-                                          patientBloodGroup: patient.bloodGroup,
-                                        ),
-                                      ),
-                                    );
-                                  } else {
-                                    // Navigate to Collect Vitals without patient data
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => const CollectVitalsPage(),
-                                      ),
-                                    );
-                                  }
-                                },
-                                isEnabled: true,
-                              ),
-                              _buildDashboardCard(
-                                context: context,
-                                title: 'Diagnosis & Prescription',
-                                icon: Icons.medical_services,
-                                color: ShadcnColors.accent,
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => const DiagnosticPage(),
-                                    ),
-                                  );
-                                },
-                                isEnabled: true,
-                              ),
-                              _buildDashboardCard(
-                                context: context,
-                                title: 'Pregnancy',
-                                icon: Icons.pregnant_woman,
-                                color: Colors.pink,
-                                onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Pregnancy feature coming soon')),
-                                  );
-                                },
-                                isEnabled: true,
-                              ),
-                              _buildDashboardCard(
-                                context: context,
-                                title: 'Family Planning',
-                                icon: Icons.family_restroom,
-                                color: Colors.orange,
-                                onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Family Planning feature coming soon')),
-                                  );
-                                },
-                                isEnabled: true,
-                              ),
-                              // Removed Integrated Screening per requirement
-                            ],
+                            children: _buildDashboardCards(context),
                           ),
                         ),
                       ),
@@ -329,6 +334,149 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildDashboardCards(BuildContext context) {
+    final List<Widget> cards = [];
+
+    cards.add(
+      _buildDashboardCard(
+        context: context,
+        title: 'Add Family',
+        icon: Icons.family_restroom,
+        color: Colors.purple,
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const AddFamilyPage(),
+            ),
+          );
+        },
+        isEnabled: true,
+      ),
+    );
+
+    cards.add(
+      _buildDashboardCard(
+        context: context,
+        title: 'Collect Vitals',
+        icon: Icons.favorite,
+        color: Colors.red,
+        onTap: () {
+          if (PatientManager.hasPatient) {
+            final patient = PatientManager.currentPatient!;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => CollectVitalsPage(
+                  patientName: patient.fullName,
+                  patientAge: patient.age,
+                  patientBloodGroup: patient.bloodGroup,
+                ),
+              ),
+            );
+          } else {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const CollectVitalsPage(),
+              ),
+            );
+          }
+        },
+        isEnabled: true,
+      ),
+    );
+
+    cards.add(
+      _buildDashboardCard(
+        context: context,
+        title: 'Diagnosis & Prescription',
+        icon: Icons.medical_services,
+        color: ShadcnColors.accent,
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const DiagnosticPage(),
+            ),
+          );
+        },
+        isEnabled: true,
+      ),
+    );
+
+    final patient = PatientManager.currentPatient;
+    final bool isFemaleOver14 = patient != null && patient.gender == 'Female' && patient.age > 14;
+    final bool isUnder14 = patient != null && patient.age < 14;
+    final bool isAdultMale = patient != null && patient.gender == 'Male' && patient.age >= 18;
+
+    if (isFemaleOver14) {
+      cards.add(
+        _buildDashboardCard(
+          context: context,
+          title: 'Pregnancy',
+          icon: Icons.pregnant_woman,
+          color: Colors.pink,
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Pregnancy feature coming soon')),
+            );
+          },
+          isEnabled: true,
+        ),
+      );
+
+      // Family Planning for adult females
+      cards.add(
+        _buildDashboardCard(
+          context: context,
+          title: 'Family Planning',
+          icon: Icons.family_restroom,
+          color: Colors.orange,
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Family Planning feature coming soon')),
+            );
+          },
+          isEnabled: true,
+        ),
+      );
+    }
+
+    // Family Planning for adult males
+    if (isAdultMale) {
+      cards.add(
+        _buildDashboardCard(
+          context: context,
+          title: 'Family Planning',
+          icon: Icons.family_restroom,
+          color: Colors.orange,
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Family Planning feature coming soon')),
+            );
+          },
+          isEnabled: true,
+        ),
+      );
+    }
+
+    if (isUnder14) {
+      cards.add(
+        _buildDashboardCard(
+          context: context,
+          title: 'Immunization',
+          icon: Icons.vaccines,
+          color: Colors.teal,
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Immunization feature coming soon')),
+            );
+          },
+          isEnabled: true,
+        ),
+      );
+    }
+
+    return cards;
   }
 
   Widget _buildDashboardCard({
@@ -435,6 +583,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         return 'خاندانی منصوبہ بندی';
       case 'Pregnancy':
         return 'حمل';
+      case 'Immunization':
+        return 'ٹیکہ لگانا';
       default:
         return title;
     }
