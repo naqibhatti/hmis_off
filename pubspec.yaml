@@ -44,7 +44,8 @@ dependencies:
   http: ^1.1.0
   dio: ^5.3.2
   image_picker: ^1.0.7
-  google_mlkit_text_recognition: ^0.13.0
+  google_mlkit_text_recognition: ^0.15.0
+  google_mlkit_barcode_scanning: ^0.14.1
 
 dev_dependencies:
   flutter_test:

@@ -3,9 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
+import 'dart:convert' as convert;
 import '../models/patient_data.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import '../theme/shadcn_colors.dart';
+import 'package:http/http.dart' as http;
 
 class AddPatientPage extends StatefulWidget {
   const AddPatientPage({super.key});
@@ -206,8 +209,16 @@ class _AddPatientPageState extends State<AddPatientPage> {
             _capturedBytes = bytes;
           });
         } catch (_) {}
-        if (!kIsWeb) {
-          await _runOcrOnImage(image);
+        if (kIsWeb) {
+          if (_capturedBytes != null) {
+            await _runOcrOnImageWeb(_capturedBytes!);
+          }
+        } else {
+          // Mobile/desktop: try barcode first, then OCR
+          final decoded = await _runBarcodeOnImage(image);
+          if (!decoded) {
+            await _runOcrOnImage(image);
+          }
         }
       }
     } catch (_) {
@@ -229,6 +240,52 @@ class _AddPatientPageState extends State<AddPatientPage> {
       _populateFieldsFromCnicText(fullText);
     } catch (_) {
       // ignore errors silently for now
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isOcrRunning = false;
+        });
+      }
+    }
+  }
+
+  Future<bool> _runBarcodeOnImage(XFile image) async {
+    setState(() {
+      _isOcrRunning = true;
+    });
+    try {
+      final inputImage = InputImage.fromFilePath(image.path);
+      final barcodeScanner = BarcodeScanner(
+        formats: [
+          BarcodeFormat.pdf417,
+          BarcodeFormat.code128,
+          BarcodeFormat.qrCode,
+        ],
+      );
+      final List<Barcode> barcodes = await barcodeScanner.processImage(inputImage);
+      await barcodeScanner.close();
+
+      if (barcodes.isEmpty) return false;
+
+      // Prefer PDF417 (commonly used on IDs)
+      barcodes.sort((a, b) {
+        int score(BarcodeFormat f) => f == BarcodeFormat.pdf417 ? 2 : (f == BarcodeFormat.code128 ? 1 : 0);
+        return score(b.format).compareTo(score(a.format));
+      });
+
+      final StringBuffer buffer = StringBuffer();
+      for (final b in barcodes) {
+        if (b.rawValue != null && b.rawValue!.trim().isNotEmpty) {
+          buffer.writeln(b.rawValue);
+        }
+      }
+      final text = buffer.toString();
+      if (text.trim().isEmpty) return false;
+
+      _populateFieldsFromCnicText(text);
+      return true;
+    } catch (_) {
+      return false;
     } finally {
       if (mounted) {
         setState(() {
@@ -282,6 +339,56 @@ class _AddPatientPageState extends State<AddPatientPage> {
     }
 
     setState(() {});
+  }
+
+  // Web OCR using OCR.space (requires API key)
+  static const String _ocrSpaceEndpoint = 'https://api.ocr.space/parse/image';
+  static const String _ocrSpaceApiKey = String.fromEnvironment('OCR_SPACE_API_KEY', defaultValue: '');
+
+  Future<void> _runOcrOnImageWeb(Uint8List bytes) async {
+    setState(() {
+      _isOcrRunning = true;
+    });
+    try {
+      if (_ocrSpaceApiKey.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Set OCR_SPACE_API_KEY to enable web OCR')),
+        );
+        return;
+      }
+      final String base64Image = 'data:image/jpeg;base64,' + convert.base64Encode(bytes);
+      final response = await http.post(
+        Uri.parse(_ocrSpaceEndpoint),
+        headers: {
+          'apikey': _ocrSpaceApiKey,
+        },
+        body: {
+          'base64Image': base64Image,
+          'OCREngine': '2',
+          'language': 'eng',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = convert.jsonDecode(response.body) as Map<String, dynamic>;
+        final results = data['ParsedResults'] as List<dynamic>?;
+        final text = (results != null && results.isNotEmpty)
+            ? (results.first['ParsedText'] as String? ?? '')
+            : '';
+        if (text.isNotEmpty) {
+          _populateFieldsFromCnicText(text);
+        }
+      } else {
+        // ignore errors quietly; could show a toast
+      }
+    } catch (_) {
+      // ignore
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isOcrRunning = false;
+        });
+      }
+    }
   }
 
   String? _requiredValidator(String? value, {String fieldName = 'This field'}) {
