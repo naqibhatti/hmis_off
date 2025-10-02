@@ -9,6 +9,7 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import '../theme/shadcn_colors.dart';
 import 'package:http/http.dart' as http;
+import '../utils/urdu_decoder.dart';
 
 class AddPatientPage extends StatefulWidget {
   const AddPatientPage({super.key});
@@ -39,6 +40,14 @@ class _AddPatientPageState extends State<AddPatientPage> {
   XFile? _capturedImage;
   Uint8List? _capturedBytes; // for web preview
   bool _isOcrRunning = false;
+  String _ocrRawText = '';
+  String _ocrSanitizedText = '';
+  bool _showOcrOverlay = false;
+  String? _parsedCnic;
+  DateTime? _parsedDob;
+  String? _parsedGender;
+  List<String> _urduDecoded = [];
+  bool _overlayIsBarcode = false;
 
   @override
   void dispose() {
@@ -162,34 +171,121 @@ class _AddPatientPageState extends State<AddPatientPage> {
                 onPressed: _captureFromCamera,
                 child: const Text('Open Camera'),
               ),
+              const SizedBox(width: 8),
+              OutlinedButton(
+                onPressed: _ocrRawText.isNotEmpty
+                    ? () => setState(() => _showOcrOverlay = !_showOcrOverlay)
+                    : null,
+                child: Text(_showOcrOverlay ? 'Hide OCR' : 'Show OCR'),
+              ),
             ],
           ),
           const SizedBox(height: 12),
-          if (_capturedImage != null)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.memory(
-                _capturedBytes ?? Uint8List(0),
-                height: 180,
-                fit: BoxFit.cover,
-              ),
-            )
-          else
-            Container(
-              height: 180,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: _isOcrRunning
-                  ? const CircularProgressIndicator()
-                  : Text(
-                      'No image captured',
-                      style: TextStyle(color: Colors.grey.shade600),
+          SizedBox(
+            height: 200,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: _capturedImage != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.memory(
+                            _capturedBytes ?? Uint8List(0),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Container(
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: _isOcrRunning
+                              ? const CircularProgressIndicator()
+                              : Text(
+                                  'No image captured',
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                        ),
+                ),
+                if (_showOcrOverlay && _ocrRawText.isNotEmpty)
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        color: Colors.black.withOpacity(0.65),
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  _overlayIsBarcode ? 'Barcode Preview' : 'OCR Preview',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(),
+                                IconButton(
+                                  onPressed: () => setState(() => _showOcrOverlay = false),
+                                  icon: const Icon(Icons.close, color: Colors.white),
+                                  tooltip: 'Close',
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(_overlayIsBarcode ? 'Raw (Barcode)' : 'Raw (OCR)', style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
+                                    const SizedBox(height: 2),
+                                    Text(_ocrRawText, style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.2)),
+                                    const SizedBox(height: 8),
+                                    Text(_overlayIsBarcode ? 'Sanitized (Barcode)' : 'Sanitized (OCR)', style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
+                                    const SizedBox(height: 2),
+                                    Text(_ocrSanitizedText, style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.2)),
+                                    const SizedBox(height: 10),
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.06),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.white24),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Fields detected', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                          const SizedBox(height: 6),
+                                          Text('CNIC: ${_parsedCnic ?? '-'}', style: const TextStyle(color: Colors.white70)),
+                                          Text('DOB: ${_parsedDob != null ? (_parsedDob!.year.toString().padLeft(4,'0') + '-' + _parsedDob!.month.toString().padLeft(2,'0') + '-' + _parsedDob!.day.toString().padLeft(2,'0')) : '-'}', style: const TextStyle(color: Colors.white70)),
+                                          Text('Gender: ${_parsedGender ?? '-'}', style: const TextStyle(color: Colors.white70)),
+                                          if (_urduDecoded.isNotEmpty) ...[
+                                            const SizedBox(height: 6),
+                                            Text('Urdu decoded', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                            const SizedBox(height: 4),
+                                            ..._urduDecoded.map((s) => Text(s, style: const TextStyle(color: Colors.white70)))
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
+                  ),
+              ],
             ),
+          ),
         ],
       ),
     );
@@ -236,8 +332,13 @@ class _AddPatientPageState extends State<AddPatientPage> {
       final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
       await textRecognizer.close();
 
-      final String fullText = recognizedText.text;
+      final String raw = recognizedText.text;
+      final String fullText = _sanitizeOcr(raw);
+      _ocrRawText = raw;
+      _ocrSanitizedText = fullText;
+      _overlayIsBarcode = false;
       _populateFieldsFromCnicText(fullText);
+      _decodeUrduCandidates(fullText);
     } catch (_) {
       // ignore errors silently for now
     } finally {
@@ -279,10 +380,14 @@ class _AddPatientPageState extends State<AddPatientPage> {
           buffer.writeln(b.rawValue);
         }
       }
-      final text = buffer.toString();
+      final raw = buffer.toString();
+      final text = _sanitizeOcr(raw);
       if (text.trim().isEmpty) return false;
-
+      _ocrRawText = raw;
+      _ocrSanitizedText = text;
+      _overlayIsBarcode = true;
       _populateFieldsFromCnicText(text);
+      _decodeUrduCandidates(text);
       return true;
     } catch (_) {
       return false;
@@ -301,13 +406,72 @@ class _AddPatientPageState extends State<AddPatientPage> {
     final RegExp datePattern = RegExp(r'(\d{2})[\/-](\d{2})[\/-](\d{4})'); // DD/MM/YYYY or DD-MM-YYYY
     final RegExp namePattern = RegExp(r'Name\s*:?\s*([A-Za-z ]{3,})', caseSensitive: false);
 
+    // 1) Prefer date directly under the "Date of Birth" label in sanitized OCR
+    try {
+      final List<String> lines = text.split(RegExp(r'\r?\n'));
+      for (int i = 0; i < lines.length; i++) {
+        final String line = lines[i].toLowerCase().trim();
+        if (line.contains('date of birth')) {
+          for (int j = i + 1; j < lines.length && j <= i + 3; j++) {
+            final String next = lines[j].trim();
+            final RegExp dobDot = RegExp(r'^(\d{2})\.(\d{2})\.(\d{4})$');
+            final RegExp dobSlashDash = RegExp(r'^(\d{2})[\/-](\d{2})[\/-](\d{4})$');
+            final RegExpMatch? m = dobDot.firstMatch(next) ?? dobSlashDash.firstMatch(next);
+            if (m != null) {
+              final int d = int.tryParse(m.group(1)!) ?? 1;
+              final int mth = int.tryParse(m.group(2)!) ?? 1;
+              final int y = int.tryParse(m.group(3)!) ?? 1900;
+              try {
+                final dob = DateTime(y, mth, d);
+                _dateOfBirth = dob;
+                _parsedDob = dob;
+              } catch (_) {}
+              break;
+            }
+          }
+          break;
+        }
+      }
+    } catch (_) {}
+
     final cnicMatch = cnicPattern.firstMatch(text);
     if (cnicMatch != null) {
-      _cnicController.text = _formatCnic(cnicMatch.group(1)!);
+      final String rawCnic = cnicMatch.group(1)!;
+      _cnicController.text = _formatCnic(rawCnic);
+      _parsedCnic = _formatCnic(rawCnic);
+
+      // Infer gender via NADRA rule from CNIC last digit (odd=Male, even=Female)
+      final String digitsOnly = rawCnic.replaceAll(RegExp(r'[^0-9]'), '');
+      if (digitsOnly.length >= 13) {
+        final int lastDigit = int.tryParse(digitsOnly[digitsOnly.length - 1]) ?? -1;
+        if (lastDigit != -1) {
+          _gender = (lastDigit % 2 == 1) ? 'Male' : 'Female';
+        }
+      }
+
+      // Prefer date in format dd.MM.yyyy immediately after CNIC (separated by space)
+      final RegExp dotDatePattern = RegExp(r'\b(\d{2})\.(\d{2})\.(\d{4})\b');
+      final String tail = text.substring(cnicMatch.end);
+      final RegExpMatch? dotAfter = dotDatePattern.firstMatch(tail);
+      if (dotAfter != null) {
+        final int d = int.tryParse(dotAfter.group(1)!) ?? 1;
+        final int m = int.tryParse(dotAfter.group(2)!) ?? 1;
+        final int y = int.tryParse(dotAfter.group(3)!) ?? 1900;
+        try {
+          if (_dateOfBirth == null) {
+            _dateOfBirth = DateTime(y, m, d);
+            _parsedDob = _dateOfBirth;
+          }
+        } catch (_) {}
+      }
     }
 
-    // Collect all dates and choose the oldest (earliest) as DOB
-    final Iterable<RegExpMatch> allDates = datePattern.allMatches(text);
+    // If DOB not already set, collect dates (slashes, dashes, and dots) and choose oldest
+    final RegExp dotDatePatternAll = RegExp(r'(\d{2})\.(\d{2})\.(\d{4})');
+    final Iterable<RegExpMatch> allDates = [
+      ...datePattern.allMatches(text),
+      ...dotDatePatternAll.allMatches(text),
+    ];
     DateTime? oldest;
     for (final m in allDates) {
       final String day = m.group(1)!;
@@ -323,8 +487,9 @@ class _AddPatientPageState extends State<AddPatientPage> {
         }
       } catch (_) {}
     }
-    if (oldest != null) {
+    if (_dateOfBirth == null && oldest != null) {
       _dateOfBirth = oldest;
+      _parsedDob = oldest;
     }
 
     final nameMatch = namePattern.firstMatch(text);
@@ -335,21 +500,27 @@ class _AddPatientPageState extends State<AddPatientPage> {
       }
     }
 
-    // Heuristics for gender: map M/F to Male/Female, prefer labeled fields
-    final genderLabel = RegExp(r'\b(GENDER|SEX)\s*[:\-]?\s*([A-Z]+)\b', caseSensitive: false).firstMatch(text);
-    String? g;
-    if (genderLabel != null) {
-      g = genderLabel.group(2)!.toUpperCase();
-    } else {
-      final mToken = RegExp(r'\bMALE\b', caseSensitive: false).hasMatch(text);
-      final fToken = RegExp(r'\bFEMALE\b', caseSensitive: false).hasMatch(text);
-      if (mToken) g = 'MALE';
-      if (fToken) g = 'FEMALE';
+    // If CNIC didn't set gender, fallback to labeled/token heuristics (M/F or MALE/FEMALE)
+    if (_gender == null) {
+      final genderLabel = RegExp(r'\b(GENDER|SEX)\s*[:\-]?\s*([A-Z])([A-Z]*)\b', caseSensitive: false).firstMatch(text);
+      String? g;
+      if (genderLabel != null) {
+        final String letter = genderLabel.group(2)!.toUpperCase();
+        final String rest = (genderLabel.group(3) ?? '').toUpperCase();
+        g = rest.isNotEmpty ? (letter + rest) : letter;
+      } else {
+        final mToken = RegExp(r'\bMALE\b', caseSensitive: false).hasMatch(text);
+        final fToken = RegExp(r'\bFEMALE\b', caseSensitive: false).hasMatch(text);
+        if (mToken) g = 'MALE';
+        if (fToken) g = 'FEMALE';
+      }
+      if (g != null) {
+        if (g == 'M' || g == 'MALE') _gender = 'Male';
+        if (g == 'F' || g == 'FEMALE') _gender = 'Female';
+      }
     }
-    if (g != null) {
-      if (g == 'M' || g == 'MALE') _gender = 'Male';
-      if (g == 'F' || g == 'FEMALE') _gender = 'Female';
-    }
+
+    _parsedGender = _gender;
 
     setState(() {});
   }
@@ -384,11 +555,16 @@ class _AddPatientPageState extends State<AddPatientPage> {
       if (response.statusCode == 200) {
         final data = convert.jsonDecode(response.body) as Map<String, dynamic>;
         final results = data['ParsedResults'] as List<dynamic>?;
-        final text = (results != null && results.isNotEmpty)
+        final raw = (results != null && results.isNotEmpty)
             ? (results.first['ParsedText'] as String? ?? '')
             : '';
+        final text = _sanitizeOcr(raw);
         if (text.isNotEmpty) {
+          _ocrRawText = raw;
+          _ocrSanitizedText = text;
+          _overlayIsBarcode = false;
           _populateFieldsFromCnicText(text);
+          _decodeUrduCandidates(text);
         }
       } else {
         // ignore errors quietly; could show a toast
@@ -402,6 +578,40 @@ class _AddPatientPageState extends State<AddPatientPage> {
         });
       }
     }
+  }
+
+  String _sanitizeOcr(String text) {
+    String t = text;
+    // Fix stray 'O' between CNIC and DOB (treat as space)
+    t = t.replaceAll(RegExp(r'(\d{5}-\d{7}-\d)\s*[oO]\s*(\d{2}[./-]\d{2}[./-]\d{4})'), r'$1 $2');
+    // Fix between Identity Number and date
+    t = t.replaceAll(RegExp(r'(Identity\s*Number)\s*[oO]\s*(\d{2}[./-]\d{2}[./-]\d{4})', caseSensitive: false), r'$1 $2');
+    // Fix between Gender and Country of Stay
+    t = t.replaceAll(RegExp(r'(Gender)\s*[oO]\s*(Country\s*of\s*Stay)', caseSensitive: false), r'$1 $2');
+
+    // If CNIC and DOB are on the same line, move DOB to the next line
+    final cnDobSameLine = RegExp(r'^(\s*\d{5}-\d{7}-\d)\s+(\d{2}[./-]\d{2}[./-]\d{4})(.*)$', multiLine: true);
+    t = t.replaceAllMapped(cnDobSameLine, (m) => '${m.group(1)}\n${m.group(2)}${m.group(3) ?? ''}');
+    // Also handle when the line includes the Identity Number label
+    final idLabelSameLine = RegExp(r'^(.*\bIdentity\s*Number\b.*\d{5}-\d{7}-\d)\s+(\d{2}[./-]\d{2}[./-]\d{4})(.*)$', caseSensitive: false, multiLine: true);
+    t = t.replaceAllMapped(idLabelSameLine, (m) => '${m.group(1)}\n${m.group(2)}${m.group(3) ?? ''}');
+    return t;
+  }
+
+  void _decodeUrduCandidates(String sanitized) {
+    // Heuristic: find comma-separated hex sequences possibly spanning multiple tokens/lines
+    // Example: "A0,U1,20,07,08,09,12,32" or lines containing repeated ",[0-9A-F]{2}"
+    final RegExp hexSeq = RegExp(r'(?:(?:\b[0-9A-Fa-f]{2}\b),){2,}(?:\b[0-9A-Fa-f]{2}\b)');
+    final matches = hexSeq.allMatches(sanitized);
+    final List<String> decoded = [];
+    for (final m in matches) {
+      final csv = m.group(0)!;
+      final urdu = UrduDecoder.convertToUrdu(csv);
+      if (urdu.trim().isNotEmpty) decoded.add(urdu);
+    }
+    setState(() {
+      _urduDecoded = decoded;
+    });
   }
 
   String? _requiredValidator(String? value, {String fieldName = 'This field'}) {
