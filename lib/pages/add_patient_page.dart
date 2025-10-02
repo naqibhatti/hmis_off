@@ -306,21 +306,25 @@ class _AddPatientPageState extends State<AddPatientPage> {
       _cnicController.text = _formatCnic(cnicMatch.group(1)!);
     }
 
-    final dateMatch = datePattern.firstMatch(text);
-    if (dateMatch != null) {
-      final String day = dateMatch.group(1)!;
-      final String month = dateMatch.group(2)!;
-      final String year = dateMatch.group(3)!;
+    // Collect all dates and choose the oldest (earliest) as DOB
+    final Iterable<RegExpMatch> allDates = datePattern.allMatches(text);
+    DateTime? oldest;
+    for (final m in allDates) {
+      final String day = m.group(1)!;
+      final String month = m.group(2)!;
+      final String year = m.group(3)!;
       final int d = int.tryParse(day) ?? 1;
-      final int m = int.tryParse(month) ?? 1;
-      final int y = int.tryParse(year) ?? 2000;
-      DateTime? parsed;
+      final int mm = int.tryParse(month) ?? 1;
+      final int y = int.tryParse(year) ?? 1900;
       try {
-        parsed = DateTime(y, m, d);
+        final candidate = DateTime(y, mm, d);
+        if (oldest == null || candidate.isBefore(oldest!)) {
+          oldest = candidate;
+        }
       } catch (_) {}
-      if (parsed != null) {
-        _dateOfBirth = parsed;
-      }
+    }
+    if (oldest != null) {
+      _dateOfBirth = oldest;
     }
 
     final nameMatch = namePattern.firstMatch(text);
@@ -331,11 +335,20 @@ class _AddPatientPageState extends State<AddPatientPage> {
       }
     }
 
-    // Heuristics for gender
-    if (RegExp(r'\b(MALE|GENDER\s*:\s*MALE)\b', caseSensitive: false).hasMatch(text)) {
-      _gender = 'Male';
-    } else if (RegExp(r'\b(FEMALE|GENDER\s*:\s*FEMALE)\b', caseSensitive: false).hasMatch(text)) {
-      _gender = 'Female';
+    // Heuristics for gender: map M/F to Male/Female, prefer labeled fields
+    final genderLabel = RegExp(r'\b(GENDER|SEX)\s*[:\-]?\s*([A-Z]+)\b', caseSensitive: false).firstMatch(text);
+    String? g;
+    if (genderLabel != null) {
+      g = genderLabel.group(2)!.toUpperCase();
+    } else {
+      final mToken = RegExp(r'\bMALE\b', caseSensitive: false).hasMatch(text);
+      final fToken = RegExp(r'\bFEMALE\b', caseSensitive: false).hasMatch(text);
+      if (mToken) g = 'MALE';
+      if (fToken) g = 'FEMALE';
+    }
+    if (g != null) {
+      if (g == 'M' || g == 'MALE') _gender = 'Male';
+      if (g == 'F' || g == 'FEMALE') _gender = 'Female';
     }
 
     setState(() {});
@@ -428,6 +441,13 @@ class _AddPatientPageState extends State<AddPatientPage> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final double deviceWidth = MediaQuery.of(context).size.width;
+    double formScale = 1.0;
+    if (deviceWidth < 600) {
+      formScale = 0.5; // mobile
+    } else if (deviceWidth < 1024) {
+      formScale = 0.8; // tablet
+    }
 
     return Scaffold(
       body: Column(
@@ -454,7 +474,10 @@ class _AddPatientPageState extends State<AddPatientPage> {
               child: Form(
                 key: _formKey,
                 child: SingleChildScrollView(
-                  child: Column(
+                  child: Transform.scale(
+                    scale: formScale,
+                    alignment: Alignment.topCenter,
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       if (_tabIndex == 1) ...[
@@ -802,6 +825,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                         ],
                       ),
                     ],
+                  ),
                   ),
                 ),
               ),

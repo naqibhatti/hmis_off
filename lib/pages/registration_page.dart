@@ -95,6 +95,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final double deviceWidth = MediaQuery.of(context).size.width;
+    double formScale = 1.0;
+    if (deviceWidth < 600) {
+      formScale = 0.5; // mobile
+    } else if (deviceWidth < 1024) {
+      formScale = 0.8; // tablet
+    }
 
     return Scaffold(
       body: Row(
@@ -170,7 +177,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       child: Form(
                         key: _formKey,
                         child: SingleChildScrollView(
-                          child: Column(
+                          child: Transform.scale(
+                            scale: formScale,
+                            alignment: Alignment.topCenter,
+                            child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: <Widget>[
                               // Registration type radio buttons
@@ -524,7 +534,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   child: const Text('Create account'),
                                 ),
                               ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
