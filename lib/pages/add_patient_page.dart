@@ -173,6 +173,11 @@ class _AddPatientPageState extends State<AddPatientPage> {
               ),
               const SizedBox(width: 8),
               OutlinedButton(
+                onPressed: _pickFromGallery,
+                child: const Text('Pick Image'),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton(
                 onPressed: _ocrRawText.isNotEmpty
                     ? () => setState(() => _showOcrOverlay = !_showOcrOverlay)
                     : null,
@@ -311,6 +316,36 @@ class _AddPatientPageState extends State<AddPatientPage> {
           }
         } else {
           // Mobile/desktop: try barcode first, then OCR
+          final decoded = await _runBarcodeOnImage(image);
+          if (!decoded) {
+            await _runOcrOnImage(image);
+          }
+        }
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  Future<void> _pickFromGallery() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _capturedImage = image;
+        });
+        try {
+          final bytes = await image.readAsBytes();
+          setState(() {
+            _capturedBytes = bytes;
+          });
+        } catch (_) {}
+        if (kIsWeb) {
+          if (_capturedBytes != null) {
+            await _runOcrOnImageWeb(_capturedBytes!);
+          }
+        } else {
           final decoded = await _runBarcodeOnImage(image);
           if (!decoded) {
             await _runOcrOnImage(image);
