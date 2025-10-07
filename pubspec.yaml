@@ -47,6 +47,9 @@ dependencies:
   google_mlkit_text_recognition: ^0.15.0
   google_mlkit_barcode_scanning: ^0.14.1
   flutter_tesseract_ocr: ^0.4.26
+  
+  # Local storage for authentication
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

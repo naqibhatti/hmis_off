@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'doctor_dashboard.dart';
 import 'receptionist_dashboard.dart';
 import 'patient_selection_page.dart';
 import '../models/user_type.dart';
 import '../theme/theme_controller.dart';
+import '../services/auth_service.dart';
+import '../widgets/animated_popup.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,8 +20,10 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _cnicController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   bool _obscurePassword = true;
+  bool _isLoading = false;
   UserType _selectedUserType = UserType.doctor;
 
   // Responsive sizing methods
@@ -47,21 +52,85 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _login() {
+  Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // Navigate: doctors -> intermediate selection; receptionists -> dashboard directly
-      if (_selectedUserType == UserType.doctor) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => PatientSelectionPage(userType: _selectedUserType),
-          ),
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final response = await _authService.login(
+          _cnicController.text.trim(),
+          _passwordController.text.trim(),
         );
-      } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const ReceptionistDashboard(),
-          ),
+
+        if (response.success && response.data != null) {
+          final userData = response.data!['user'] as Map<String, dynamic>?;
+          final roles = userData?['roles'] as List<dynamic>?;
+          
+          // Debug logging
+          if (kDebugMode) {
+            print('🔍 User roles: $roles');
+            print('🔍 Selected user type: ${_selectedUserType.name}');
+          }
+          
+          // Check if user has the selected role
+          final expectedRole = _selectedUserType == UserType.doctor ? 'Doctor' : 'Receptionist';
+          if (kDebugMode) {
+            print('🔍 Expected role: $expectedRole');
+            print('🔍 Role check result: ${roles?.contains(expectedRole)}');
+          }
+          
+          if (roles != null && roles.contains(expectedRole)) {
+            // Show success popup
+            PopupHelper.showSuccess(
+              context,
+              'Welcome back, ${userData?['name'] ?? 'Doctor'}!',
+            );
+            
+            // Navigate after a short delay
+            await Future.delayed(const Duration(milliseconds: 1500));
+            
+            if (mounted) {
+              if (_selectedUserType == UserType.doctor) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => PatientSelectionPage(userType: _selectedUserType),
+                  ),
+                );
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const ReceptionistDashboard(),
+                  ),
+                );
+              }
+            }
+          } else {
+            // User doesn't have the selected role
+            PopupHelper.showError(
+              context,
+              'Access denied. You don\'t have $expectedRole privileges.',
+            );
+          }
+        } else {
+          // Login failed
+          PopupHelper.showError(
+            context,
+            response.message,
+          );
+        }
+      } catch (e) {
+        PopupHelper.showError(
+          context,
+          'An unexpected error occurred. Please try again.',
         );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -463,7 +532,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ],
                               ),
                               child: FilledButton(
-                                onPressed: _login,
+                                onPressed: _isLoading ? null : _login,
                                 style: FilledButton.styleFrom(
                                   backgroundColor: Colors.transparent,
                                   shadowColor: Colors.transparent,
@@ -471,18 +540,80 @@ class _LoginPageState extends State<LoginPage> {
                                     borderRadius: BorderRadius.circular(getResponsiveSize(12)),
                                   ),
                                 ),
-                                child: Text(
-                                  'Sign In',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: getResponsiveFontSize(16),
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
+                                child: _isLoading
+                                    ? SizedBox(
+                                        width: getResponsiveSize(20),
+                                        height: getResponsiveSize(20),
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      )
+                                    : Text(
+                                        'Sign In',
+                                        style: theme.textTheme.titleMedium?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: getResponsiveFontSize(16),
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
                               ),
                             ),
                             SizedBox(height: getResponsiveSize(24)),
+                            // Sample credentials for testing (only in debug mode)
+                            if (kDebugMode) ...[
+                              Container(
+                                padding: EdgeInsets.all(getResponsiveSize(16)),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(getResponsiveSize(8)),
+                                  border: Border.all(color: Colors.blue.shade200),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Sample Doctor Credentials (Debug)',
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.blue.shade800,
+                                        fontSize: getResponsiveFontSize(14),
+                                      ),
+                                    ),
+                                    SizedBox(height: getResponsiveSize(8)),
+                                    Text(
+                                      'CNIC: 12345-1234567-1\nPassword: Doctor123!',
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: Colors.blue.shade700,
+                                        fontSize: getResponsiveFontSize(12),
+                                        fontFamily: 'monospace',
+                                      ),
+                                    ),
+                                    SizedBox(height: getResponsiveSize(8)),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton.icon(
+                                        onPressed: _isLoading ? null : () {
+                                          _cnicController.text = '12345-1234567-1';
+                                          _passwordController.text = 'Doctor123!';
+                                          setState(() {
+                                            _selectedUserType = UserType.doctor;
+                                          });
+                                        },
+                                        icon: const Icon(Icons.person_add, size: 16),
+                                        label: const Text('Use Sample Credentials'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.blue.shade700,
+                                          side: BorderSide(color: Colors.blue.shade300),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: getResponsiveSize(16)),
+                            ],
                             // Footer text
                             Text(
                               'By signing in, you agree to our Terms of Service and Privacy Policy',
