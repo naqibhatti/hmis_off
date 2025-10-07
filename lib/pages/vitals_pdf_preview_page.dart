@@ -107,7 +107,7 @@ class _VitalsPdfPreviewPageState extends State<VitalsPdfPreviewPage> {
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text('Blood Group: ${widget.patient.bloodGroup}'),
-                        pw.Text('Phone: ${widget.patient.phone}'),
+                        pw.Text('Phone: ${widget.patient.contactNumber}'),
                         pw.Text('Email: ${widget.patient.email}'),
                         pw.Text('Date of Birth: ${_formatDate(widget.patient.dateOfBirth)}'),
                       ],

@@ -33,6 +33,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isSubmitting = false;
+  bool _isTestingConnection = false;
 
   DateTime? _dateOfBirth;
   String? _gender; // 'Male' or 'Female'
@@ -79,6 +80,28 @@ class _AddPatientPageState extends State<AddPatientPage> {
       setState(() {
         _isSubmitting = true;
       });
+
+      // Test connection first
+      if (kDebugMode) {
+        print('🔍 Testing API connection before submitting...');
+        final isConnected = await _apiService.testConnection();
+        if (!isConnected) {
+          setState(() {
+            _isSubmitting = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('❌ Cannot connect to server. Please check if the backend server is running on http://localhost:7287'),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 8),
+              ),
+            );
+          }
+          return;
+        }
+        print('✅ API connection test passed');
+      }
 
       try {
         // Calculate age from date of birth
@@ -136,25 +159,85 @@ class _AddPatientPageState extends State<AddPatientPage> {
             );
           }
         } else {
-          // Show error message
+          // Show detailed error message
           if (mounted) {
+            String errorMessage = response.message;
+            if (response.error != null) {
+              errorMessage += '\n\nError details: ${response.error}';
+            }
+            
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(response.message),
+                content: Text(errorMessage),
                 backgroundColor: Colors.red,
-                duration: const Duration(seconds: 5),
+                duration: const Duration(seconds: 8),
+                action: SnackBarAction(
+                  label: 'DETAILS',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('API Error Details'),
+                        content: SingleChildScrollView(
+                          child: Text(
+                            'Message: ${response.message}\n\n'
+                            'Error: ${response.error ?? 'No additional details'}\n\n'
+                            'Please check:\n'
+                            '1. Backend server is running on http://localhost:7287\n'
+                            '2. Check the console logs for more details\n'
+                            '3. Verify the API endpoint is accessible',
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             );
           }
         }
       } catch (e) {
-        // Show error message
+        // Show detailed error message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('An error occurred: ${e.toString()}'),
+              content: Text('Unexpected error: ${e.toString()}'),
               backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
+              duration: const Duration(seconds: 8),
+              action: SnackBarAction(
+                label: 'DETAILS',
+                textColor: Colors.white,
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Unexpected Error'),
+                      content: SingleChildScrollView(
+                        child: Text(
+                          'Error: ${e.toString()}\n\n'
+                          'This is an unexpected error. Please:\n'
+                          '1. Check the console logs for more details\n'
+                          '2. Ensure the backend server is running\n'
+                          '3. Check your network connection',
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           );
         }
@@ -164,6 +247,43 @@ class _AddPatientPageState extends State<AddPatientPage> {
             _isSubmitting = false;
           });
         }
+      }
+    }
+  }
+
+  Future<void> _testConnection() async {
+    setState(() {
+      _isTestingConnection = true;
+    });
+
+    try {
+      final isConnected = await _apiService.testConnection();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isConnected 
+                ? '✅ Connection successful! Server is reachable.'
+                : '❌ Connection failed! Server is not reachable.'),
+            backgroundColor: isConnected ? Colors.green : Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Connection test error: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTestingConnection = false;
+        });
       }
     }
   }
@@ -1163,6 +1283,34 @@ class _AddPatientPageState extends State<AddPatientPage> {
                         ],
                       ),
                       const SizedBox(height: 24),
+                      // Debug connection test button (only in debug mode)
+                      if (kDebugMode) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 200,
+                              height: 48,
+                              child: OutlinedButton.icon(
+                                onPressed: _isTestingConnection ? null : _testConnection,
+                                icon: _isTestingConnection
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      )
+                                    : const Icon(Icons.network_check),
+                                label: Text(_isTestingConnection ? 'Testing...' : 'Test API Connection'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.blue,
+                                  side: const BorderSide(color: Colors.blue),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       // Action buttons: Cancel and Save
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,

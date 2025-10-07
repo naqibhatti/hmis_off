@@ -15,10 +15,10 @@ class PatientApiRepository implements PatientRepository {
       'gender': p.gender,
       'bloodGroup': p.bloodGroup,
       'email': p.email,
-      'phone': p.phone,
+      'contactNumber': p.contactNumber,
       'address': p.address,
-      'emergencyContactName': '',
-      'emergencyRelation': '',
+      'emergencyContact': p.emergencyContact ?? '',
+      'emergencyContactRelation': p.emergencyContactRelation ?? '',
       'registrationType': 'Self',
       'parentType': null,
     };

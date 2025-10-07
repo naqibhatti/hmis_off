@@ -419,7 +419,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                               ),
                                               const SizedBox(height: 2),
                                               Text(
-                                                'Phone: ${p.phone}',
+                                                'Phone: ${p.contactNumber}',
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   color: ShadcnColors.accent600,

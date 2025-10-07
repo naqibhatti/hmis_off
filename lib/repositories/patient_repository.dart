@@ -33,7 +33,7 @@ class MockPatientRepository implements PatientRepository {
       q = q.where((p) =>
           p.fullName.toLowerCase().contains(lower) ||
           p.cnic.toLowerCase().contains(lower) ||
-          p.phone.toLowerCase().contains(lower));
+          p.contactNumber.toLowerCase().contains(lower));
     }
     final start = (page - 1) * pageSize;
     return q.skip(start).take(pageSize).toList();

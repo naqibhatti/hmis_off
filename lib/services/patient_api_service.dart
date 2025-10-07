@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
 import '../models/api_response.dart';
 import '../models/patient_data.dart';
@@ -9,11 +11,50 @@ class PatientApiService {
   factory PatientApiService() => _instance;
   PatientApiService._internal();
 
+  // Logging method
+  void _log(String message, {bool isError = false}) {
+    if (kDebugMode) {
+      final timestamp = DateTime.now().toIso8601String();
+      final prefix = isError ? '❌ API ERROR' : '📡 API LOG';
+      print('[$timestamp] $prefix: $message');
+    }
+  }
+
+  // Test API connectivity
+  Future<bool> testConnection() async {
+    try {
+      _log('🔍 Testing API connectivity...');
+      final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.patients}');
+      _log('📍 Testing URL: $url');
+      
+      final response = await http.get(
+        url,
+        headers: ApiConfig.defaultHeaders,
+      ).timeout(const Duration(seconds: 10));
+      
+      _log('📊 Connection test response: ${response.statusCode}');
+      _log('📦 Response body: ${response.body}');
+      
+      return response.statusCode < 500; // Any response means server is reachable
+    } catch (e) {
+      _log('❌ Connection test failed: $e', isError: true);
+      return false;
+    }
+  }
+
   // Create a new patient
   Future<ApiResponse<PatientData>> createPatient(PatientData patient) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.patients}');
+    final body = jsonEncode(patient.toCreateDto());
+    
+    _log('🚀 Starting patient creation request');
+    _log('📍 URL: $url');
+    _log('📋 Headers: ${ApiConfig.defaultHeaders}');
+    _log('📦 Request Body: $body');
+    _log('⏱️ Timeout: ${ApiConfig.timeout}');
+    
     try {
-      final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.patients}');
-      final body = jsonEncode(patient.toCreateDto());
+      _log('🌐 Making HTTP POST request...');
       
       final response = await http.post(
         url,
@@ -21,34 +62,77 @@ class PatientApiService {
         body: body,
       ).timeout(ApiConfig.timeout);
 
+      _log('📨 Response received');
+      _log('📊 Status Code: ${response.statusCode}');
+      _log('📋 Response Headers: ${response.headers}');
+      _log('📦 Response Body: ${response.body}');
+
       if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        final apiResponse = ApiResponse.fromJson(responseData, (data) => PatientData.fromJson(data));
+        _log('✅ HTTP 200 - Processing response...');
         
-        if (apiResponse.success && apiResponse.data != null) {
-          return ApiResponse<PatientData>(
-            success: true,
-            message: apiResponse.message,
-            data: apiResponse.data,
-          );
-        } else {
+        try {
+          final responseData = jsonDecode(response.body);
+          _log('🔍 Parsed JSON: $responseData');
+          
+          final apiResponse = ApiResponse.fromJson(responseData, (data) => PatientData.fromJson(data));
+          
+          if (apiResponse.success && apiResponse.data != null) {
+            _log('✅ Patient created successfully: ${apiResponse.data!.fullName}');
+            return ApiResponse<PatientData>(
+              success: true,
+              message: apiResponse.message,
+              data: apiResponse.data,
+            );
+          } else {
+            _log('⚠️ API returned success=false: ${apiResponse.message}', isError: true);
+            return ApiResponse<PatientData>(
+              success: false,
+              message: apiResponse.message,
+              error: apiResponse.error,
+            );
+          }
+        } catch (parseError) {
+          _log('❌ JSON Parse Error: $parseError', isError: true);
           return ApiResponse<PatientData>(
             success: false,
-            message: apiResponse.message,
-            error: apiResponse.error,
+            message: 'Failed to parse server response',
+            error: 'JSON Parse Error: $parseError',
           );
         }
       } else {
+        _log('❌ HTTP Error ${response.statusCode}: ${response.body}', isError: true);
         return ApiResponse<PatientData>(
           success: false,
           message: 'Failed to create patient',
           error: 'HTTP ${response.statusCode}: ${response.body}',
         );
       }
-    } catch (e) {
+    } on TimeoutException catch (e) {
+      _log('⏰ Request timeout: $e', isError: true);
       return ApiResponse<PatientData>(
         success: false,
-        message: 'Network error occurred',
+        message: 'Request timeout - server took too long to respond',
+        error: 'Timeout: $e',
+      );
+    } on SocketException catch (e) {
+      _log('🌐 Network connection error: $e', isError: true);
+      return ApiResponse<PatientData>(
+        success: false,
+        message: 'Network connection failed - check your internet connection',
+        error: 'Socket Error: $e',
+      );
+    } on HttpException catch (e) {
+      _log('🌐 HTTP exception: $e', isError: true);
+      return ApiResponse<PatientData>(
+        success: false,
+        message: 'HTTP request failed',
+        error: 'HTTP Exception: $e',
+      );
+    } catch (e) {
+      _log('💥 Unexpected error: $e', isError: true);
+      return ApiResponse<PatientData>(
+        success: false,
+        message: 'An unexpected error occurred',
         error: e.toString(),
       );
     }

@@ -114,7 +114,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
         _filteredPatients = _allPatients.where((patient) {
           return patient.fullName.toLowerCase().contains(query) ||
                  patient.cnic.contains(query) ||
-                 patient.phone.contains(query);
+                 patient.contactNumber.contains(query);
         }).toList();
       }
     });
@@ -178,7 +178,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                     age: 0,
                     bloodGroup: 'Unknown',
                     email: '',
-                    phone: '',
+                    contactNumber: '',
                     address: '',
                     cnic: '',
                     gender: '',
@@ -801,7 +801,7 @@ class _CollectVitalsPageState extends State<CollectVitalsPage> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        'Phone: ${(_selectedPatient ?? PatientManager.currentPatient)!.phone}',
+                                        'Phone: ${(_selectedPatient ?? PatientManager.currentPatient)!.contactNumber}',
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: ShadcnColors.accent600,

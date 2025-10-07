@@ -15,10 +15,10 @@ Edit `lib/config/app_config.dart` and update the `backendBaseUrl`:
 
 ```dart
 // For local development (if running backend locally)
-static const String backendBaseUrl = 'http://localhost:5000/api';
+static const String backendBaseUrl = 'http://localhost:7287/api';
 
 // For Android emulator (if backend is on host machine)
-static const String backendBaseUrl = 'http://10.0.2.2:5000/api';
+static const String backendBaseUrl = 'http://10.0.2.2:7287/api';
 
 // For production server
 static const String backendBaseUrl = 'https://your-production-server.com/api';
@@ -94,9 +94,9 @@ If you're testing with a web browser, ensure your backend has CORS configured to
 ### Common Issues
 
 1. **Connection Refused**
-   - Check if backend server is running
-   - Verify the backend URL in `app_config.dart`
-   - For Android emulator, use `10.0.2.2` instead of `localhost`
+   - Check if backend server is running on port 7287
+   - Verify the backend URL in `app_config.dart` (should be `http://localhost:7287/api`)
+   - For Android emulator, use `10.0.2.2:7287` instead of `localhost:7287`
 
 2. **CORS Errors (Web)**
    - Configure CORS in your backend to allow Flutter web requests
