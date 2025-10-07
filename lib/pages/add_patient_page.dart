@@ -10,6 +10,8 @@ import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart
 import '../theme/shadcn_colors.dart';
 import 'package:http/http.dart' as http;
 import '../utils/urdu_decoder.dart';
+import 'package:flutter_tesseract_ocr/flutter_tesseract_ocr.dart';
+import '../services/patient_api_service.dart';
 
 class AddPatientPage extends StatefulWidget {
   const AddPatientPage({super.key});
@@ -20,6 +22,7 @@ class AddPatientPage extends StatefulWidget {
 
 class _AddPatientPageState extends State<AddPatientPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final PatientApiService _apiService = PatientApiService();
 
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -29,6 +32,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
   final TextEditingController _cnicController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isSubmitting = false;
 
   DateTime? _dateOfBirth;
   String? _gender; // 'Male' or 'Female'
@@ -60,7 +64,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_registrationType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -72,50 +76,95 @@ class _AddPatientPageState extends State<AddPatientPage> {
     }
     
     if (_formKey.currentState?.validate() ?? false) {
-      // Calculate age from date of birth
-      int age = 0;
-      if (_dateOfBirth != null) {
-        final now = DateTime.now();
-        age = now.year - _dateOfBirth!.year;
-        if (now.month < _dateOfBirth!.month || 
-            (now.month == _dateOfBirth!.month && now.day < _dateOfBirth!.day)) {
-          age--;
+      setState(() {
+        _isSubmitting = true;
+      });
+
+      try {
+        // Calculate age from date of birth
+        int age = 0;
+        if (_dateOfBirth != null) {
+          final now = DateTime.now();
+          age = now.year - _dateOfBirth!.year;
+          if (now.month < _dateOfBirth!.month || 
+              (now.month == _dateOfBirth!.month && now.day < _dateOfBirth!.day)) {
+            age--;
+          }
+        }
+
+        // Create patient data
+        final patient = PatientData(
+          fullName: _fullNameController.text.trim(),
+          age: age,
+          bloodGroup: _bloodGroup ?? '',
+          email: _emailController.text.trim(),
+          contactNumber: _phoneController.text.trim(),
+          address: _addressController.text.trim(),
+          cnic: _cnicController.text.trim(),
+          gender: _gender ?? '',
+          dateOfBirth: _dateOfBirth ?? DateTime.now(),
+          emergencyContact: _emergencyContactNameController.text.trim().isNotEmpty 
+              ? _emergencyContactNameController.text.trim() 
+              : null,
+          emergencyContactRelation: _emergencyRelation,
+        );
+
+        // Call API to create patient
+        final response = await _apiService.createPatient(patient);
+
+        if (response.success && response.data != null) {
+          // Save patient data locally for backward compatibility
+          PatientManager.setPatient(response.data!);
+
+          // Show success dialog and return to dashboard
+          if (mounted) {
+            showDialog<void>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Patient Registration'),
+                content: Text('Patient "${response.data!.fullName}" registered successfully for $_registrationType registration.'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(); // Go back to dashboard
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          }
+        } else {
+          // Show error message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(response.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('An error occurred: ${e.toString()}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
         }
       }
-
-      // Create patient data
-      final patient = PatientData(
-        fullName: _fullNameController.text.trim(),
-        age: age,
-        bloodGroup: _bloodGroup ?? '',
-        email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
-        address: _addressController.text.trim(),
-        cnic: _cnicController.text.trim(),
-        gender: _gender ?? '',
-        dateOfBirth: _dateOfBirth ?? DateTime.now(),
-      );
-
-      // Save patient data
-      PatientManager.setPatient(patient);
-
-      // Show success dialog and return to dashboard
-      showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Patient Registration'),
-          content: Text('Patient "${patient.fullName}" registered successfully for $_registrationType registration.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop(); // Go back to dashboard
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
     }
   }
 
@@ -312,7 +361,8 @@ class _AddPatientPageState extends State<AddPatientPage> {
         } catch (_) {}
         if (kIsWeb) {
           if (_capturedBytes != null) {
-            await _runOcrOnImageWeb(_capturedBytes!);
+            // Prefer local Urdu OCR via Tesseract on web-unavailable MLKit path
+            await _runTesseractUrduOcrBytes(_capturedBytes!);
           }
         } else {
           // Mobile/desktop: try barcode first, then OCR
@@ -343,7 +393,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
         } catch (_) {}
         if (kIsWeb) {
           if (_capturedBytes != null) {
-            await _runOcrOnImageWeb(_capturedBytes!);
+            await _runTesseractUrduOcrBytes(_capturedBytes!);
           }
         } else {
           final decoded = await _runBarcodeOnImage(image);
@@ -615,6 +665,34 @@ class _AddPatientPageState extends State<AddPatientPage> {
     }
   }
 
+  Future<void> _runTesseractUrduOcrBytes(Uint8List bytes) async {
+    setState(() {
+      _isOcrRunning = true;
+    });
+    try {
+      // Note: Requires urd (Urdu) traineddata in assets/tessdata or downloaded
+      final String text = await FlutterTesseractOcr.extractText('',
+          args: {
+            'bytes': bytes,
+            'language': 'urd+eng',
+          });
+      final String sanitized = _sanitizeOcr(text);
+      _ocrRawText = text;
+      _ocrSanitizedText = sanitized;
+      _overlayIsBarcode = false;
+      _populateFieldsFromCnicText(sanitized);
+      _decodeUrduCandidates(sanitized);
+    } catch (_) {
+      // ignore
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isOcrRunning = false;
+        });
+      }
+    }
+  }
+
   String _sanitizeOcr(String text) {
     String t = text;
     // Fix stray 'O' between CNIC and DOB (treat as space)
@@ -647,6 +725,53 @@ class _AddPatientPageState extends State<AddPatientPage> {
     setState(() {
       _urduDecoded = decoded;
     });
+
+    // Try to populate name from Urdu if name is still empty
+    if ((_fullNameController.text).trim().isEmpty && decoded.isNotEmpty) {
+      final String? urduName = _extractUrduNameFromList(decoded);
+      if (urduName != null && urduName.trim().isNotEmpty) {
+        // Do not translate; store as-is (Unicode)
+        _fullNameController.text = urduName.trim();
+      }
+    }
+  }
+
+  String? _extractUrduNameFromList(List<String> lines) {
+    final RegExp urduChars = RegExp(r"[\u0600-\u06FF]");
+    // Common Urdu labels on CNICs to exclude when guessing a name
+    const List<String> labelTokens = [
+      'نام', // Name label
+      'ولدیت', 'ولد', 'والد', 'شوہر', // Father/Husband
+      'شناختی', 'نمبر', 'جاری', 'سمت', // Identity/Number/Issue
+      'تاریخ', 'پیدائش', // Date/DOB
+      'جنس', 'قومیت', 'قومی', 'مقام', 'قیام' // Gender/Nationality/Place/Stay
+    ];
+
+    // First pass: if a line with 'نام' is found, use the next non-empty Urdu line
+    for (int i = 0; i < lines.length; i++) {
+      final String l = lines[i].trim();
+      if (l.contains('نام')) {
+        for (int j = i + 1; j < lines.length && j <= i + 3; j++) {
+          final String cand = lines[j].trim();
+          if (cand.isNotEmpty && urduChars.hasMatch(cand)) {
+            if (!labelTokens.any((t) => cand.contains(t))) {
+              return cand;
+            }
+          }
+        }
+      }
+    }
+
+    // Second pass: choose the longest Urdu-only line that doesn't look like a label
+    String? best;
+    for (final String l in lines) {
+      final String s = l.trim();
+      if (s.isEmpty) continue;
+      if (!urduChars.hasMatch(s)) continue;
+      if (labelTokens.any((t) => s.contains(t))) continue;
+      if (best == null || s.length > best.length) best = s;
+    }
+    return best;
   }
 
   String? _requiredValidator(String? value, {String fieldName = 'This field'}) {
@@ -1060,11 +1185,20 @@ class _AddPatientPageState extends State<AddPatientPage> {
                             width: 200,
                             height: 56,
                             child: FilledButton(
-                              onPressed: _submit,
+                              onPressed: _isSubmitting ? null : _submit,
                               style: FilledButton.styleFrom(
                                 textStyle: theme.textTheme.titleMedium,
                               ),
-                              child: const Text('Save Patient'),
+                              child: _isSubmitting
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : const Text('Save Patient'),
                             ),
                           ),
                         ],

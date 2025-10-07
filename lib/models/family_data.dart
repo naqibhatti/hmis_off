@@ -38,7 +38,7 @@ class FamilyMember {
       age: patient.age,
       bloodGroup: patient.bloodGroup,
       email: patient.email,
-      phone: patient.phone,
+      phone: patient.contactNumber, // Updated to use contactNumber
       address: patient.address,
       cnic: patient.cnic,
       gender: patient.gender,
@@ -54,7 +54,7 @@ class FamilyMember {
       age: age,
       bloodGroup: bloodGroup,
       email: email,
-      phone: phone,
+      contactNumber: phone, // Updated to use contactNumber
       address: address,
       cnic: cnic,
       gender: gender,
