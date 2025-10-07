@@ -54,6 +54,32 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {
+      // For receptionist, use the old flow (bypass authentication)
+      if (_selectedUserType == UserType.receptionist) {
+        if (kDebugMode) {
+          print('🔍 Bypassing authentication for receptionist - using old flow');
+        }
+        
+        // Show success popup
+        PopupHelper.showSuccess(
+          context,
+          'Welcome back, Receptionist!',
+        );
+        
+        // Navigate after a short delay
+        await Future.delayed(const Duration(milliseconds: 1500));
+        
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const ReceptionistDashboard(),
+            ),
+          );
+        }
+        return;
+      }
+
+      // For doctor, use API authentication
       setState(() {
         _isLoading = true;
       });
@@ -92,19 +118,11 @@ class _LoginPageState extends State<LoginPage> {
             await Future.delayed(const Duration(milliseconds: 1500));
             
             if (mounted) {
-              if (_selectedUserType == UserType.doctor) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => PatientSelectionPage(userType: _selectedUserType),
-                  ),
-                );
-              } else {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const ReceptionistDashboard(),
-                  ),
-                );
-              }
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => PatientSelectionPage(userType: _selectedUserType),
+                ),
+              );
             }
           } else {
             // User doesn't have the selected role
@@ -574,7 +592,9 @@ class _LoginPageState extends State<LoginPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Sample Doctor Credentials (Debug)',
+                                      _selectedUserType == UserType.doctor 
+                                          ? 'Sample Doctor Credentials (Debug)'
+                                          : 'Receptionist Login (Debug)',
                                       style: theme.textTheme.bodyMedium?.copyWith(
                                         fontWeight: FontWeight.w600,
                                         color: Colors.blue.shade800,
@@ -583,7 +603,9 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                     SizedBox(height: getResponsiveSize(8)),
                                     Text(
-                                      'CNIC: 12345-1234567-1\nPassword: Doctor123!',
+                                      _selectedUserType == UserType.doctor
+                                          ? 'CNIC: 12345-1234567-1\nPassword: Doctor123!'
+                                          : 'Any CNIC and password will work\n(No API authentication required)',
                                       style: theme.textTheme.bodySmall?.copyWith(
                                         color: Colors.blue.shade700,
                                         fontSize: getResponsiveFontSize(12),
@@ -595,14 +617,18 @@ class _LoginPageState extends State<LoginPage> {
                                       width: double.infinity,
                                       child: OutlinedButton.icon(
                                         onPressed: _isLoading ? null : () {
-                                          _cnicController.text = '12345-1234567-1';
-                                          _passwordController.text = 'Doctor123!';
-                                          setState(() {
-                                            _selectedUserType = UserType.doctor;
-                                          });
+                                          if (_selectedUserType == UserType.doctor) {
+                                            _cnicController.text = '12345-1234567-1';
+                                            _passwordController.text = 'Doctor123!';
+                                          } else {
+                                            _cnicController.text = '12345-1234567-1';
+                                            _passwordController.text = 'password123';
+                                          }
                                         },
                                         icon: const Icon(Icons.person_add, size: 16),
-                                        label: const Text('Use Sample Credentials'),
+                                        label: Text(_selectedUserType == UserType.doctor 
+                                            ? 'Use Sample Doctor Credentials'
+                                            : 'Use Sample Receptionist Credentials'),
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: Colors.blue.shade700,
                                           side: BorderSide(color: Colors.blue.shade300),
