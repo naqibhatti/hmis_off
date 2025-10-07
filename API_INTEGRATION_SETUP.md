@@ -20,6 +20,9 @@ static const String backendBaseUrl = 'http://localhost:7287/api';
 // For Android emulator (if backend is on host machine)
 static const String backendBaseUrl = 'http://10.0.2.2:7287/api';
 
+// For physical device testing (replace with your computer's IP)
+static const String backendBaseUrl = 'http://192.168.137.74:7287/api';
+
 // For production server
 static const String backendBaseUrl = 'https://your-production-server.com/api';
 ```
@@ -41,12 +44,22 @@ If you're testing with a web browser, ensure your backend has CORS configured to
 
 ### 4. Testing the Integration
 
+#### For Desktop/Web Testing:
 1. Start your backend server
-2. Update the backend URL in `app_config.dart`
+2. Update the backend URL in `app_config.dart` to `http://localhost:7287/api`
 3. Run the Flutter app
 4. Navigate to "Add Patient" page
 5. Fill in patient details and submit
 6. Check your backend database to verify the patient was created
+
+#### For Physical Device Testing:
+1. Start your backend server with: `dotnet run --urls "http://0.0.0.0:7287"`
+2. Find your computer's IP address: `ipconfig` (Windows) or `ifconfig` (Mac/Linux)
+3. Update the backend URL in `app_config.dart` to `http://YOUR_IP:7287/api`
+4. Ensure both devices are on the same network
+5. Run the Flutter app on your physical device
+6. Test the "Test API Connection" button first
+7. Navigate to "Add Patient" page and submit
 
 ## Features Implemented
 
