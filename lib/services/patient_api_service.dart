@@ -4,8 +4,11 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
+import '../config/testing_config.dart';
 import '../models/api_response.dart';
 import '../models/patient_data.dart';
+import 'auth_service.dart';
+import 'patient_data_service.dart';
 
 class PatientApiService {
   static final PatientApiService _instance = PatientApiService._internal();
@@ -344,30 +347,80 @@ class PatientApiService {
     int page = 1,
     int pageSize = 20,
   }) async {
+    // Check if we're in testing mode
+    if (TestingConfig.isTestingMode) {
+      _log('🧪 TESTING MODE: Using dummy patient search');
+      
+      // Simulate API delay
+      await Future.delayed(const Duration(milliseconds: 300));
+      
+      // Get dummy patients and apply filters
+      List<PatientData> filteredPatients = PatientDataService.allPatients;
+      
+      // Apply search term filter
+      if (searchTerm != null && searchTerm.isNotEmpty) {
+        filteredPatients = PatientDataService.searchPatients(searchTerm);
+      }
+      
+      // Apply gender filter
+      if (gender != null && gender.isNotEmpty) {
+        filteredPatients = filteredPatients.where((p) => 
+          p.gender.toLowerCase() == gender.toLowerCase()).toList();
+      }
+      
+      // Apply blood group filter
+      if (bloodGroup != null && bloodGroup.isNotEmpty) {
+        filteredPatients = filteredPatients.where((p) => 
+          p.bloodGroup == bloodGroup).toList();
+      }
+      
+      // Apply pagination
+      final startIndex = (page - 1) * pageSize;
+      final endIndex = startIndex + pageSize;
+      final paginatedPatients = filteredPatients.length > startIndex 
+        ? filteredPatients.sublist(startIndex, endIndex > filteredPatients.length ? filteredPatients.length : endIndex)
+        : <PatientData>[];
+      
+      final totalPages = (filteredPatients.length / pageSize).ceil();
+      
+      return ApiResponse<List<PatientData>>(
+        success: true,
+        message: 'Patients searched successfully (Testing Mode)',
+        data: paginatedPatients,
+        totalEntityCount: filteredPatients.length,
+        totalPages: totalPages,
+      );
+    }
+    
+    // Normal API flow
     try {
+      // Prefer the paged SP-based endpoint for predictable list shape
       final queryParams = <String, String>{
-        'page': page.toString(),
-        'pageSize': pageSize.toString(),
+        'PageNumber': page.toString(),
+        'PageSize': pageSize.toString(),
       };
       
+      // Optional filters for the stored-proc endpoint
       if (searchTerm != null && searchTerm.isNotEmpty) {
-        queryParams['searchTerm'] = searchTerm;
+        queryParams['PatientName'] = searchTerm;
       }
       if (gender != null && gender.isNotEmpty) {
-        queryParams['gender'] = gender;
+        // gender filter not supported on SP endpoint; keep only basic name/cnic/contact
       }
       if (bloodGroup != null && bloodGroup.isNotEmpty) {
-        queryParams['bloodGroup'] = bloodGroup;
+        // not supported on SP endpoint
       }
       if (isActive != null) {
-        queryParams['isActive'] = isActive.toString();
+        // not supported on SP endpoint
       }
 
-      final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.patients}').replace(queryParameters: queryParams);
+      final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.searchPatients}')
+          .replace(queryParameters: queryParams);
+      final headers = await AuthService().getAuthHeaders();
       
       final response = await http.get(
         url,
-        headers: ApiConfig.defaultHeaders,
+        headers: headers,
       ).timeout(ApiConfig.timeout);
 
       if (response.statusCode == 200) {
@@ -376,13 +429,22 @@ class PatientApiService {
           if (data is List) {
             return data.map((item) => PatientData.fromJson(item)).toList();
           }
+          if (data is Map<String, dynamic>) {
+            // Fallback to EF search shape: data.patients
+            final dynamic patientsNode = data['patients'] ?? data['Patients'];
+            if (patientsNode is List) {
+              return patientsNode.map((item) => PatientData.fromJson(item)).toList();
+            }
+          }
           return <PatientData>[];
         });
-        
+
         return ApiResponse<List<PatientData>>(
-          success: true,
+          success: apiResponse.success,
           message: apiResponse.message,
           data: apiResponse.data ?? [],
+          totalEntityCount: apiResponse.totalEntityCount,
+          totalPages: apiResponse.totalPages,
         );
       } else {
         return ApiResponse<List<PatientData>>(
@@ -391,6 +453,69 @@ class PatientApiService {
           error: 'HTTP ${response.statusCode}: ${response.body}',
         );
       }
+    } catch (e) {
+      return ApiResponse<List<PatientData>>(
+        success: false,
+        message: 'Network error occurred',
+        error: e.toString(),
+      );
+    }
+  }
+
+  // Fetch all patients by paging through the search endpoint
+  Future<ApiResponse<List<PatientData>>> fetchAllPatients({int pageSize = 50}) async {
+    // Check if we're in testing mode
+    if (TestingConfig.isTestingMode) {
+      _log('🧪 TESTING MODE: Using dummy patient data');
+      
+      // Simulate API delay
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Return dummy patients
+      final dummyPatients = PatientDataService.allPatients;
+      
+      return ApiResponse<List<PatientData>>(
+        success: true,
+        message: 'Patients fetched successfully (Testing Mode)',
+        data: dummyPatients,
+        totalEntityCount: dummyPatients.length,
+        totalPages: 1,
+      );
+    }
+    
+    // Normal API flow
+    try {
+      final List<PatientData> all = <PatientData>[];
+      int page = 1;
+      int safetyCounter = 0; // prevent infinite loops
+      while (true) {
+        final ApiResponse<List<PatientData>> pageResult = await searchPatients(page: page, pageSize: pageSize);
+        if (!pageResult.success) {
+          return ApiResponse<List<PatientData>>(
+            success: false,
+            message: pageResult.message,
+            error: pageResult.error,
+          );
+        }
+        final List<PatientData> items = pageResult.data ?? <PatientData>[];
+        all.addAll(items);
+
+        final int? totalPages = pageResult.totalPages;
+        if (items.isEmpty || totalPages != null && page >= totalPages) {
+          break;
+        }
+        page += 1;
+        safetyCounter += 1;
+        if (safetyCounter > 200) { // safeguard for extremely large data sets
+          break;
+        }
+      }
+
+      return ApiResponse<List<PatientData>>(
+        success: true,
+        message: 'All patients fetched',
+        data: all,
+      );
     } catch (e) {
       return ApiResponse<List<PatientData>>(
         success: false,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/patient_data.dart';
 import '../models/user_type.dart';
 import '../services/patient_data_service.dart';
+import '../services/patient_api_service.dart';
 import '../theme/shadcn_colors.dart';
 import '../widgets/side_navigation_drawer.dart';
 import '../theme/theme_controller.dart';
@@ -19,6 +20,12 @@ class _PatientSelectionPageState extends State<PatientSelectionPage> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
   int _visibleCount = 5;
+  // API-backed state for doctor view
+  final PatientApiService _apiService = PatientApiService();
+  List<PatientData> _latestPatients = <PatientData>[];
+  List<PatientData> _allPatients = <PatientData>[];
+  bool _isLoadingPatients = false;
+  String? _loadError;
 
   @override
   void initState() {
@@ -29,12 +36,51 @@ class _PatientSelectionPageState extends State<PatientSelectionPage> {
         _visibleCount = 5;
       });
     });
+    // Load latest patients from API when doctor logs in
+    if (widget.userType == UserType.doctor) {
+      _fetchLatestPatients();
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchLatestPatients() async {
+    setState(() {
+      _isLoadingPatients = true;
+      _loadError = null;
+    });
+    try {
+      // Fetch all, then slice on UI side
+      final response = await _apiService.fetchAllPatients(pageSize: 50);
+      if (!mounted) return;
+      setState(() {
+        _isLoadingPatients = false;
+        if (response.success && response.data != null) {
+          final List<PatientData> list = List<PatientData>.from(response.data!);
+          list.sort((a, b) {
+            final DateTime ad = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final DateTime bd = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return bd.compareTo(ad); // newest first
+          });
+          _allPatients = list;
+          _latestPatients = list.length > 5 ? list.sublist(0, 5) : list;
+        } else {
+          _loadError = response.message.isNotEmpty
+              ? response.message
+              : 'Failed to load patients';
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingPatients = false;
+        _loadError = 'Network error occurred';
+      });
+    }
   }
 
   void _selectPatient(PatientData patient) {
@@ -48,7 +94,26 @@ class _PatientSelectionPageState extends State<PatientSelectionPage> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final List<PatientData> patients = PatientDataService.searchPatients(_query);
+    // Determine patients source: API for doctors (latest 5), local service for others
+    List<PatientData> patients;
+    if (widget.userType == UserType.doctor) {
+      final List<PatientData> source = _allPatients;
+      if (_query.isEmpty) {
+        patients = List<PatientData>.from(source);
+      } else {
+        final String q = _query.toLowerCase();
+        patients = source.where((p) {
+          final String name = p.fullName.toLowerCase();
+          final String cnic = p.cnic.toLowerCase();
+          final String gender = (p.gender).toLowerCase();
+          final String contact = (p.contactNumber).toLowerCase();
+          final String age = p.age.toString();
+          return name.contains(q) || cnic.contains(q) || gender.contains(q) || contact.contains(q) || age.contains(q);
+        }).toList();
+      }
+    } else {
+      patients = PatientDataService.searchPatients(_query);
+    }
     final int itemCount = _visibleCount < patients.length ? _visibleCount : patients.length;
 
     return Scaffold(
@@ -298,46 +363,69 @@ class _PatientSelectionPageState extends State<PatientSelectionPage> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.grey.shade300),
                         ),
-                        child: ListView.builder(
-                          itemCount: itemCount,
-                          itemBuilder: (context, index) {
-                            final p = patients[index];
-                            return Container(
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(color: Colors.grey.shade200),
-                                ),
-                              ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                leading: CircleAvatar(
-                                  backgroundColor: ShadcnColors.accent100,
-                                  child: Text(
-                                    p.fullName.isNotEmpty ? p.fullName[0].toUpperCase() : '?',
-                                    style: TextStyle(color: ShadcnColors.accent700),
+                        child: widget.userType == UserType.doctor && _isLoadingPatients
+                            ? const Center(child: CircularProgressIndicator())
+                            : widget.userType == UserType.doctor && _loadError != null
+                                ? Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                          child: Text(
+                                            _loadError!,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(color: Colors.red.shade700),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        OutlinedButton(
+                                          onPressed: _fetchLatestPatients,
+                                          child: const Text('Retry'),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    itemCount: itemCount,
+                                    itemBuilder: (context, index) {
+                                      final p = patients[index];
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            bottom: BorderSide(color: Colors.grey.shade200),
+                                          ),
+                                        ),
+                                        child: ListTile(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                          leading: CircleAvatar(
+                                            backgroundColor: ShadcnColors.accent100,
+                                            child: Text(
+                                              p.fullName.isNotEmpty ? p.fullName[0].toUpperCase() : '?',
+                                              style: TextStyle(color: ShadcnColors.accent700),
+                                            ),
+                                          ),
+                                          title: Text(
+                                            '${index + 1}. ${p.fullName}',
+                                            style: const TextStyle(fontWeight: FontWeight.w600),
+                                          ),
+                                          subtitle: Text(
+                                            '${p.age}y • ${p.gender} • ${p.cnic}',
+                                            style: TextStyle(color: Colors.grey.shade600),
+                                          ),
+                                          trailing: FilledButton(
+                                            onPressed: () => _selectPatient(p),
+                                            style: FilledButton.styleFrom(
+                                              backgroundColor: ShadcnColors.accent,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                            child: const Text('Add'),
+                                          ),
+                                          onTap: () => _selectPatient(p),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                ),
-                                title: Text(
-                                  '${index + 1}. ${p.fullName}',
-                                  style: const TextStyle(fontWeight: FontWeight.w600),
-                                ),
-                                subtitle: Text(
-                                  '${p.age}y • ${p.gender} • ${p.cnic}',
-                                  style: TextStyle(color: Colors.grey.shade600),
-                                ),
-                                trailing: FilledButton(
-                                  onPressed: () => _selectPatient(p),
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: ShadcnColors.accent,
-                                    foregroundColor: Colors.white,
-                                  ),
-                                  child: const Text('Add'),
-                                ),
-                                onTap: () => _selectPatient(p),
-                              ),
-                            );
-                          },
-                        ),
                       ),
                     ),
                     if (patients.length > itemCount) ...[

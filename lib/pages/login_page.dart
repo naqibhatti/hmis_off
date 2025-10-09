@@ -7,7 +7,9 @@ import 'patient_selection_page.dart';
 import '../models/user_type.dart';
 import '../theme/theme_controller.dart';
 import '../services/auth_service.dart';
+import '../config/testing_config.dart';
 import '../widgets/animated_popup.dart';
+import '../widgets/testing_mode_toggle.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -54,6 +56,39 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {
+      // Check if we're in testing mode
+      if (TestingConfig.isTestingMode) {
+        if (kDebugMode) {
+          print('🧪 TESTING MODE: Bypassing authentication');
+        }
+        
+        // Show success popup
+        PopupHelper.showSuccess(
+          context,
+          'Welcome back, ${_selectedUserType.displayName}! (Testing Mode)',
+        );
+        
+        // Navigate after a short delay
+        await Future.delayed(const Duration(milliseconds: 1500));
+        
+        if (mounted) {
+          if (_selectedUserType == UserType.receptionist) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const ReceptionistDashboard(),
+              ),
+            );
+          } else {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => PatientSelectionPage(userType: _selectedUserType),
+              ),
+            );
+          }
+        }
+        return;
+      }
+      
       // For receptionist, use the old flow (bypass authentication)
       if (_selectedUserType == UserType.receptionist) {
         if (kDebugMode) {
@@ -640,6 +675,10 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               SizedBox(height: getResponsiveSize(16)),
                             ],
+                            // Testing mode toggle
+                            SizedBox(height: getResponsiveSize(16)),
+                            const TestingModeToggle(),
+                            SizedBox(height: getResponsiveSize(16)),
                             // Footer text
                             Text(
                               'By signing in, you agree to our Terms of Service and Privacy Policy',

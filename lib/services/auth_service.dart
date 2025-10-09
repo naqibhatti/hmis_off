@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart';
+import '../config/testing_config.dart';
 import '../models/api_response.dart';
 
 class AuthService {
@@ -23,6 +24,31 @@ class AuthService {
 
   // Login with CNIC and password
   Future<ApiResponse<Map<String, dynamic>>> login(String cnic, String password) async {
+    // Check if we're in testing mode
+    if (TestingConfig.isTestingMode) {
+      _log('🧪 TESTING MODE: Bypassing authentication');
+      
+      // Simulate successful login with dummy data
+      final dummyAuthData = {
+        'token': 'dummy_token_for_testing',
+        'user': {
+          'name': 'Test Doctor',
+          'cnic': cnic,
+          'roles': ['Doctor', 'Receptionist'], // Allow both roles for testing
+        }
+      };
+      
+      // Store dummy auth data
+      await _storeAuthData(dummyAuthData);
+      
+      return ApiResponse<Map<String, dynamic>>(
+        success: true,
+        message: 'Login successful (Testing Mode)',
+        data: dummyAuthData,
+      );
+    }
+    
+    // Normal API authentication flow
     final url = Uri.parse('${ApiConfig.baseUrl}/Auth/login');
     final body = jsonEncode({
       'cnic': _formatCnicForApi(cnic), // Remove dashes for API
