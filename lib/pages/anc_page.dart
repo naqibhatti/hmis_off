@@ -716,31 +716,22 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   }
 
   void _saveAndContinue() {
-    print('DEBUG: _saveAndContinue called');
     // Validate required fields
     if (!_validatePregnancyInfoFields()) {
-      print('DEBUG: Validation failed');
       return; // Stop if validation fails
     }
-    print('DEBUG: Validation passed');
     
     // Mark current tab as completed
     setState(() {
-      print('DEBUG: Before increment - _currentTabIndex: $_currentTabIndex');
       _tabCompleted[_currentTabIndex] = true;
       
       // Move to next tab if available
       if (_currentTabIndex < _tabCompleted.length - 1) {
         _currentTabIndex = _currentTabIndex + 1;
-        print('DEBUG: After increment - _currentTabIndex: $_currentTabIndex');
         // Enable the next tab before switching
         _tabCompleted[_currentTabIndex] = true;
         // Programmatically switch to the next tab
         _tabController.animateTo(_currentTabIndex);
-        print('DEBUG: Switched to tab index $_currentTabIndex');
-        print('DEBUG: Tab enabled status: $_tabCompleted');
-      } else {
-        print('DEBUG: No next tab available - at last tab');
       }
     });
     
@@ -755,84 +746,70 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   }
 
   bool _validatePregnancyInfoFields() {
-    print('DEBUG: Validating fields...');
     // Check if LMP is selected
     if (_lmpController.text.isEmpty) {
-      print('DEBUG: LMP validation failed');
       _showValidationError('Please select Last Menstrual Period');
       return false;
     }
     
     // Check required fields
     if (_gravidaController.text.isEmpty) {
-      print('DEBUG: Gravida validation failed');
       _showValidationError('Please enter Gravida');
       return false;
     }
     
     if (_paraController.text.isEmpty) {
-      print('DEBUG: Para validation failed');
       _showValidationError('Please enter Para');
       return false;
     }
     
     if (_abortionController.text.isEmpty) {
-      print('DEBUG: Abortion validation failed');
       _showValidationError('Please enter Abortion');
       return false;
     }
     
     if (_birthAddressController.text.isEmpty) {
-      print('DEBUG: Birth Address validation failed');
       _showValidationError('Please enter Birth Address');
       return false;
     }
     
     if (_husbandNameController.text.isEmpty) {
-      print('DEBUG: Husband Name validation failed');
       _showValidationError('Please enter Husband Name');
       return false;
     }
     
     if (_husbandCnicController.text.isEmpty) {
-      print('DEBUG: Husband CNIC validation failed');
       _showValidationError('Please enter Husband CNIC');
       return false;
     }
     
     // Validate numeric fields
     if (!_isValidNumber(_gravidaController.text)) {
-      print('DEBUG: Gravida numeric validation failed');
       _showValidationError('Gravida must be a valid number');
       return false;
     }
     
     if (!_isValidNumber(_paraController.text)) {
-      print('DEBUG: Para numeric validation failed');
       _showValidationError('Para must be a valid number');
       return false;
     }
     
     if (!_isValidNumber(_abortionController.text)) {
-      print('DEBUG: Abortion numeric validation failed');
       _showValidationError('Abortion must be a valid number');
       return false;
     }
     
     if (_gestationAgeController.text.isNotEmpty && !_isValidNumber(_gestationAgeController.text)) {
-      print('DEBUG: Gestation Age numeric validation failed');
       _showValidationError('Gestation Age must be a valid number');
       return false;
     }
     
     // Validate CNIC format (basic validation)
     if (!_isValidCNIC(_husbandCnicController.text)) {
-      print('DEBUG: CNIC format validation failed');
       _showValidationError('Please enter a valid CNIC format (e.g., 12345-1234567-1)');
       return false;
     }
     
-    print('DEBUG: All validations passed');
     return true;
   }
 
