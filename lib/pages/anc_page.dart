@@ -501,6 +501,29 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: OutlinedButton(
+                  onPressed: _goBack,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade600,
+                    side: BorderSide(color: Colors.red.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SizedBox.shrink(),
+              ),
+              Expanded(
+                child: OutlinedButton(
                   onPressed: () {
                     _resetPregnancyInfoFields();
                   },
@@ -528,7 +551,6 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
@@ -1723,6 +1745,27 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
     return 'next tab';
   }
 
+  String _getPreviousTabName() {
+    const tabNames = ['Pregnancy Info', 'Medical History', 'Vitals', 'Ultrasound', 'Supplements', 'Referrals'];
+    final prevIndex = _currentTabIndex - 1;
+    if (prevIndex >= 0) {
+      return tabNames[prevIndex];
+    }
+    return 'previous tab';
+  }
+
+  void _goBack() {
+    if (_currentTabIndex > 0) {
+      setState(() {
+        _currentTabIndex = _currentTabIndex - 1;
+        _tabController.animateTo(_currentTabIndex);
+      });
+    } else {
+      // If on first tab, navigate back to previous page
+      Navigator.of(context).pop();
+    }
+  }
+
   Widget _buildMedicalHistoryTab() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -2061,6 +2104,29 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: OutlinedButton(
+                  onPressed: _goBack,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade600,
+                    side: BorderSide(color: Colors.red.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SizedBox.shrink(),
+              ),
+              Expanded(
+                child: OutlinedButton(
                   onPressed: () {
                     _resetMedicalHistoryFields();
                   },
@@ -2081,7 +2147,6 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
@@ -2379,6 +2444,29 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: OutlinedButton(
+                  onPressed: _goBack,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade600,
+                    side: BorderSide(color: Colors.red.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SizedBox.shrink(),
+              ),
+              Expanded(
+                child: OutlinedButton(
                   onPressed: () {
                     _resetVitalsFields();
                   },
@@ -2399,7 +2487,6 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
@@ -2895,6 +2982,29 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: OutlinedButton(
+                  onPressed: _goBack,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade600,
+                    side: BorderSide(color: Colors.red.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SizedBox.shrink(),
+              ),
+              Expanded(
+                child: OutlinedButton(
                   onPressed: () {
                     _resetUltrasoundFields();
                   },
@@ -2915,7 +3025,6 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
@@ -3447,6 +3556,29 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: OutlinedButton(
+                  onPressed: _goBack,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade600,
+                    side: BorderSide(color: Colors.red.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SizedBox.shrink(),
+              ),
+              Expanded(
+                child: OutlinedButton(
                   onPressed: () {
                     _resetSupplementsFields();
                   },
@@ -3467,7 +3599,6 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
@@ -3731,6 +3862,29 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: OutlinedButton(
+                  onPressed: _goBack,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade600,
+                    side: BorderSide(color: Colors.red.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SizedBox.shrink(),
+              ),
+              Expanded(
+                child: OutlinedButton(
                   onPressed: () {
                     _resetReferralsFields();
                   },
@@ -3751,7 +3905,6 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
