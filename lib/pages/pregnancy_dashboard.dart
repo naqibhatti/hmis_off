@@ -1,10 +1,4 @@
 import 'package:flutter/material.dart';
-import 'add_patient_page.dart';
-import 'collect_vitals_page.dart';
-import 'add_family_page.dart';
-import 'diagnostic_page.dart';
-import 'pregnancy_dashboard.dart';
-import 'login_page.dart';
 import '../models/patient_data.dart';
 import '../services/patient_data_service.dart';
 import '../theme/shadcn_colors.dart';
@@ -13,14 +7,14 @@ import '../theme/theme_controller.dart';
 import 'patient_selection_page.dart';
 import '../models/user_type.dart';
 
-class DoctorDashboard extends StatefulWidget {
-  const DoctorDashboard({super.key});
+class PregnancyDashboard extends StatefulWidget {
+  const PregnancyDashboard({super.key});
 
   @override
-  State<DoctorDashboard> createState() => _DoctorDashboardState();
+  State<PregnancyDashboard> createState() => _PregnancyDashboardState();
 }
 
-class _DoctorDashboardState extends State<DoctorDashboard> {
+class _PregnancyDashboardState extends State<PregnancyDashboard> {
   late VoidCallback _patientListener;
 
   @override
@@ -49,7 +43,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
           ? Colors.grey.shade50
           : Colors.green.shade50,
       body: SideNavigationDrawer(
-        currentRoute: '/doctor-dashboard',
+        currentRoute: '/pregnancy-dashboard',
         userType: 'Doctor',
         child: Column(
           children: <Widget>[
@@ -279,7 +273,6 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // duplicate HMIS section removed
                       // Cards grid
                       Expanded(
                         child: Container(
@@ -295,11 +288,11 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                             ),
                           ),
                           child: GridView.count(
-                            crossAxisCount: 4,
+                            crossAxisCount: 3,
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
                             childAspectRatio: 1.2,
-                            children: _buildDashboardCards(context),
+                            children: _buildPregnancyCards(context),
                           ),
                         ),
                       ),
@@ -314,154 +307,76 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     );
   }
 
-  List<Widget> _buildDashboardCards(BuildContext context) {
+  List<Widget> _buildPregnancyCards(BuildContext context) {
     final List<Widget> cards = [];
 
+    // Antenatal Care (ANC)
     cards.add(
-      _buildDashboardCard(
+      _buildPregnancyCard(
         context: context,
-        title: 'Add Family',
+        title: 'Antenatal Care',
+        subtitle: 'ANC',
+        icon: Icons.pregnant_woman,
+        color: Colors.pink,
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Antenatal Care feature coming soon'),
+              backgroundColor: Colors.pink,
+            ),
+          );
+        },
+        isEnabled: true,
+      ),
+    );
+
+    // Delivery and Newborn Care
+    cards.add(
+      _buildPregnancyCard(
+        context: context,
+        title: 'Delivery & Newborn Care',
+        subtitle: 'Delivery',
+        icon: Icons.child_care,
+        color: Colors.blue,
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Delivery & Newborn Care feature coming soon'),
+              backgroundColor: Colors.blue,
+            ),
+          );
+        },
+        isEnabled: true,
+      ),
+    );
+
+    // Postnatal Care (PNC)
+    cards.add(
+      _buildPregnancyCard(
+        context: context,
+        title: 'Postnatal Care',
+        subtitle: 'PNC',
         icon: Icons.family_restroom,
-        color: Colors.purple,
+        color: Colors.green,
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const AddFamilyPage(),
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Postnatal Care feature coming soon'),
+              backgroundColor: Colors.green,
             ),
           );
         },
         isEnabled: true,
       ),
     );
-
-    cards.add(
-      _buildDashboardCard(
-        context: context,
-        title: 'Collect Vitals',
-        icon: Icons.favorite,
-        color: Colors.red,
-        onTap: () {
-          if (PatientManager.hasPatient) {
-            final patient = PatientManager.currentPatient!;
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => CollectVitalsPage(
-                  patientName: patient.fullName,
-                  patientAge: patient.age,
-                  patientBloodGroup: patient.bloodGroup,
-                ),
-              ),
-            );
-          } else {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const CollectVitalsPage(),
-              ),
-            );
-          }
-        },
-        isEnabled: true,
-      ),
-    );
-
-    cards.add(
-      _buildDashboardCard(
-        context: context,
-        title: 'Diagnosis & Prescription',
-        icon: Icons.medical_services,
-        color: ShadcnColors.accent,
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const DiagnosticPage(),
-            ),
-          );
-        },
-        isEnabled: true,
-      ),
-    );
-
-    final patient = PatientManager.currentPatient;
-    final bool isFemaleOver14 = patient != null && patient.gender == 'Female' && patient.age > 14;
-    final bool isUnder14 = patient != null && patient.age < 14;
-    final bool isAdultMale = patient != null && patient.gender == 'Male' && patient.age >= 18;
-
-    if (isFemaleOver14) {
-      cards.add(
-        _buildDashboardCard(
-          context: context,
-          title: 'Pregnancy',
-          icon: Icons.pregnant_woman,
-          color: Colors.pink,
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const PregnancyDashboard(),
-              ),
-            );
-          },
-          isEnabled: true,
-        ),
-      );
-
-      // Family Planning for adult females
-      cards.add(
-        _buildDashboardCard(
-          context: context,
-          title: 'Family Planning',
-          icon: Icons.family_restroom,
-          color: Colors.orange,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Family Planning feature coming soon')),
-            );
-          },
-          isEnabled: true,
-        ),
-      );
-    }
-
-    // Family Planning for adult males
-    if (isAdultMale) {
-      cards.add(
-        _buildDashboardCard(
-          context: context,
-          title: 'Family Planning',
-          icon: Icons.family_restroom,
-          color: Colors.orange,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Family Planning feature coming soon')),
-            );
-          },
-          isEnabled: true,
-        ),
-      );
-    }
-
-    if (isUnder14) {
-      cards.add(
-        _buildDashboardCard(
-          context: context,
-          title: 'Immunization',
-          icon: Icons.vaccines,
-          color: Colors.teal,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Immunization feature coming soon')),
-            );
-          },
-          isEnabled: true,
-        ),
-      );
-    }
 
     return cards;
   }
 
-  Widget _buildDashboardCard({
+  Widget _buildPregnancyCard({
     required BuildContext context,
     required String title,
+    required String subtitle,
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
@@ -504,20 +419,30 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
               children: <Widget>[
                 Icon(
                   icon,
-                  size: 42,
+                  size: 48,
                   color: isEnabled ? color : Colors.grey.shade400,
                 ),
                 const SizedBox(height: 12),
                 Text(
                   title,
-                  style: theme.textTheme.titleSmall?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: isEnabled ? theme.colorScheme.onSurface : Colors.grey.shade500,
-                    fontSize: 21,
+                    fontSize: 18,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: isEnabled ? color : Colors.grey.shade400,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -553,18 +478,12 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
 
   String _getUrduTranslation(String title) {
     switch (title) {
-      case 'Add Family':
-        return 'خاندانی تفصیلات ان پٹ کریں';
-      case 'Collect Vitals':
-        return 'حیاتیاتی علامات جمع کریں';
-      case 'Diagnosis & Prescription':
-        return 'تشخیص اور نسخہ';
-      case 'Family Planning':
-        return 'خاندانی منصوبہ بندی';
-      case 'Pregnancy':
-        return 'حمل';
-      case 'Immunization':
-        return 'ٹیکہ لگانا';
+      case 'Antenatal Care':
+        return 'حمل سے پہلے کی دیکھ بھال';
+      case 'Delivery & Newborn Care':
+        return 'زچگی اور نوزائیدہ کی دیکھ بھال';
+      case 'Postnatal Care':
+        return 'زچگی کے بعد کی دیکھ بھال';
       default:
         return title;
     }
