@@ -5,6 +5,7 @@ import '../theme/shadcn_colors.dart';
 import '../widgets/side_navigation_drawer.dart';
 import '../theme/theme_controller.dart';
 import 'patient_selection_page.dart';
+import 'anc_page.dart';
 import '../models/user_type.dart';
 
 class PregnancyDashboard extends StatefulWidget {
@@ -319,10 +320,9 @@ class _PregnancyDashboardState extends State<PregnancyDashboard> {
         icon: Icons.pregnant_woman,
         color: Colors.pink,
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Antenatal Care feature coming soon'),
-              backgroundColor: Colors.pink,
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const AncPage(),
             ),
           );
         },
