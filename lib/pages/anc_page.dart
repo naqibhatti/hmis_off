@@ -500,21 +500,12 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: _goBack,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red.shade600,
-                    side: BorderSide(color: Colors.red.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: _goBack,
+                    child: Text(
+                      _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                     ),
                   ),
                 ),
@@ -523,55 +514,28 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                 child: SizedBox.shrink(),
               ),
               Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    _resetPregnancyInfoFields();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: ThemeController.instance.useShadcn.value
-                        ? ShadcnColors.accent700
-                        : Colors.green.shade700,
-                    side: BorderSide(
-                      color: ThemeController.instance.useShadcn.value
-                          ? ShadcnColors.accent300
-                          : Colors.green.shade300,
-                      width: 1.5,
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Reset',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton.tonal(
+                    onPressed: () {
+                      _resetPregnancyInfoFields();
+                    },
+                    child: const Text('Reset'),
                   ),
                 ),
               ),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    _saveAndContinue();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemeController.instance.useShadcn.value
-                        ? ShadcnColors.accent
-                        : Colors.green.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: () {
+                      _saveAndContinue();
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: ShadcnColors.accent600,
+                      foregroundColor: Colors.white,
                     ),
-                  ),
-                  child: const Text(
-                    'Save and Continue',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                    child: const Text('Save and Continue'),
                   ),
                 ),
               ),
@@ -2103,21 +2067,12 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: _goBack,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red.shade600,
-                    side: BorderSide(color: Colors.red.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: _goBack,
+                    child: Text(
+                      _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                     ),
                   ),
                 ),
@@ -2126,48 +2081,28 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                 child: SizedBox.shrink(),
               ),
               Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    _resetMedicalHistoryFields();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.grey.shade600,
-                    side: BorderSide(color: Colors.grey.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Reset',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton.tonal(
+                    onPressed: () {
+                      _resetMedicalHistoryFields();
+                    },
+                    child: const Text('Reset'),
                   ),
                 ),
               ),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    _saveAndContinueMedicalHistory();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemeController.instance.useShadcn.value
-                        ? ShadcnColors.accent
-                        : Colors.green.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: () {
+                      _saveAndContinueMedicalHistory();
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: ShadcnColors.accent600,
+                      foregroundColor: Colors.white,
                     ),
-                  ),
-                  child: const Text(
-                    'Save and Continue',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                    child: const Text('Save and Continue'),
                   ),
                 ),
               ),
@@ -2443,21 +2378,12 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: _goBack,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red.shade600,
-                    side: BorderSide(color: Colors.red.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: _goBack,
+                    child: Text(
+                      _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                     ),
                   ),
                 ),
@@ -2466,48 +2392,28 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                 child: SizedBox.shrink(),
               ),
               Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    _resetVitalsFields();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.grey.shade600,
-                    side: BorderSide(color: Colors.grey.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Reset',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton.tonal(
+                    onPressed: () {
+                      _resetVitalsFields();
+                    },
+                    child: const Text('Reset'),
                   ),
                 ),
               ),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    _saveAndContinueVitals();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemeController.instance.useShadcn.value
-                        ? ShadcnColors.accent
-                        : Colors.green.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: () {
+                      _saveAndContinueVitals();
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: ShadcnColors.accent600,
+                      foregroundColor: Colors.white,
                     ),
-                  ),
-                  child: const Text(
-                    'Save and Continue',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                    child: const Text('Save and Continue'),
                   ),
                 ),
               ),
@@ -2981,21 +2887,12 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: _goBack,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red.shade600,
-                    side: BorderSide(color: Colors.red.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: _goBack,
+                    child: Text(
+                      _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                     ),
                   ),
                 ),
@@ -3004,48 +2901,28 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                 child: SizedBox.shrink(),
               ),
               Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    _resetUltrasoundFields();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.grey.shade600,
-                    side: BorderSide(color: Colors.grey.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Reset',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton.tonal(
+                    onPressed: () {
+                      _resetUltrasoundFields();
+                    },
+                    child: const Text('Reset'),
                   ),
                 ),
               ),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    _saveAndContinueUltrasound();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemeController.instance.useShadcn.value
-                        ? ShadcnColors.accent
-                        : Colors.green.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: () {
+                      _saveAndContinueUltrasound();
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: ShadcnColors.accent600,
+                      foregroundColor: Colors.white,
                     ),
-                  ),
-                  child: const Text(
-                    'Save and Continue',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                    child: const Text('Save and Continue'),
                   ),
                 ),
               ),
@@ -3555,21 +3432,12 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: _goBack,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red.shade600,
-                    side: BorderSide(color: Colors.red.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: _goBack,
+                    child: Text(
+                      _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                     ),
                   ),
                 ),
@@ -3578,48 +3446,28 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                 child: SizedBox.shrink(),
               ),
               Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    _resetSupplementsFields();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.grey.shade600,
-                    side: BorderSide(color: Colors.grey.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Reset',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton.tonal(
+                    onPressed: () {
+                      _resetSupplementsFields();
+                    },
+                    child: const Text('Reset'),
                   ),
                 ),
               ),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    _saveAndContinueSupplements();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemeController.instance.useShadcn.value
-                        ? ShadcnColors.accent
-                        : Colors.green.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: () {
+                      _saveAndContinueSupplements();
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: ShadcnColors.accent600,
+                      foregroundColor: Colors.white,
                     ),
-                  ),
-                  child: const Text(
-                    'Save and Continue',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                    child: const Text('Save and Continue'),
                   ),
                 ),
               ),
@@ -3861,21 +3709,12 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: _goBack,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red.shade600,
-                    side: BorderSide(color: Colors.red.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: _goBack,
+                    child: Text(
+                      _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                     ),
                   ),
                 ),
@@ -3884,48 +3723,28 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                 child: SizedBox.shrink(),
               ),
               Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    _resetReferralsFields();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.grey.shade600,
-                    side: BorderSide(color: Colors.grey.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Reset',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton.tonal(
+                    onPressed: () {
+                      _resetReferralsFields();
+                    },
+                    child: const Text('Reset'),
                   ),
                 ),
               ),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    _saveAndContinueReferrals();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemeController.instance.useShadcn.value
-                        ? ShadcnColors.accent
-                        : Colors.green.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: () {
+                      _saveAndContinueReferrals();
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: ShadcnColors.accent600,
+                      foregroundColor: Colors.white,
                     ),
-                  ),
-                  child: const Text(
-                    'Save and Continue',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                    child: const Text('Save and Continue'),
                   ),
                 ),
               ),

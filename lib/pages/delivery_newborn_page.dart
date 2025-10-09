@@ -551,21 +551,12 @@ class _DeliveryNewbornPageState extends State<DeliveryNewbornPage> with TickerPr
         Row(
           children: [
             Expanded(
-              child: OutlinedButton(
-                onPressed: _goBack,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red.shade600,
-                  side: BorderSide(color: Colors.red.shade300),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+              child: SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: _goBack,
+                  child: Text(
+                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                   ),
                 ),
               ),
@@ -574,43 +565,25 @@ class _DeliveryNewbornPageState extends State<DeliveryNewbornPage> with TickerPr
               child: SizedBox.shrink(),
             ),
             Expanded(
-              child: OutlinedButton(
-                onPressed: _resetInitialAssessmentFields,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.grey.shade600,
-                  side: BorderSide(color: Colors.grey.shade300),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Reset',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
+              child: SizedBox(
+                height: 48,
+                child: FilledButton.tonal(
+                  onPressed: _resetInitialAssessmentFields,
+                  child: const Text('Reset'),
                 ),
               ),
             ),
             Expanded(
-              child: ElevatedButton(
-                onPressed: _saveAndContinueInitialAssessment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ThemeController.instance.useShadcn.value
-                      ? ShadcnColors.accent
-                      : Colors.green.shade600,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                height: 48,
+                child: FilledButton(
+                  onPressed: _saveAndContinueInitialAssessment,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: ShadcnColors.accent600,
+                    foregroundColor: Colors.white,
                   ),
-                ),
-                child: Text(
-                  'Save and Continue to ${_getNextTabName()}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                  child: Text(
+                    'Save and Continue to ${_getNextTabName()}',
                   ),
                 ),
               ),
@@ -685,21 +658,12 @@ class _DeliveryNewbornPageState extends State<DeliveryNewbornPage> with TickerPr
         Row(
           children: [
             Expanded(
-              child: OutlinedButton(
-                onPressed: _goBack,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red.shade600,
-                  side: BorderSide(color: Colors.red.shade300),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+              child: SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: _goBack,
+                  child: Text(
+                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                   ),
                 ),
               ),
@@ -708,43 +672,25 @@ class _DeliveryNewbornPageState extends State<DeliveryNewbornPage> with TickerPr
               child: SizedBox.shrink(),
             ),
             Expanded(
-              child: OutlinedButton(
-                onPressed: _resetDeliveryAssessmentFields,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.grey.shade600,
-                  side: BorderSide(color: Colors.grey.shade300),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Reset',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
+              child: SizedBox(
+                height: 48,
+                child: FilledButton.tonal(
+                  onPressed: _resetDeliveryAssessmentFields,
+                  child: const Text('Reset'),
                 ),
               ),
             ),
             Expanded(
-              child: ElevatedButton(
-                onPressed: _saveAndContinueDeliveryAssessment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ThemeController.instance.useShadcn.value
-                      ? ShadcnColors.accent
-                      : Colors.green.shade600,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                height: 48,
+                child: FilledButton(
+                  onPressed: _saveAndContinueDeliveryAssessment,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: ShadcnColors.accent600,
+                    foregroundColor: Colors.white,
                   ),
-                ),
-                child: Text(
-                  'Save and Continue to ${_getNextTabName()}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                  child: Text(
+                    'Save and Continue to ${_getNextTabName()}',
                   ),
                 ),
               ),
@@ -819,21 +765,12 @@ class _DeliveryNewbornPageState extends State<DeliveryNewbornPage> with TickerPr
         Row(
           children: [
             Expanded(
-              child: OutlinedButton(
-                onPressed: _goBack,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red.shade600,
-                  side: BorderSide(color: Colors.red.shade300),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+              child: SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: _goBack,
+                  child: Text(
+                    _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                   ),
                 ),
               ),
@@ -842,44 +779,24 @@ class _DeliveryNewbornPageState extends State<DeliveryNewbornPage> with TickerPr
               child: SizedBox.shrink(),
             ),
             Expanded(
-              child: OutlinedButton(
-                onPressed: _resetDischargeReferralsFields,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.grey.shade600,
-                  side: BorderSide(color: Colors.grey.shade300),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Reset',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
+              child: SizedBox(
+                height: 48,
+                child: FilledButton.tonal(
+                  onPressed: _resetDischargeReferralsFields,
+                  child: const Text('Reset'),
                 ),
               ),
             ),
             Expanded(
-              child: ElevatedButton(
-                onPressed: _saveAndContinueDischargeReferrals,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ThemeController.instance.useShadcn.value
-                      ? ShadcnColors.accent
-                      : Colors.green.shade600,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                height: 48,
+                child: FilledButton(
+                  onPressed: _saveAndContinueDischargeReferrals,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: ShadcnColors.accent600,
+                    foregroundColor: Colors.white,
                   ),
-                ),
-                child: const Text(
-                  'Save and Complete',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
+                  child: const Text('Save and Complete'),
                 ),
               ),
             ),
