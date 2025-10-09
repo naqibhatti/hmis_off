@@ -6,6 +6,7 @@ import '../widgets/side_navigation_drawer.dart';
 import '../theme/theme_controller.dart';
 import 'patient_selection_page.dart';
 import 'anc_page.dart';
+import 'delivery_newborn_page.dart';
 import '../models/user_type.dart';
 
 class PregnancyDashboard extends StatefulWidget {
@@ -339,10 +340,9 @@ class _PregnancyDashboardState extends State<PregnancyDashboard> {
         icon: Icons.child_care,
         color: Colors.blue,
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Delivery & Newborn Care feature coming soon'),
-              backgroundColor: Colors.blue,
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const DeliveryNewbornPage(),
             ),
           );
         },

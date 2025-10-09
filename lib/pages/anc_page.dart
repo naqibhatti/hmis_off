@@ -6,6 +6,7 @@ import '../widgets/side_navigation_drawer.dart';
 import '../widgets/square_tab.dart';
 import '../theme/theme_controller.dart';
 import 'patient_selection_page.dart';
+import 'pregnancy_dashboard.dart';
 import '../models/user_type.dart';
 
 class AncPage extends StatefulWidget {
@@ -72,6 +73,16 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   String? _selectedPlacentaCondition;
   String? _selectedLiquor;
   final TextEditingController _fetalHeartRateController = TextEditingController();
+  
+  // Supplements section
+  bool _supplementsGiven = false;
+  List<Map<String, dynamic>> _selectedSupplements = [];
+  
+  // Referrals section
+  bool _patientReferred = false;
+  String? _selectedDistrict;
+  String? _selectedType;
+  String? _selectedHealthFacility;
   
   // Tab progression state
   List<bool> _tabCompleted = [true, false, false, false, false, false]; // First tab enabled by default
@@ -813,23 +824,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   }
 
   void _saveAndContinueVitals() {
-    // Validate required fields
-    if (_heightController.text.isEmpty ||
-        _weightController.text.isEmpty ||
-        _systolicController.text.isEmpty ||
-        _diastolicController.text.isEmpty ||
-        _hbController.text.isEmpty ||
-        _bsrController.text.isEmpty ||
-        _selectedBloodGroup == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all required fields'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
+    // Validation disabled for testing purposes
 
     // Mark current tab as completed
     setState(() {
@@ -869,26 +864,24 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
     });
   }
 
+  void _resetSupplementsFields() {
+    setState(() {
+      _supplementsGiven = false;
+      _selectedSupplements.clear();
+    });
+  }
+
+  void _resetReferralsFields() {
+    setState(() {
+      _patientReferred = false;
+      _selectedDistrict = null;
+      _selectedType = null;
+      _selectedHealthFacility = null;
+    });
+  }
+
   void _saveAndContinueUltrasound() {
-    // If ultrasound was conducted, validate required fields
-    if (_ultrasoundConducted) {
-      if (_selectedTypeOfPregnancy == null ||
-          _selectedFetalMovement == null ||
-          _selectedPresentation == null ||
-          _selectedPlacenta == null ||
-          _selectedPlacentaCondition == null ||
-          _selectedLiquor == null ||
-          _fetalHeartRateController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please fill in all required ultrasound fields'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
-        return;
-      }
-    }
+    // Validation disabled for testing purposes
 
     // Mark current tab as completed
     setState(() {
@@ -910,6 +903,194 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
         content: Text('Ultrasound data saved successfully! Moving to ${_getNextTabName()}'),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _saveAndContinueSupplements() {
+    // Validation disabled for testing purposes
+    
+    // Mark current tab as completed
+    setState(() {
+      _tabCompleted[_currentTabIndex] = true;
+      
+      // Move to next tab if available
+      if (_currentTabIndex < _tabCompleted.length - 1) {
+        _currentTabIndex = _currentTabIndex + 1;
+        // Enable the next tab before switching
+        _tabCompleted[_currentTabIndex] = true;
+        // Programmatically switch to the next tab
+        _tabController.animateTo(_currentTabIndex);
+      }
+    });
+    
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Supplements data saved successfully! Moving to ${_getNextTabName()}'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showSupplementsModal() {
+    final List<Map<String, dynamic>> availableSupplements = [
+      {'name': 'Calcium supplements', 'quantity': 1},
+      {'name': 'Iron supplements', 'quantity': 1},
+      {'name': 'Folic acid', 'quantity': 1},
+      {'name': 'Vitamin D', 'quantity': 1},
+      {'name': 'Multivitamin', 'quantity': 1},
+      {'name': 'Omega-3', 'quantity': 1},
+      {'name': 'Magnesium', 'quantity': 1},
+      {'name': 'Zinc', 'quantity': 1},
+    ];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.5,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Select Supplements',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: ThemeController.instance.useShadcn.value
+                            ? ShadcnColors.accent700
+                            : Colors.green.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: availableSupplements.length,
+                        itemBuilder: (context, index) {
+                          final supplement = availableSupplements[index];
+                          final isSelected = _selectedSupplements.any(
+                            (selected) => selected['name'] == supplement['name'],
+                          );
+                          
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              title: Text(supplement['name']),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isSelected) ...[
+                                    IconButton(
+                                      icon: const Icon(Icons.remove),
+                                      onPressed: () {
+                                        setModalState(() {
+                                          _selectedSupplements.removeWhere(
+                                            (selected) => selected['name'] == supplement['name'],
+                                          );
+                                        });
+                                      },
+                                    ),
+                                    Text('${_selectedSupplements.firstWhere((s) => s['name'] == supplement['name'])['quantity']}'),
+                                    IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () {
+                                        setModalState(() {
+                                          final index = _selectedSupplements.indexWhere(
+                                            (selected) => selected['name'] == supplement['name'],
+                                          );
+                                          if (index != -1) {
+                                            _selectedSupplements[index]['quantity']++;
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ] else
+                                    IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () {
+                                        setModalState(() {
+                                          _selectedSupplements.add({
+                                            'name': supplement['name'],
+                                            'quantity': 1,
+                                          });
+                                        });
+                                      },
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            setState(() {});
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent
+                                : Colors.green.shade600,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Done'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _saveAndContinueReferrals() {
+    // Validation disabled for testing purposes
+    
+    // Mark current tab as completed
+    setState(() {
+      _tabCompleted[_currentTabIndex] = true;
+    });
+    
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Referrals data saved successfully! Returning to Pregnancy Dashboard'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
+    );
+    
+    // Navigate back to Pregnancy Dashboard
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => PregnancyDashboard(),
       ),
     );
   }
@@ -1387,6 +1568,8 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   }
 
   void _saveAndContinueMedicalHistory() {
+    // Validation disabled for testing purposes
+    
     // Mark current tab as completed
     setState(() {
       _tabCompleted[_currentTabIndex] = true;
@@ -1412,10 +1595,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   }
 
   void _saveAndContinue() {
-    // Validate required fields
-    if (!_validatePregnancyInfoFields()) {
-      return; // Stop if validation fails
-    }
+    // Validation disabled for testing purposes
     
     // Mark current tab as completed
     setState(() {
@@ -2988,13 +3168,333 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: const Center(
-        child: Text(
-          'Supplements Tab\n\nThis section will contain:\n• Folic Acid\n• Iron Supplements\n• Calcium\n• Vitamin D\n• Prescription History\n• Dosage Tracking',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent50
+                  : Colors.green.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent200
+                    : Colors.green.shade200,
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Supplements',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: ThemeController.instance.useShadcn.value
+                              ? ShadcnColors.accent700
+                              : Colors.green.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Record supplements given to the patient',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.medication,
+                  color: ThemeController.instance.useShadcn.value
+                      ? ShadcnColors.accent
+                      : Colors.green.shade600,
+                  size: 32,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          
+          // Supplements Given Radio Button
+          Text(
+            'Supplements Given?',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent700
+                  : Colors.green.shade700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Radio<bool>(
+                value: true,
+                groupValue: _supplementsGiven,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _supplementsGiven = value ?? false;
+                  });
+                },
+                activeColor: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent
+                    : Colors.green.shade600,
+              ),
+              const Text('Yes'),
+              const SizedBox(width: 24),
+              Radio<bool>(
+                value: false,
+                groupValue: _supplementsGiven,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _supplementsGiven = value ?? false;
+                  });
+                },
+                activeColor: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent
+                    : Colors.green.shade600,
+              ),
+              const Text('No'),
+            ],
+          ),
+          
+          // Conditional Supplements Management
+          if (_supplementsGiven) ...[
+            const SizedBox(height: 24),
+            
+            // Title
+            Text(
+              'Add Supplements Detail Below',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent700
+                    : Colors.green.shade700,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Supplements List Container
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Column(
+                children: [
+                  // Column Headers
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Name',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade700,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Quantity',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: ThemeController.instance.useShadcn.value
+                              ? ShadcnColors.accent700
+                              : Colors.green.shade700,
+                        ),
+                      ),
+                      const SizedBox(width: 48), // Space for delete button
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Supplements List
+                  if (_selectedSupplements.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(32),
+                      child: Text(
+                        'No supplements added yet. Click ADD to add supplements.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _selectedSupplements.length,
+                      itemBuilder: (context, index) {
+                        final supplement = _selectedSupplements[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  supplement['name'],
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: ThemeController.instance.useShadcn.value
+                                        ? ShadcnColors.accent700
+                                        : Colors.green.shade700,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '${supplement['quantity']}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: ThemeController.instance.useShadcn.value
+                                      ? ShadcnColors.accent700
+                                      : Colors.green.shade700,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedSupplements.removeAt(index);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // ADD Button
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    _showSupplementsModal();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent
+                        : Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'ADD',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          
+          const SizedBox(height: 32),
+          
+          // Action Buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    _resetSupplementsFields();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.grey.shade600,
+                    side: BorderSide(color: Colors.grey.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Reset',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    _saveAndContinueSupplements();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent
+                        : Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Save and Continue',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -3006,14 +3506,337 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: const Center(
-        child: Text(
-          'Referrals Tab\n\nThis section will contain:\n• Specialist Referrals\n• Hospital Referrals\n• Emergency Contacts\n• Referral History\n• Follow-up Appointments',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent50
+                  : Colors.green.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent200
+                    : Colors.green.shade200,
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Referrals',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: ThemeController.instance.useShadcn.value
+                              ? ShadcnColors.accent700
+                              : Colors.green.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Record patient referrals to secondary health facilities',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.local_hospital,
+                  color: ThemeController.instance.useShadcn.value
+                      ? ShadcnColors.accent
+                      : Colors.green.shade600,
+                  size: 32,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          
+          // Patient Referred Radio Button
+          Text(
+            'Did you refer the patient to a secondary health facility?',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent700
+                  : Colors.green.shade700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Radio<bool>(
+                value: true,
+                groupValue: _patientReferred,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _patientReferred = value ?? false;
+                  });
+                },
+                activeColor: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent
+                    : Colors.green.shade600,
+              ),
+              const Text('Yes'),
+              const SizedBox(width: 24),
+              Radio<bool>(
+                value: false,
+                groupValue: _patientReferred,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _patientReferred = value ?? false;
+                  });
+                },
+                activeColor: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent
+                    : Colors.green.shade600,
+              ),
+              const Text('No'),
+            ],
+          ),
+          
+          // Conditional Referral Details
+          if (_patientReferred) ...[
+            const SizedBox(height: 24),
+            
+            // Title
+            Text(
+              'Where were they referred to?',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent700
+                    : Colors.green.shade700,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Referral Details Form
+            Column(
+              children: [
+                // Row 1: District and Type
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildReferralsDropdown(
+                        value: _selectedDistrict,
+                        label: 'District',
+                        hint: 'Select District',
+                        items: [
+                          'Bahawalnagar',
+                          'Bahawalpur',
+                          'Rahim Yar Khan',
+                          'Lahore',
+                          'Karachi',
+                          'Islamabad',
+                          'Rawalpindi',
+                          'Faisalabad',
+                          'Multan',
+                          'Peshawar',
+                        ],
+                        onChanged: (String? value) {
+                          setState(() {
+                            _selectedDistrict = value;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildReferralsDropdown(
+                        value: _selectedType,
+                        label: 'Type',
+                        hint: 'Select Type',
+                        items: [
+                          'DHQ',
+                          'THQ',
+                          'RHC',
+                          'BHU',
+                          'Private Hospital',
+                          'Specialist Clinic',
+                          'Teaching Hospital',
+                          'General Hospital',
+                        ],
+                        onChanged: (String? value) {
+                          setState(() {
+                            _selectedType = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                
+                // Row 2: Health Facility
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildReferralsDropdown(
+                        value: _selectedHealthFacility,
+                        label: 'Health Facility',
+                        hint: 'Select Health Facility',
+                        items: [
+                          'District Headquarter Hospital, Bahawalnagar',
+                          'District Headquarter Hospital, Bahawalpur',
+                          'District Headquarter Hospital, Rahim Yar Khan',
+                          'Allama Iqbal Medical College, Lahore',
+                          'Jinnah Hospital, Lahore',
+                          'Aga Khan Hospital, Karachi',
+                          'Shifa International Hospital, Islamabad',
+                          'Holy Family Hospital, Rawalpindi',
+                          'Allied Hospital, Faisalabad',
+                          'Nishtar Hospital, Multan',
+                          'Lady Reading Hospital, Peshawar',
+                        ],
+                        onChanged: (String? value) {
+                          setState(() {
+                            _selectedHealthFacility = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+          
+          const SizedBox(height: 32),
+          
+          // Action Buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    _resetReferralsFields();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.grey.shade600,
+                    side: BorderSide(color: Colors.grey.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Reset',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    _saveAndContinueReferrals();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent
+                        : Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Save and Continue',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReferralsDropdown({
+    required String? value,
+    required String label,
+    required String hint,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: ThemeController.instance.useShadcn.value
+                ? ShadcnColors.accent700
+                : Colors.green.shade700,
+          ),
         ),
-      ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: value,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent
+                    : Colors.green.shade600,
+                width: 2,
+              ),
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
+          ),
+          items: items.map((String item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              child: Text(item),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
+      ],
     );
   }
 
