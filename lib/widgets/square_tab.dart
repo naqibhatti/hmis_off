@@ -8,6 +8,7 @@ class SquareTabWidget extends StatefulWidget {
   final int initialIndex;
   final ValueChanged<int>? onTabChanged;
   final List<bool>? tabEnabled;
+  final TabController? controller;
 
   const SquareTabWidget({
     super.key,
@@ -16,6 +17,7 @@ class SquareTabWidget extends StatefulWidget {
     this.initialIndex = 0,
     this.onTabChanged,
     this.tabEnabled,
+    this.controller,
   });
 
   @override
@@ -25,25 +27,68 @@ class SquareTabWidget extends StatefulWidget {
 class _SquareTabWidgetState extends State<SquareTabWidget>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  bool _isExternalController = false;
+  bool _isProgrammaticChange = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: widget.tabs.length,
-      vsync: this,
-      initialIndex: widget.initialIndex,
-    );
+    
+    if (widget.controller != null) {
+      // Use external controller
+      _tabController = widget.controller!;
+      _isExternalController = true;
+    } else {
+      // Create internal controller
+      _tabController = TabController(
+        length: widget.tabs.length,
+        vsync: this,
+        initialIndex: widget.initialIndex,
+      );
+      _isExternalController = false;
+    }
+    
     _tabController.addListener(() {
+      // Allow programmatic changes to disabled tabs
+      if (_isProgrammaticChange) {
+        _isProgrammaticChange = false;
+        if (widget.onTabChanged != null) {
+          widget.onTabChanged!(_tabController.index);
+        }
+        return;
+      }
+      
+      // Prevent manual navigation to disabled tabs
+      if (widget.tabEnabled != null && 
+          _tabController.index < widget.tabEnabled!.length &&
+          !widget.tabEnabled![_tabController.index]) {
+        // Revert to the last enabled tab
+        for (int i = _tabController.index - 1; i >= 0; i--) {
+          if (widget.tabEnabled![i]) {
+            _tabController.animateTo(i);
+            break;
+          }
+        }
+        return;
+      }
+      
       if (widget.onTabChanged != null) {
         widget.onTabChanged!(_tabController.index);
       }
     });
   }
 
+  void animateToTab(int index) {
+    _isProgrammaticChange = true;
+    _tabController.animateTo(index);
+  }
+
   @override
   void dispose() {
-    _tabController.dispose();
+    // Only dispose if we created the controller internally
+    if (!_isExternalController) {
+      _tabController.dispose();
+    }
     super.dispose();
   }
 
