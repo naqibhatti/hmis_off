@@ -7,6 +7,7 @@ import '../theme/theme_controller.dart';
 import 'patient_selection_page.dart';
 import 'anc_page.dart';
 import 'delivery_newborn_page.dart';
+import 'pregnancy_registration_page.dart';
 import '../models/user_type.dart';
 
 class PregnancyDashboard extends StatefulWidget {
@@ -312,6 +313,25 @@ class _PregnancyDashboardState extends State<PregnancyDashboard> {
   List<Widget> _buildPregnancyCards(BuildContext context) {
     final List<Widget> cards = [];
 
+    // Pregnancy Registration
+    cards.add(
+      _buildPregnancyCard(
+        context: context,
+        title: 'Pregnancy Registration',
+        subtitle: 'Registration',
+        icon: Icons.app_registration,
+        color: Colors.orange,
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const PregnancyRegistrationPage(),
+            ),
+          );
+        },
+        isEnabled: true,
+      ),
+    );
+
     // Antenatal Care (ANC)
     cards.add(
       _buildPregnancyCard(
@@ -478,6 +498,8 @@ class _PregnancyDashboardState extends State<PregnancyDashboard> {
 
   String _getUrduTranslation(String title) {
     switch (title) {
+      case 'Pregnancy Registration':
+        return 'حمل کی رجسٹریشن';
       case 'Antenatal Care':
         return 'حمل سے پہلے کی دیکھ بھال';
       case 'Delivery & Newborn Care':

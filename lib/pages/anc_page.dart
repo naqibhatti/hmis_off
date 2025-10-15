@@ -74,6 +74,44 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   String? _selectedLiquor;
   final TextEditingController _fetalHeartRateController = TextEditingController();
   
+  // ANC Visit dropdown variables
+  String? _visitType;
+  String? _urineProtein;
+  String? _edemaAssessment;
+  String? _fetalMovements;
+  String? _fetalPresentation;
+  String? _fetalPosition;
+  String? _nauseaVomiting;
+  String? _headaches;
+  String? _urinarySymptoms;
+  String? _painLocation;
+  String? _painSeverity;
+  
+  // ANC Visit toggle variables
+  bool _visualChanges = false;
+  bool _abdominalPain = false;
+  bool _vaginalBleeding = false;
+  bool _vaginalDischarge = false;
+  bool _contractions = false;
+  bool _dizzinessFainting = false;
+  bool _breathingDifficulty = false;
+  bool _labTestRequired = false;
+  
+  // Additional ANC Visit controllers
+  final TextEditingController _ancVisitDateController = TextEditingController();
+  final TextEditingController _ancGestationalAgeWeeksController = TextEditingController();
+  final TextEditingController _ancGestationalAgeDaysController = TextEditingController();
+  final TextEditingController _ancWeightController = TextEditingController();
+  final TextEditingController _ancBpSystolicController = TextEditingController();
+  final TextEditingController _ancBpDiastolicController = TextEditingController();
+  final TextEditingController _ancPulseController = TextEditingController();
+  final TextEditingController _ancTemperatureController = TextEditingController();
+  final TextEditingController _ancHemoglobinController = TextEditingController();
+  final TextEditingController _ancFundalHeightController = TextEditingController();
+  final TextEditingController _ancFetalHeartRateController = TextEditingController();
+  final TextEditingController _ancNextVisitDateController = TextEditingController();
+  final TextEditingController _painDurationController = TextEditingController();
+  
   // Supplements section
   bool _supplementsGiven = false;
   List<Map<String, dynamic>> _selectedSupplements = [];
@@ -85,7 +123,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   String? _selectedHealthFacility;
   
   // Tab progression state
-  List<bool> _tabCompleted = [true, false, false, false, false, false]; // First tab enabled by default
+  List<bool> _tabCompleted = [true, true, false, false, false, false, false]; // First two tabs enabled by default
   int _currentTabIndex = 0;
 
   void _onTabChanged(int index) {
@@ -97,7 +135,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this, initialIndex: 0);
+    _tabController = TabController(length: 7, vsync: this, initialIndex: 0);
     _patientListener = () {
       if (mounted) {
         setState(() {});
@@ -136,6 +174,19 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
     _muacController.dispose();
     _dangerSignsController.dispose();
     _fetalHeartRateController.dispose();
+    _ancVisitDateController.dispose();
+    _ancGestationalAgeWeeksController.dispose();
+    _ancGestationalAgeDaysController.dispose();
+    _ancWeightController.dispose();
+    _ancBpSystolicController.dispose();
+    _ancBpDiastolicController.dispose();
+    _ancPulseController.dispose();
+    _ancTemperatureController.dispose();
+    _ancHemoglobinController.dispose();
+    _ancFundalHeightController.dispose();
+    _ancFetalHeartRateController.dispose();
+    _ancNextVisitDateController.dispose();
+    _painDurationController.dispose();
     PatientManager.removeListener(_patientListener);
     super.dispose();
   }
@@ -260,6 +311,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                        'Referrals',
                      ],
                      children: [
+                       _buildAncVisitTab(),
                        _buildPregnancyInfoTab(),
                        _buildMedicalHistoryTab(),
                        _buildVitalsTab(),
@@ -278,6 +330,406 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                    ),
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAncVisitTab() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Visit Information Section
+            _buildCollapsibleSection(
+              'Visit Information',
+              [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDateField(
+                        label: 'Visit Date*',
+                        controller: _ancVisitDateController,
+                        onTap: () => _selectAncVisitDate(),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildNumberField('Gestational Age (Weeks)*', '0', _ancGestationalAgeWeeksController),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDropdownField('Visit Type', _visitType, [
+                        'Routine',
+                        'Emergency',
+                        'Follow-up',
+                        'Initial',
+                      ], (value) {
+                        setState(() {
+                          _visitType = value;
+                        });
+                      }),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildNumberField('Gestational Age (Days)', '0', _ancGestationalAgeDaysController),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Maternal Assessment Section
+            _buildCollapsibleSection(
+              'Maternal Assessment',
+              [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildNumberField('Weight (kg)', 'e.g. 65.5', _ancWeightController),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildNumberField('BP Systolic (mmHg)', 'e.g. 120', _ancBpSystolicController),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildNumberField('BP Diastolic (mmHg)', 'e.g. 80', _ancBpDiastolicController),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildNumberField('Pulse (bpm)', 'e.g. 72', _ancPulseController),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildNumberField('Temperature (°C)', 'e.g. 36.8', _ancTemperatureController),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildNumberField('Hemoglobin (g/dL)', 'e.g. 12.5', _ancHemoglobinController),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDropdownField('Urine Protein', _urineProtein, [
+                        'Negative',
+                        'Trace',
+                        '+1',
+                        '+2',
+                        '+3',
+                        '+4',
+                      ], (value) {
+                        setState(() {
+                          _urineProtein = value;
+                        });
+                      }),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildDropdownField('Edema Assessment', _edemaAssessment, [
+                        'None',
+                        'Mild',
+                        'Moderate',
+                        'Severe',
+                      ], (value) {
+                        setState(() {
+                          _edemaAssessment = value;
+                        });
+                      }),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Fetal Assessment Section
+            _buildCollapsibleSection(
+              'Fetal Assessment',
+              [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildNumberField('Fundal Height (cm)', 'e.g. 24.5', _ancFundalHeightController),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildNumberField('Fetal Heart Rate (bpm)', 'e.g. 140', _ancFetalHeartRateController),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDropdownField('Fetal Movements', _fetalMovements, [
+                        'None',
+                        'Present',
+                        'Active',
+                        'Reduced',
+                      ], (value) {
+                        setState(() {
+                          _fetalMovements = value;
+                        });
+                      }),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildDropdownField('Fetal Presentation', _fetalPresentation, [
+                        'Cephalic',
+                        'Breech',
+                        'Transverse',
+                        'Oblique',
+                      ], (value) {
+                        setState(() {
+                          _fetalPresentation = value;
+                        });
+                      }),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDropdownField('Fetal Position', _fetalPosition, [
+                        'LOA',
+                        'ROA',
+                        'LOP',
+                        'ROP',
+                        'LOT',
+                        'ROT',
+                        'LSA',
+                        'RSA',
+                      ], (value) {
+                        setState(() {
+                          _fetalPosition = value;
+                        });
+                      }),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(child: Container()), // Empty space for alignment
+                  ],
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Symptom Assessment Section
+            _buildCollapsibleSection(
+              'Symptom Assessment',
+              [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDropdownField('Nausea/Vomiting', _nauseaVomiting, [
+                        'None',
+                        'Mild',
+                        'Moderate',
+                        'Severe',
+                      ], (value) {
+                        setState(() {
+                          _nauseaVomiting = value;
+                        });
+                      }),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildDropdownField('Headaches', _headaches, [
+                        'None',
+                        'Mild',
+                        'Moderate',
+                        'Severe',
+                      ], (value) {
+                        setState(() {
+                          _headaches = value;
+                        });
+                      }),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDropdownField('Urinary Symptoms', _urinarySymptoms, [
+                        'None',
+                        'Frequency',
+                        'Dysuria',
+                        'Incontinence',
+                      ], (value) {
+                        setState(() {
+                          _urinarySymptoms = value;
+                        });
+                      }),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(child: Container()), // Empty space for alignment
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Symptom Checklist
+                Text(
+                  'Symptom Checklist',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent700
+                        : Colors.green.shade800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildToggleField('Visual Changes', _visualChanges, (value) {
+                  setState(() {
+                    _visualChanges = value;
+                  });
+                }),
+                _buildToggleField('Abdominal Pain', _abdominalPain, (value) {
+                  setState(() {
+                    _abdominalPain = value;
+                  });
+                }),
+                _buildToggleField('Vaginal Bleeding', _vaginalBleeding, (value) {
+                  setState(() {
+                    _vaginalBleeding = value;
+                  });
+                }),
+                _buildToggleField('Vaginal Discharge', _vaginalDischarge, (value) {
+                  setState(() {
+                    _vaginalDischarge = value;
+                  });
+                }),
+                _buildToggleField('Contractions', _contractions, (value) {
+                  setState(() {
+                    _contractions = value;
+                  });
+                }),
+                _buildToggleField('Dizziness/Fainting', _dizzinessFainting, (value) {
+                  setState(() {
+                    _dizzinessFainting = value;
+                  });
+                }),
+                _buildToggleField('Breathing Difficulty', _breathingDifficulty, (value) {
+                  setState(() {
+                    _breathingDifficulty = value;
+                  });
+                }),
+              ],
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Pain Assessment Section
+            _buildCollapsibleSection(
+              'Pain Assessment',
+              [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDropdownField('Pain Location', _painLocation, [
+                        'None',
+                        'Head',
+                        'Abdomen',
+                        'Back',
+                        'Pelvic',
+                        'Chest',
+                        'Other',
+                      ], (value) {
+                        setState(() {
+                          _painLocation = value;
+                        });
+                      }),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildDropdownField('Pain Severity', _painSeverity, [
+                        'None',
+                        'Mild',
+                        'Moderate',
+                        'Severe',
+                      ], (value) {
+                        setState(() {
+                          _painSeverity = value;
+                        });
+                      }),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTextField('Pain Duration', 'e.g. 2 hours, intermittent, etc.', _painDurationController),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildToggleField('Lab Test Required', _labTestRequired, (value) {
+                        setState(() {
+                          _labTestRequired = value;
+                        });
+                      }),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Follow-up Planning Section
+            _buildCollapsibleSection(
+              'Follow-up Planning',
+              [
+                _buildDateField(
+                  label: 'Next Visit Date',
+                  controller: _ancNextVisitDateController,
+                  onTap: () => _selectNextVisitDate(),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Automatically set to one month after visit date',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -731,6 +1183,280 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
 
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
+  }
+
+  Future<void> _selectAncVisitDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent500
+                  : Colors.green.shade600,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _ancVisitDateController.text = _formatDate(picked);
+      });
+    }
+  }
+
+  Future<void> _selectNextVisitDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime.now().add(const Duration(days: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent500
+                  : Colors.green.shade600,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _ancNextVisitDateController.text = _formatDate(picked);
+      });
+    }
+  }
+
+  // Helper methods for ANC Visit tab
+  Widget _buildCollapsibleSection(String title, List<Widget> children) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: ExpansionTile(
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: ThemeController.instance.useShadcn.value
+                ? ShadcnColors.accent700
+                : Colors.green.shade800,
+          ),
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(children: children),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNumberField(String label, String hint, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: ThemeController.instance.useShadcn.value
+                ? ShadcnColors.accent700
+                : Colors.green.shade800,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent500
+                    : Colors.green.shade600,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField(String label, String? value, List<String> items, ValueChanged<String?> onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: ThemeController.instance.useShadcn.value
+                ? ShadcnColors.accent700
+                : Colors.green.shade800,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: value,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent500
+                    : Colors.green.shade600,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+          items: items.map((String item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              child: Text(item),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToggleField(String label, bool value, ValueChanged<bool> onChanged) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade700,
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: ThemeController.instance.useShadcn.value
+              ? ShadcnColors.accent500
+              : Colors.green.shade600,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField(String label, String hint, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: ThemeController.instance.useShadcn.value
+                ? ShadcnColors.accent700
+                : Colors.green.shade800,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent500
+                    : Colors.green.shade600,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   String _getHintText(String label) {
@@ -1701,7 +2427,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   }
 
   String _getNextTabName() {
-    const tabNames = ['Pregnancy Info', 'Medical History', 'Vitals', 'Ultrasound', 'Supplements', 'Referrals'];
+    const tabNames = ['ANC Visit', 'Pregnancy Info', 'Medical History', 'Vitals', 'Ultrasound', 'Supplements', 'Referrals'];
     final nextIndex = _currentTabIndex + 1;
     if (nextIndex < tabNames.length) {
       return tabNames[nextIndex];
@@ -1710,7 +2436,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   }
 
   String _getPreviousTabName() {
-    const tabNames = ['Pregnancy Info', 'Medical History', 'Vitals', 'Ultrasound', 'Supplements', 'Referrals'];
+    const tabNames = ['ANC Visit', 'Pregnancy Info', 'Medical History', 'Vitals', 'Ultrasound', 'Supplements', 'Referrals'];
     final prevIndex = _currentTabIndex - 1;
     if (prevIndex >= 0) {
       return tabNames[prevIndex];
