@@ -919,7 +919,7 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
               });
             }),
             _buildTextField('Any Other Addiction', 'Specify any other addictions (drugs, etc.)', _otherAddictionController),
-            _buildDropdownField('Lifestyle - Sedentary/Plan', _lifestyleType, [
+            _buildDropdownField('Lifestyle - Sedentary/Plan', 'Select lifestyle type', _lifestyleType, [
               'Sedentary',
               'Moderately Active',
               'Active',
@@ -949,7 +949,7 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
           ),
           const SizedBox(height: 16),
           _buildFormSection([
-            _buildDropdownField('Literacy Rate', _literacyRate, [
+            _buildDropdownField('Literacy Rate', 'Select education level', _literacyRate, [
               'Illiterate',
               'Primary (1-5)',
               'Middle (6-8)',
@@ -962,7 +962,7 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
                 _literacyRate = value;
               });
             }),
-            _buildDropdownField('Medicine Adherence', _medicineAdherence, [
+            _buildDropdownField('Medicine Adherence', 'Select adherence level', _medicineAdherence, [
               'Excellent',
               'Good',
               'Fair',

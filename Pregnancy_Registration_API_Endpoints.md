@@ -322,21 +322,94 @@ Authentication: Bearer Token Required
 
 ## 5. GENERIC INFO TAB
 
-### 5.1 Generic Information
-**Endpoint:** `POST /api/pregnancy-registration/v1/generic-info`
-**Purpose:** Save generic information
+### 5.1 Lifestyle Information
+**Endpoint:** `POST /api/pregnancy-registration/v1/generic-info/lifestyle`
+**Purpose:** Save lifestyle information
+
+**Request Body:**
+```json
+{
+  "pregnancyId": "string (required)",
+  "lifestyleInfo": {
+    "smoking": false,
+    "alcoholConsumption": false,
+    "otherAddiction": "None",
+    "lifestyleType": "Moderately Active",
+    "exerciseHabits": "30 minutes walking daily, yoga twice a week",
+    "dietaryPlan": "Balanced diet with increased protein and iron",
+    "dietaryHabits": "Prefers home-cooked meals, avoids processed foods"
+  }
+}
+```
+
+### 5.2 Education & Health Information
+**Endpoint:** `POST /api/pregnancy-registration/v1/generic-info/education-health`
+**Purpose:** Save education and health adherence information
+
+**Request Body:**
+```json
+{
+  "pregnancyId": "string (required)",
+  "educationHealthInfo": {
+    "literacyRate": "Graduate",
+    "medicineAdherence": "Good"
+  }
+}
+```
+
+### 5.3 Family History
+**Endpoint:** `POST /api/pregnancy-registration/v1/generic-info/family-history`
+**Purpose:** Save family history information
+
+**Request Body:**
+```json
+{
+  "pregnancyId": "string (required)",
+  "familyHistory": {
+    "tuberculosis": false,
+    "hiv": false,
+    "serology": true,
+    "notes": "Father had hepatitis B, mother has diabetes type 2"
+  }
+}
+```
+
+### 5.4 Complete Generic Information
+**Endpoint:** `POST /api/pregnancy-registration/v1/generic-info/complete`
+**Purpose:** Save all generic information at once
 
 **Request Body:**
 ```json
 {
   "pregnancyId": "string (required)",
   "genericInfo": {
-    "occupation": "Teacher",
-    "educationLevel": "Bachelor's Degree",
-    "maritalStatus": "Married",
-    "religion": "Islam",
-    "ethnicity": "Punjabi",
-    "language": "Urdu",
+    "lifestyleInfo": {
+      "smoking": false,
+      "alcoholConsumption": false,
+      "otherAddiction": "None",
+      "lifestyleType": "Moderately Active",
+      "exerciseHabits": "30 minutes walking daily, yoga twice a week",
+      "dietaryPlan": "Balanced diet with increased protein and iron",
+      "dietaryHabits": "Prefers home-cooked meals, avoids processed foods"
+    },
+    "educationHealthInfo": {
+      "literacyRate": "Graduate",
+      "medicineAdherence": "Good"
+    },
+    "familyHistory": {
+      "tuberculosis": false,
+      "hiv": false,
+      "serology": true,
+      "notes": "Father had hepatitis B, mother has diabetes type 2"
+    },
+    "personalInfo": {
+      "occupation": "Teacher",
+      "educationLevel": "Bachelor's Degree",
+      "maritalStatus": "Married",
+      "religion": "Islam",
+      "ethnicity": "Punjabi",
+      "language": "Urdu"
+    },
     "emergencyContact": {
       "name": "Fatima Khan",
       "relationship": "Sister",
@@ -353,7 +426,57 @@ Authentication: Bearer Token Required
 ```
 
 **Endpoint:** `GET /api/pregnancy-registration/v1/generic-info/{pregnancyId}`
-**Purpose:** Retrieve generic information
+**Purpose:** Retrieve complete generic information
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "pregnancyId": "preg_123456",
+    "lifestyleInfo": {
+      "smoking": false,
+      "alcoholConsumption": false,
+      "otherAddiction": "None",
+      "lifestyleType": "Moderately Active",
+      "exerciseHabits": "30 minutes walking daily, yoga twice a week",
+      "dietaryPlan": "Balanced diet with increased protein and iron",
+      "dietaryHabits": "Prefers home-cooked meals, avoids processed foods"
+    },
+    "educationHealthInfo": {
+      "literacyRate": "Graduate",
+      "medicineAdherence": "Good"
+    },
+    "familyHistory": {
+      "tuberculosis": false,
+      "hiv": false,
+      "serology": true,
+      "notes": "Father had hepatitis B, mother has diabetes type 2"
+    },
+    "personalInfo": {
+      "occupation": "Teacher",
+      "educationLevel": "Bachelor's Degree",
+      "maritalStatus": "Married",
+      "religion": "Islam",
+      "ethnicity": "Punjabi",
+      "language": "Urdu"
+    },
+    "emergencyContact": {
+      "name": "Fatima Khan",
+      "relationship": "Sister",
+      "phone": "+92-300-1234567",
+      "address": "123 Main Street, Lahore"
+    },
+    "insuranceInfo": {
+      "provider": "State Insurance",
+      "policyNumber": "INS-789456",
+      "expiryDate": "2024-12-31"
+    },
+    "lastUpdated": "2024-01-20T10:30:00Z",
+    "updatedBy": "Dr. Sarah Ahmed"
+  }
+}
+```
 
 ---
 
@@ -416,7 +539,46 @@ Authentication: Bearer Token Required
   "chronicConditions": { /* chronic conditions data */ },
   "previousSurgery": { /* surgery data */ },
   "allergies": { /* allergies data */ },
-  "genericInfo": { /* generic info data */ },
+  "genericInfo": {
+    "lifestyleInfo": {
+      "smoking": false,
+      "alcoholConsumption": false,
+      "otherAddiction": "None",
+      "lifestyleType": "Moderately Active",
+      "exerciseHabits": "30 minutes walking daily, yoga twice a week",
+      "dietaryPlan": "Balanced diet with increased protein and iron",
+      "dietaryHabits": "Prefers home-cooked meals, avoids processed foods"
+    },
+    "educationHealthInfo": {
+      "literacyRate": "Graduate",
+      "medicineAdherence": "Good"
+    },
+    "familyHistory": {
+      "tuberculosis": false,
+      "hiv": false,
+      "serology": true,
+      "notes": "Father had hepatitis B, mother has diabetes type 2"
+    },
+    "personalInfo": {
+      "occupation": "Teacher",
+      "educationLevel": "Bachelor's Degree",
+      "maritalStatus": "Married",
+      "religion": "Islam",
+      "ethnicity": "Punjabi",
+      "language": "Urdu"
+    },
+    "emergencyContact": {
+      "name": "Fatima Khan",
+      "relationship": "Sister",
+      "phone": "+92-300-1234567",
+      "address": "123 Main Street, Lahore"
+    },
+    "insuranceInfo": {
+      "provider": "State Insurance",
+      "policyNumber": "INS-789456",
+      "expiryDate": "2024-12-31"
+    }
+  },
   "riskAssessment": { /* risk assessment data */ },
   "clinicalNotes": "string",
   "registrationDate": "2024-01-20T10:30:00Z",
@@ -440,7 +602,46 @@ Authentication: Bearer Token Required
     "chronicConditions": { /* complete chronic conditions */ },
     "previousSurgery": { /* complete surgery history */ },
     "allergies": { /* complete allergies */ },
-    "genericInfo": { /* complete generic info */ },
+    "genericInfo": {
+      "lifestyleInfo": {
+        "smoking": false,
+        "alcoholConsumption": false,
+        "otherAddiction": "None",
+        "lifestyleType": "Moderately Active",
+        "exerciseHabits": "30 minutes walking daily, yoga twice a week",
+        "dietaryPlan": "Balanced diet with increased protein and iron",
+        "dietaryHabits": "Prefers home-cooked meals, avoids processed foods"
+      },
+      "educationHealthInfo": {
+        "literacyRate": "Graduate",
+        "medicineAdherence": "Good"
+      },
+      "familyHistory": {
+        "tuberculosis": false,
+        "hiv": false,
+        "serology": true,
+        "notes": "Father had hepatitis B, mother has diabetes type 2"
+      },
+      "personalInfo": {
+        "occupation": "Teacher",
+        "educationLevel": "Bachelor's Degree",
+        "maritalStatus": "Married",
+        "religion": "Islam",
+        "ethnicity": "Punjabi",
+        "language": "Urdu"
+      },
+      "emergencyContact": {
+        "name": "Fatima Khan",
+        "relationship": "Sister",
+        "phone": "+92-300-1234567",
+        "address": "123 Main Street, Lahore"
+      },
+      "insuranceInfo": {
+        "provider": "State Insurance",
+        "policyNumber": "INS-789456",
+        "expiryDate": "2024-12-31"
+      }
+    },
     "riskAssessment": { /* complete risk assessment */ },
     "clinicalNotes": "string",
     "lastUpdated": "2024-01-20T10:30:00Z",
@@ -557,7 +758,47 @@ Authentication: Bearer Token Required
 **Endpoint:** `GET /api/pregnancy-registration/v1/lookup/allergy-types`
 **Purpose:** Get list of allergy types
 
-### 9.4 Risk Assessment Options
+### 9.4 Generic Info Lookup
+**Endpoint:** `GET /api/pregnancy-registration/v1/lookup/generic-info`
+**Purpose:** Get lookup data for generic information fields
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "lifestyleTypes": [
+      "Sedentary",
+      "Moderately Active",
+      "Active",
+      "Very Active"
+    ],
+    "literacyRates": [
+      "Illiterate",
+      "Primary (1-5)",
+      "Middle (6-8)",
+      "Secondary (9-10)",
+      "Higher Secondary (11-12)",
+      "Graduate",
+      "Post Graduate"
+    ],
+    "medicineAdherenceLevels": [
+      "Excellent",
+      "Good",
+      "Fair",
+      "Poor",
+      "Non-compliant"
+    ],
+    "familyHistoryConditions": [
+      "TB (Tuberculosis)",
+      "HIV",
+      "Serology"
+    ]
+  }
+}
+```
+
+### 9.5 Risk Assessment Options
 **Endpoint:** `GET /api/pregnancy-registration/v1/lookup/risk-assessment`
 **Purpose:** Get risk assessment options
 
