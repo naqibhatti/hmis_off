@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/patient_data.dart';
-import '../services/patient_data_service.dart';
 import '../theme/shadcn_colors.dart';
 import '../widgets/side_navigation_drawer.dart';
 import '../theme/theme_controller.dart';
@@ -292,10 +291,10 @@ class _PregnancyDashboardState extends State<PregnancyDashboard> {
                             ),
                           ),
                           child: GridView.count(
-                            crossAxisCount: 3,
+                            crossAxisCount: 4,
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
-                            childAspectRatio: 1.2,
+                            childAspectRatio: 1.0,
                             children: _buildPregnancyCards(context),
                           ),
                         ),
