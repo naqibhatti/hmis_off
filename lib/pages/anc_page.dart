@@ -614,41 +614,67 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                   ),
                 ),
                 const SizedBox(height: 8),
-                _buildToggleField('Visual Changes', _visualChanges, (value) {
-                  setState(() {
-                    _visualChanges = value;
-                  });
-                }),
-                _buildToggleField('Abdominal Pain', _abdominalPain, (value) {
-                  setState(() {
-                    _abdominalPain = value;
-                  });
-                }),
-                _buildToggleField('Vaginal Bleeding', _vaginalBleeding, (value) {
-                  setState(() {
-                    _vaginalBleeding = value;
-                  });
-                }),
-                _buildToggleField('Vaginal Discharge', _vaginalDischarge, (value) {
-                  setState(() {
-                    _vaginalDischarge = value;
-                  });
-                }),
-                _buildToggleField('Contractions', _contractions, (value) {
-                  setState(() {
-                    _contractions = value;
-                  });
-                }),
-                _buildToggleField('Dizziness/Fainting', _dizzinessFainting, (value) {
-                  setState(() {
-                    _dizzinessFainting = value;
-                  });
-                }),
-                _buildToggleField('Breathing Difficulty', _breathingDifficulty, (value) {
-                  setState(() {
-                    _breathingDifficulty = value;
-                  });
-                }),
+                // 2-column grid for symptom toggles
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _buildToggleField('Visual Changes', _visualChanges, (value) {
+                            setState(() {
+                              _visualChanges = value;
+                            });
+                          }),
+                          const SizedBox(height: 8),
+                          _buildToggleField('Abdominal Pain', _abdominalPain, (value) {
+                            setState(() {
+                              _abdominalPain = value;
+                            });
+                          }),
+                          const SizedBox(height: 8),
+                          _buildToggleField('Vaginal Bleeding', _vaginalBleeding, (value) {
+                            setState(() {
+                              _vaginalBleeding = value;
+                            });
+                          }),
+                          const SizedBox(height: 8),
+                          _buildToggleField('Vaginal Discharge', _vaginalDischarge, (value) {
+                            setState(() {
+                              _vaginalDischarge = value;
+                            });
+                          }),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _buildToggleField('Contractions', _contractions, (value) {
+                            setState(() {
+                              _contractions = value;
+                            });
+                          }),
+                          const SizedBox(height: 8),
+                          _buildToggleField('Dizziness/Fainting', _dizzinessFainting, (value) {
+                            setState(() {
+                              _dizzinessFainting = value;
+                            });
+                          }),
+                          const SizedBox(height: 8),
+                          _buildToggleField('Breathing Difficulty', _breathingDifficulty, (value) {
+                            setState(() {
+                              _breathingDifficulty = value;
+                            });
+                          }),
+                          const SizedBox(height: 8),
+                          // Empty space to balance the grid
+                          Container(height: 48),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
             

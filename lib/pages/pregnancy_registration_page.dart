@@ -38,6 +38,15 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
   // Consanguineous marriage
   String? _consanguineousMarriage;
   
+  // Risk assessment screening
+  String? _riskAssessmentMisCarriage;
+  String? _riskAssessmentPreEclampsia;
+  String? _riskAssessmentEclampsia;
+  String? _riskAssessmentDvtVta;
+  String? _riskAssessmentKidneyInjury;
+  String? _riskAssessmentGestationalDiabetes;
+  String? _riskAssessmentPreTermLabor;
+  
   // Pregnancy history section
   List<Map<String, dynamic>> _pregnancyHistory = [];
   
@@ -89,6 +98,18 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
   // Allergies section
   List<Map<String, dynamic>> _allergies = [];
   
+  // Additional Generic info fields
+  final TextEditingController _otherAddictionController = TextEditingController();
+  String? _lifestyleType;
+  final TextEditingController _dietaryHabitsController = TextEditingController();
+  String? _literacyRate;
+  String? _medicineAdherence;
+  
+  // Family History section
+  bool _familyHistoryTb = false;
+  bool _familyHistoryHiv = false;
+  bool _familyHistorySerology = false;
+  final TextEditingController _familyHistoryNotesController = TextEditingController();
   
   // Lifestyle information
   bool _smokingToggle = false;
@@ -151,6 +172,9 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
     }
     _exerciseHabitsController.dispose();
     _dietaryPlanController.dispose();
+    _otherAddictionController.dispose();
+    _dietaryHabitsController.dispose();
+    _familyHistoryNotesController.dispose();
     _clinicalNotesController.dispose();
     super.dispose();
   }
@@ -870,6 +894,19 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
             ),
           ),
           const SizedBox(height: 24),
+          
+          // Lifestyle Section
+          Text(
+            'Lifestyle Information',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent700
+                  : Colors.green.shade800,
+            ),
+          ),
+          const SizedBox(height: 16),
           _buildFormSection([
             _buildLifestyleToggleField('Smoking', 'Check if patient smokes', _smokingToggle, (value) {
               setState(() {
@@ -881,8 +918,94 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
                 _alcoholToggle = value;
               });
             }),
+            _buildTextField('Any Other Addiction', 'Specify any other addictions (drugs, etc.)', _otherAddictionController),
+            _buildDropdownField('Lifestyle - Sedentary/Plan', _lifestyleType, [
+              'Sedentary',
+              'Moderately Active',
+              'Active',
+              'Very Active',
+            ], (value) {
+              setState(() {
+                _lifestyleType = value;
+              });
+            }),
             _buildTextAreaField('Exercise Habits', 'Describe exercise routine and physical activity', _exerciseHabitsController),
             _buildTextAreaField('Dietary Plan', 'Describe dietary patterns, restrictions, or special diet', _dietaryPlanController),
+            _buildTextAreaField('Dietary Habits', 'Describe specific dietary habits and preferences', _dietaryHabitsController),
+          ]),
+          
+          const SizedBox(height: 24),
+          
+          // Education & Health Section
+          Text(
+            'Education & Health Information',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent700
+                  : Colors.green.shade800,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildFormSection([
+            _buildDropdownField('Literacy Rate', _literacyRate, [
+              'Illiterate',
+              'Primary (1-5)',
+              'Middle (6-8)',
+              'Secondary (9-10)',
+              'Higher Secondary (11-12)',
+              'Graduate',
+              'Post Graduate',
+            ], (value) {
+              setState(() {
+                _literacyRate = value;
+              });
+            }),
+            _buildDropdownField('Medicine Adherence', _medicineAdherence, [
+              'Excellent',
+              'Good',
+              'Fair',
+              'Poor',
+              'Non-compliant',
+            ], (value) {
+              setState(() {
+                _medicineAdherence = value;
+              });
+            }),
+          ]),
+          
+          const SizedBox(height: 24),
+          
+          // Family History Section
+          Text(
+            'Family History',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent700
+                  : Colors.green.shade800,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildFormSection([
+            _buildLifestyleToggleField('TB (Tuberculosis)', 'Check if family has history of TB', _familyHistoryTb, (value) {
+              setState(() {
+                _familyHistoryTb = value;
+              });
+            }),
+            _buildLifestyleToggleField('HIV', 'Check if family has history of HIV', _familyHistoryHiv, (value) {
+              setState(() {
+                _familyHistoryHiv = value;
+              });
+            }),
+            _buildLifestyleToggleField('Serology', 'Check if family has serology-related conditions', _familyHistorySerology, (value) {
+              setState(() {
+                _familyHistorySerology = value;
+              });
+            }),
+            _buildTextAreaField('Family History Notes', 'Additional family history details and notes', _familyHistoryNotesController),
           ]),
         ],
       ),
@@ -911,6 +1034,33 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
               fontStyle: FontStyle.italic,
             ),
           ),
+          const SizedBox(height: 24),
+          
+          // Risk Assessment Section
+          Text(
+            'Risk Assessment Screening',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent700
+                  : Colors.green.shade800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'The patient has been screened for risk assessment of:',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // Risk Assessment Radio Buttons
+          _buildRiskAssessmentSection(),
+          
           const SizedBox(height: 24),
           _buildTextAreaField('Clinical Notes', 'Enter notes, observations, and special instructions', _clinicalNotesController),
         ],
@@ -1726,6 +1876,14 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
             _husbandCnicController.clear();
             _yearsMarriedController.clear();
             _consanguineousMarriage = null;
+            // Clear risk assessment fields
+            _riskAssessmentMisCarriage = null;
+            _riskAssessmentPreEclampsia = null;
+            _riskAssessmentEclampsia = null;
+            _riskAssessmentDvtVta = null;
+            _riskAssessmentKidneyInjury = null;
+            _riskAssessmentGestationalDiabetes = null;
+            _riskAssessmentPreTermLabor = null;
             // Clear pregnancy history
             for (var pregnancy in _pregnancyHistory) {
               pregnancy['dateOfDeliveryController']?.dispose();
@@ -1791,6 +1949,15 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
             _alcoholToggle = false;
             _exerciseHabitsController.clear();
             _dietaryPlanController.clear();
+            _otherAddictionController.clear();
+            _lifestyleType = null;
+            _dietaryHabitsController.clear();
+            _literacyRate = null;
+            _medicineAdherence = null;
+            _familyHistoryTb = false;
+            _familyHistoryHiv = false;
+            _familyHistorySerology = false;
+            _familyHistoryNotesController.clear();
           });
           break;
         case 5: // Clinical Notes
@@ -2000,7 +2167,109 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
                       : Colors.green.shade800)
                   : Colors.grey.shade700,
             ),
-            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRiskAssessmentSection() {
+    return Column(
+      children: [
+        _buildRiskAssessmentItem('Mis-carriage', _riskAssessmentMisCarriage, (value) {
+          setState(() {
+            _riskAssessmentMisCarriage = value;
+          });
+        }),
+        const SizedBox(height: 12),
+        _buildRiskAssessmentItem('Pre-Eclampsia', _riskAssessmentPreEclampsia, (value) {
+          setState(() {
+            _riskAssessmentPreEclampsia = value;
+          });
+        }),
+        const SizedBox(height: 12),
+        _buildRiskAssessmentItem('Eclampsia', _riskAssessmentEclampsia, (value) {
+          setState(() {
+            _riskAssessmentEclampsia = value;
+          });
+        }),
+        const SizedBox(height: 12),
+        _buildRiskAssessmentItem('DVT/VTA', _riskAssessmentDvtVta, (value) {
+          setState(() {
+            _riskAssessmentDvtVta = value;
+          });
+        }),
+        const SizedBox(height: 12),
+        _buildRiskAssessmentItem('Increased Risk of Kidney Injury', _riskAssessmentKidneyInjury, (value) {
+          setState(() {
+            _riskAssessmentKidneyInjury = value;
+          });
+        }),
+        const SizedBox(height: 12),
+        _buildRiskAssessmentItem('Gestational Diabetes', _riskAssessmentGestationalDiabetes, (value) {
+          setState(() {
+            _riskAssessmentGestationalDiabetes = value;
+          });
+        }),
+        const SizedBox(height: 12),
+        _buildRiskAssessmentItem('Pre-Term Labor', _riskAssessmentPreTermLabor, (value) {
+          setState(() {
+            _riskAssessmentPreTermLabor = value;
+          });
+        }),
+      ],
+    );
+  }
+
+  Widget _buildRiskAssessmentItem(String condition, String? selectedValue, ValueChanged<String?> onChanged) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            condition,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent700
+                  : Colors.green.shade800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: RadioListTile<String>(
+                  title: const Text('Low Risk'),
+                  value: 'Low Risk',
+                  groupValue: selectedValue,
+                  onChanged: onChanged,
+                  activeColor: ThemeController.instance.useShadcn.value
+                      ? ShadcnColors.accent500
+                      : Colors.green.shade600,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              Expanded(
+                child: RadioListTile<String>(
+                  title: const Text('High Risk'),
+                  value: 'High Risk',
+                  groupValue: selectedValue,
+                  onChanged: onChanged,
+                  activeColor: ThemeController.instance.useShadcn.value
+                      ? ShadcnColors.accent500
+                      : Colors.green.shade600,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
           ),
         ],
       ),
