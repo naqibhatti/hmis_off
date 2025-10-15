@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/patient_data.dart';
-import '../services/patient_data_service.dart';
 import '../theme/shadcn_colors.dart';
 import '../widgets/side_navigation_drawer.dart';
 import '../widgets/square_tab.dart';
@@ -303,6 +302,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                   padding: const EdgeInsets.all(16),
                    child: SquareTabWidget(
                      tabs: const [
+                       'ANC Visit',
                        'Pregnancy Info',
                        'Medical History',
                        'Vitals',
