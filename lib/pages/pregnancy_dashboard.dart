@@ -8,6 +8,7 @@ import 'patient_selection_page.dart';
 import 'anc_page.dart';
 import 'delivery_newborn_page.dart';
 import 'pregnancy_registration_page.dart';
+import 'post_natal_care_page.dart';
 import '../models/user_type.dart';
 
 class PregnancyDashboard extends StatefulWidget {
@@ -379,10 +380,9 @@ class _PregnancyDashboardState extends State<PregnancyDashboard> {
         icon: Icons.family_restroom,
         color: Colors.green,
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Postnatal Care feature coming soon'),
-              backgroundColor: Colors.green,
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const PostNatalCarePage(),
             ),
           );
         },
