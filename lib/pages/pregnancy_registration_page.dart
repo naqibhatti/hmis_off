@@ -95,6 +95,12 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
   final TextEditingController _surgeryDescriptionController = TextEditingController();
   bool _surgeryToggle = false;
   
+  // Previous surgeries from database and newly added
+  List<Map<String, String>> _previousSurgeries = [];
+  final TextEditingController _newSurgeryTypeController = TextEditingController();
+  final TextEditingController _newSurgeryDateController = TextEditingController();
+  final TextEditingController _newSurgeryNotesController = TextEditingController();
+  
   // Allergies section
   List<Map<String, dynamic>> _allergies = [];
   
@@ -136,6 +142,8 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
     _gravidaController.addListener(_updatePregnancyHistory);
     _numberOfBoysController.addListener(_updateLivingChildrenCalculation);
     _numberOfGirlsController.addListener(_updateLivingChildrenCalculation);
+    
+    _loadPreviousSurgeries();
   }
 
   @override
@@ -161,6 +169,9 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
     _asthmaDiagnosedDateController.dispose();
     _ibdDiagnosedDateController.dispose();
     _surgeryDescriptionController.dispose();
+    _newSurgeryTypeController.dispose();
+    _newSurgeryDateController.dispose();
+    _newSurgeryNotesController.dispose();
     // Dispose allergy controllers
     for (var allergy in _allergies) {
       allergy['controller']?.dispose();
@@ -779,6 +790,167 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
             ),
           ),
           const SizedBox(height: 24),
+          
+          // Existing Surgeries from Database
+          if (_previousSurgeries.isNotEmpty) ...[
+            Text(
+              'Previous Surgeries from Database:',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent700
+                    : Colors.green.shade800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ..._previousSurgeries.map((surgery) {
+              final isFromDatabase = surgery['source'] == 'database';
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isFromDatabase ? Colors.blue.shade50 : Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isFromDatabase ? Colors.blue.shade200 : Colors.green.shade200,
+                    width: 1.5,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                surgery['type'] ?? '',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: isFromDatabase ? Colors.blue.shade700 : Colors.green.shade700,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isFromDatabase ? Colors.blue.shade100 : Colors.green.shade100,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  isFromDatabase ? 'From DB' : 'New',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: isFromDatabase ? Colors.blue.shade700 : Colors.green.shade700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (surgery['date']?.isNotEmpty == true) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              'Date: ${surgery['date']}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                          if (surgery['notes']?.isNotEmpty == true) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              surgery['notes'] ?? '',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (!isFromDatabase) ...[
+                      IconButton(
+                        onPressed: () => _removeSurgery(surgery['id'] ?? ''),
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: Colors.red.shade600,
+                          size: 24,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }).toList(),
+            const SizedBox(height: 24),
+          ],
+          
+          // Add New Surgery Section
+          Text(
+            'Add New Surgery:',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent700
+                  : Colors.green.shade800,
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField('Surgery Type', 'e.g. Appendectomy, C-Section', _newSurgeryTypeController),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDateField(
+                  'Surgery Date',
+                  'Select surgery date',
+                  _newSurgeryDateController,
+                  onDateSelected: (date) {
+                    setState(() {
+                      _newSurgeryDateController.text = _formatDate(date);
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          _buildTextField('Notes', 'Additional notes about the surgery', _newSurgeryNotesController),
+          const SizedBox(height: 16),
+          
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _addNewSurgery,
+              icon: const Icon(Icons.add, size: 20),
+              label: const Text('Add Surgery'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent600
+                    : Colors.green.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 32),
+          
+          // Original Surgery Toggle Section
           _buildToggleField('Previous Caesarean Section', 'Toggle previous caesarean section', _surgeryToggle, (value) {
             setState(() {
               _surgeryToggle = value;
@@ -1932,6 +2104,10 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
           setState(() {
             _surgeryDescriptionController.clear();
             _surgeryToggle = false;
+            _newSurgeryTypeController.clear();
+            _newSurgeryDateController.clear();
+            _newSurgeryNotesController.clear();
+            // Don't clear _previousSurgeries as they come from database
           });
           break;
         case 3: // Allergies
@@ -2274,6 +2450,104 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
         ],
       ),
     );
+  }
+
+  void _loadPreviousSurgeries() {
+    // TODO: Replace with actual API call to load previous surgeries from database
+    // For now, using mock data to demonstrate the functionality
+    final currentPatient = PatientManager.currentPatient;
+    if (currentPatient != null) {
+      // Mock data - replace with actual API call
+      _previousSurgeries = [
+        {
+          'id': '1',
+          'type': 'Appendectomy',
+          'date': '2020-03-15',
+          'notes': 'Emergency appendectomy due to acute appendicitis',
+          'source': 'database',
+        },
+        {
+          'id': '2',
+          'type': 'C-Section',
+          'date': '2022-08-20',
+          'notes': 'Previous delivery via cesarean section',
+          'source': 'database',
+        },
+      ];
+    }
+  }
+
+  void _addNewSurgery() {
+    if (_newSurgeryTypeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter surgery type'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _previousSurgeries.add({
+        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+        'type': _newSurgeryTypeController.text.trim(),
+        'date': _newSurgeryDateController.text.trim(),
+        'notes': _newSurgeryNotesController.text.trim(),
+        'source': 'new',
+      });
+      
+      // Clear the form
+      _newSurgeryTypeController.clear();
+      _newSurgeryDateController.clear();
+      _newSurgeryNotesController.clear();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Surgery added successfully'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _removeSurgery(String surgeryId) {
+    setState(() {
+      _previousSurgeries.removeWhere((surgery) => surgery['id'] == surgeryId);
+    });
+  }
+
+  Future<void> _selectNewSurgeryDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent
+                  : Colors.green.shade600,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _newSurgeryDateController.text = _formatDate(picked);
+      });
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 }
 

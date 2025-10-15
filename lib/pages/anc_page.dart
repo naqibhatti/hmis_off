@@ -19,17 +19,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   late VoidCallback _patientListener;
   late TabController _tabController;
   
-  // Form controllers
-  final TextEditingController _lmpController = TextEditingController();
-  final TextEditingController _gravidaController = TextEditingController();
-  final TextEditingController _paraController = TextEditingController();
-  final TextEditingController _abortionController = TextEditingController();
-  final TextEditingController _gestationAgeController = TextEditingController();
-  final TextEditingController _eddController = TextEditingController();
-  final TextEditingController _trimesterController = TextEditingController();
-  final TextEditingController _birthAddressController = TextEditingController();
-  final TextEditingController _husbandNameController = TextEditingController();
-  final TextEditingController _husbandCnicController = TextEditingController();
+  // Form controllers (removed pregnancy info controllers)
   
   // Medical History controllers
   final TextEditingController _previousIllnessController = TextEditingController();
@@ -122,7 +112,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   String? _selectedHealthFacility;
   
   // Tab progression state
-  List<bool> _tabCompleted = [true, true, false, false, false, false, false]; // First two tabs enabled by default
+  List<bool> _tabCompleted = [true, false, false, false, false, false]; // First tab enabled by default
   int _currentTabIndex = 0;
 
   void _onTabChanged(int index) {
@@ -134,7 +124,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 7, vsync: this, initialIndex: 0);
+    _tabController = TabController(length: 6, vsync: this, initialIndex: 0);
     _patientListener = () {
       if (mounted) {
         setState(() {});
@@ -146,16 +136,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   @override
   void dispose() {
     _tabController.dispose();
-    _lmpController.dispose();
-    _gravidaController.dispose();
-    _paraController.dispose();
-    _abortionController.dispose();
-    _gestationAgeController.dispose();
-    _eddController.dispose();
-    _trimesterController.dispose();
-    _birthAddressController.dispose();
-    _husbandNameController.dispose();
-    _husbandCnicController.dispose();
+    // Pregnancy info controllers removed
     _previousIllnessController.dispose();
     _pastObstetricHistoryController.dispose();
     _heightController.dispose();
@@ -303,7 +284,6 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                    child: SquareTabWidget(
                      tabs: const [
                        'ANC Visit',
-                       'Pregnancy Info',
                        'Medical History',
                        'Vitals',
                        'Ultrasound',
@@ -312,7 +292,6 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                      ],
                      children: [
                        _buildAncVisitTab(),
-                       _buildPregnancyInfoTab(),
                        _buildMedicalHistoryTab(),
                        _buildVitalsTab(),
                        _buildUltrasoundTab(),
@@ -407,7 +386,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildNumberField('Weight (kg)', 'e.g. 65.5', _ancWeightController),
+                      child: _buildNumberField('Weight (kg)', 'e.g. 65.5', _ancWeightController, onChanged: _calculateBMI),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -757,345 +736,61 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPregnancyInfoTab() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Section
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: ThemeController.instance.useShadcn.value
-                  ? ShadcnColors.accent50
-                  : Colors.green.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: ThemeController.instance.useShadcn.value
-                    ? ShadcnColors.accent200
-                    : Colors.green.shade200,
-                width: 1.5,
-              ),
-            ),
-            child: Row(
+            
+            const SizedBox(height: 32),
+            
+            // Action Buttons
+            Row(
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Last Menstrual Period',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: ThemeController.instance.useShadcn.value
-                              ? ShadcnColors.accent700
-                              : Colors.green.shade700,
-                        ),
+                  child: SizedBox(
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: _goBack,
+                      child: Text(
+                        _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                       ),
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () => _selectLMPDate(),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  _lmpController.text.isEmpty ? 'Select LMP Date' : _lmpController.text,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: _lmpController.text.isEmpty ? Colors.grey.shade500 : Colors.black87,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.calendar_today,
-                                size: 16,
-                                color: Colors.grey.shade600,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement LMP edit functionality
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'Edit LMP',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                ),
+                Expanded(
+                  child: SizedBox.shrink(),
+                ),
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: FilledButton.tonal(
+                      onPressed: () {
+                        _resetAncVisitFields();
+                      },
+                      child: const Text('Reset'),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: FilledButton(
+                      onPressed: () {
+                        _saveAndContinueAncVisit();
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: ShadcnColors.accent600,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Save and Continue'),
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 24),
-          // Form Fields
-          Text(
-            'Pregnancy Information',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: ThemeController.instance.useShadcn.value
-                  ? ShadcnColors.accent700
-                  : Colors.green.shade700,
-            ),
-          ),
-          const SizedBox(height: 16),
-          // First Row
-          Row(
-            children: [
-              Expanded(
-                child: _buildFormField(
-                  label: 'Gravida',
-                  controller: _gravidaController,
-                  isRequired: true,
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildFormField(
-                  label: 'Para',
-                  controller: _paraController,
-                  isRequired: true,
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildFormField(
-                  label: 'Abortion',
-                  controller: _abortionController,
-                  isRequired: true,
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Second Row
-          Row(
-            children: [
-              Expanded(
-                child: _buildFormField(
-                  label: 'Gestation Age',
-                  controller: _gestationAgeController,
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildDateField(
-                  label: 'Estimated date of delivery',
-                  controller: _eddController,
-                  onTap: () => _selectEDDDate(),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildFormField(
-                  label: 'Trimester',
-                  controller: _trimesterController,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Third Row
-          Row(
-            children: [
-              Expanded(
-                child: _buildFormField(
-                  label: 'Birth Address',
-                  controller: _birthAddressController,
-                  isRequired: true,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildFormField(
-                  label: 'Husband Name',
-                  controller: _husbandNameController,
-                  isRequired: true,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildFormField(
-                  label: 'Husband CNIC',
-                  controller: _husbandCnicController,
-                  isRequired: true,
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 48,
-                  child: OutlinedButton(
-                    onPressed: _goBack,
-                    child: Text(
-                      _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: SizedBox.shrink(),
-              ),
-              Expanded(
-                child: SizedBox(
-                  height: 48,
-                  child: FilledButton.tonal(
-                    onPressed: () {
-                      _resetPregnancyInfoFields();
-                    },
-                    child: const Text('Reset'),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: SizedBox(
-                  height: 48,
-                  child: FilledButton(
-                    onPressed: () {
-                      _saveAndContinue();
-                    },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: ShadcnColors.accent600,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Save and Continue'),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFormField({
-    required String label,
-    required TextEditingController controller,
-    bool isRequired = false,
-    TextInputType? keyboardType,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700,
-              ),
-            ),
-            if (isRequired) ...[
-              const SizedBox(width: 4),
-              Text(
-                '*',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red.shade600,
-                ),
-              ),
-            ],
-          ],
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          decoration: InputDecoration(
-            hintText: _getHintText(label),
-            hintStyle: TextStyle(
-              color: Colors.grey.shade500,
-              fontSize: 16,
-            ),
-            filled: true,
-            fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: ThemeController.instance.useShadcn.value
-                    ? ShadcnColors.accent
-                    : Colors.green.shade600,
-                width: 2,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          ),
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
-        ),
-      ],
-    );
-  }
+
 
   Widget _buildDateField({
     required String label,
@@ -1149,63 +844,6 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
     );
   }
 
-  Future<void> _selectLMPDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 30)),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(), // Only past dates allowed
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: ThemeController.instance.useShadcn.value
-                  ? ShadcnColors.accent
-                  : Colors.green.shade600,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      setState(() {
-        _lmpController.text = _formatDate(picked);
-      });
-    }
-  }
-
-  Future<void> _selectEDDDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().add(const Duration(days: 280)), // ~9 months from now
-      firstDate: DateTime.now().add(const Duration(days: 1)), // Only future dates allowed (tomorrow onwards)
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)), // 2 years from now
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: ThemeController.instance.useShadcn.value
-                  ? ShadcnColors.accent
-                  : Colors.green.shade600,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      setState(() {
-        _eddController.text = _formatDate(picked);
-      });
-    }
-  }
 
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
@@ -1299,7 +937,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildNumberField(String label, String hint, TextEditingController controller) {
+  Widget _buildNumberField(String label, String hint, TextEditingController controller, {VoidCallback? onChanged}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1317,6 +955,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
         TextField(
           controller: controller,
           keyboardType: TextInputType.number,
+          onChanged: (value) => onChanged?.call(),
           decoration: InputDecoration(
             hintText: hint,
             border: OutlineInputBorder(
@@ -1485,43 +1124,74 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
     );
   }
 
-  String _getHintText(String label) {
-    switch (label) {
-      case 'Gravida':
-        return 'e.g., 1, 2, 3...';
-      case 'Para':
-        return 'e.g., 0, 1, 2...';
-      case 'Abortion':
-        return 'e.g., 0, 1, 2...';
-      case 'Gestation Age':
-        return 'e.g., 20, 25, 30 weeks';
-      case 'Trimester':
-        return 'e.g., First, Second, Third';
-      case 'Birth Address':
-        return 'e.g., Gulshan-e-Iqbal, Karachi';
-      case 'Husband Name':
-        return 'e.g., Muhammad Ali';
-      case 'Husband CNIC':
-        return 'e.g., 12345-1234567-1';
-      default:
-        return '';
-    }
-  }
 
-  void _resetPregnancyInfoFields() {
+
+  void _resetAncVisitFields() {
     setState(() {
-      _lmpController.clear();
-      _gravidaController.clear();
-      _paraController.clear();
-      _abortionController.clear();
-      _gestationAgeController.clear();
-      _eddController.clear();
-      _trimesterController.clear();
-      _birthAddressController.clear();
-      _husbandNameController.clear();
-      _husbandCnicController.clear();
+      _ancVisitDateController.clear();
+      _ancGestationalAgeWeeksController.clear();
+      _ancGestationalAgeDaysController.clear();
+      _ancWeightController.clear();
+      _ancBpSystolicController.clear();
+      _ancBpDiastolicController.clear();
+      _ancPulseController.clear();
+      _ancTemperatureController.clear();
+      _ancHemoglobinController.clear();
+      _ancFundalHeightController.clear();
+      _ancFetalHeartRateController.clear();
+      _ancNextVisitDateController.clear();
+      _painDurationController.clear();
+      
+      // Reset dropdown values
+      _visitType = null;
+      _urineProtein = null;
+      _edemaAssessment = null;
+      _fetalMovements = null;
+      _fetalPresentation = null;
+      _fetalPosition = null;
+      _nauseaVomiting = null;
+      _headaches = null;
+      _urinarySymptoms = null;
+      _painLocation = null;
+      _painSeverity = null;
+      
+      // Reset toggle values
+      _visualChanges = false;
+      _abdominalPain = false;
+      _vaginalBleeding = false;
+      _vaginalDischarge = false;
+      _contractions = false;
+      _dizzinessFainting = false;
+      _breathingDifficulty = false;
+      _labTestRequired = false;
     });
   }
+
+  void _saveAndContinueAncVisit() {
+    // Mark current tab as completed
+    setState(() {
+      _tabCompleted[_currentTabIndex] = true;
+      
+      // Move to next tab if available
+      if (_currentTabIndex < _tabCompleted.length - 1) {
+        _currentTabIndex = _currentTabIndex + 1;
+        // Enable the next tab before switching
+        _tabCompleted[_currentTabIndex] = true;
+        // Programmatically switch to the next tab
+        _tabController.animateTo(_currentTabIndex);
+      }
+    });
+    
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('ANC Visit data saved successfully! Moving to ${_getNextTabName()}'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
 
   void _resetMedicalHistoryFields() {
     setState(() {
@@ -1553,7 +1223,10 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
 
   void _calculateBMI() {
     final height = double.tryParse(_heightController.text);
-    final weight = double.tryParse(_weightController.text);
+    // Use ANC Visit weight if available, otherwise use Vitals weight
+    final weight = double.tryParse(_ancWeightController.text.isNotEmpty 
+        ? _ancWeightController.text 
+        : _weightController.text);
     
     if (height != null && weight != null && height > 0) {
       final bmi = weight / ((height / 100) * (height / 100));
@@ -2332,128 +2005,11 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
     );
   }
 
-  void _saveAndContinue() {
-    // Validation disabled for testing purposes
-    
-    // Mark current tab as completed
-    setState(() {
-      _tabCompleted[_currentTabIndex] = true;
-      
-      // Move to next tab if available
-      if (_currentTabIndex < _tabCompleted.length - 1) {
-        _currentTabIndex = _currentTabIndex + 1;
-        // Enable the next tab before switching
-        _tabCompleted[_currentTabIndex] = true;
-        // Programmatically switch to the next tab
-        _tabController.animateTo(_currentTabIndex);
-      }
-    });
-    
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Pregnancy Info saved successfully! Moving to ${_getNextTabName()}'),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
 
-  bool _validatePregnancyInfoFields() {
-    // Check if LMP is selected
-    if (_lmpController.text.isEmpty) {
-      _showValidationError('Please select Last Menstrual Period');
-      return false;
-    }
-    
-    // Check required fields
-    if (_gravidaController.text.isEmpty) {
-      _showValidationError('Please enter Gravida');
-      return false;
-    }
-    
-    if (_paraController.text.isEmpty) {
-      _showValidationError('Please enter Para');
-      return false;
-    }
-    
-    if (_abortionController.text.isEmpty) {
-      _showValidationError('Please enter Abortion');
-      return false;
-    }
-    
-    if (_birthAddressController.text.isEmpty) {
-      _showValidationError('Please enter Birth Address');
-      return false;
-    }
-    
-    if (_husbandNameController.text.isEmpty) {
-      _showValidationError('Please enter Husband Name');
-      return false;
-    }
-    
-    if (_husbandCnicController.text.isEmpty) {
-      _showValidationError('Please enter Husband CNIC');
-      return false;
-    }
-    
-    // Validate numeric fields
-    if (!_isValidNumber(_gravidaController.text)) {
-      _showValidationError('Gravida must be a valid number');
-      return false;
-    }
-    
-    if (!_isValidNumber(_paraController.text)) {
-      _showValidationError('Para must be a valid number');
-      return false;
-    }
-    
-    if (!_isValidNumber(_abortionController.text)) {
-      _showValidationError('Abortion must be a valid number');
-      return false;
-    }
-    
-    if (_gestationAgeController.text.isNotEmpty && !_isValidNumber(_gestationAgeController.text)) {
-      _showValidationError('Gestation Age must be a valid number');
-      return false;
-    }
-    
-    // Validate CNIC format (basic validation)
-    if (!_isValidCNIC(_husbandCnicController.text)) {
-      _showValidationError('Please enter a valid CNIC format (e.g., 12345-1234567-1 or 1234512345671)');
-      return false;
-    }
-    
-    return true;
-  }
 
-  bool _isValidNumber(String value) {
-    if (value.isEmpty) return false;
-    final number = int.tryParse(value);
-    return number != null && number >= 0;
-  }
-
-  bool _isValidCNIC(String cnic) {
-    if (cnic.isEmpty) return false;
-    // CNIC validation - accepts both with and without dashes
-    // Format: 12345-1234567-1 or 1234512345671 (13 digits total)
-    final cnicWithDashes = RegExp(r'^\d{5}-\d{7}-\d{1}$');
-    final cnicWithoutDashes = RegExp(r'^\d{13}$');
-    return cnicWithDashes.hasMatch(cnic) || cnicWithoutDashes.hasMatch(cnic);
-  }
-
-  void _showValidationError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
 
   String _getNextTabName() {
-    const tabNames = ['ANC Visit', 'Pregnancy Info', 'Medical History', 'Vitals', 'Ultrasound', 'Supplements', 'Referrals'];
+    const tabNames = ['ANC Visit', 'Medical History', 'Vitals', 'Ultrasound', 'Supplements', 'Referrals'];
     final nextIndex = _currentTabIndex + 1;
     if (nextIndex < tabNames.length) {
       return tabNames[nextIndex];
@@ -2462,7 +2018,7 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
   }
 
   String _getPreviousTabName() {
-    const tabNames = ['ANC Visit', 'Pregnancy Info', 'Medical History', 'Vitals', 'Ultrasound', 'Supplements', 'Referrals'];
+    const tabNames = ['ANC Visit', 'Medical History', 'Vitals', 'Ultrasound', 'Supplements', 'Referrals'];
     final prevIndex = _currentTabIndex - 1;
     if (prevIndex >= 0) {
       return tabNames[prevIndex];
@@ -2955,12 +2511,10 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _buildVitalsField(
-                      controller: _weightController,
-                      label: 'Weight (1-220) (kg)',
-                      hint: 'Enter weight',
-                      isRequired: true,
-                      onChanged: _calculateBMI,
+                    child: _buildVitalsReadOnlyField(
+                      value: _ancWeightController.text,
+                      label: 'Weight (kg)',
+                      source: 'ANC Visit',
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -2992,28 +2546,55 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'BP (Normal: 90-140/60-90)',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: ThemeController.instance.useShadcn.value
-                                ? ShadcnColors.accent700
-                                : Colors.green.shade700,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              'BP (Normal: 90-140/60-90)',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: ThemeController.instance.useShadcn.value
+                                    ? ShadcnColors.accent700
+                                    : Colors.green.shade700,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade100,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'From ANC Visit',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.blue.shade700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
                             Expanded(
-                              child: _buildVitalsFieldWithValidation(
-                                controller: _systolicController,
-                                label: 'Systolic (50-250)',
-                                hint: 'Enter systolic',
-                                isRequired: true,
-                                showLabel: false,
-                                minNormal: 90,
-                                maxNormal: 140,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey.shade300),
+                                ),
+                                child: Text(
+                                  _ancBpSystolicController.text.isEmpty ? 'Not set' : _ancBpSystolicController.text,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: _ancBpSystolicController.text.isEmpty ? Colors.grey.shade500 : Colors.black87,
+                                  ),
+                                ),
                               ),
                             ),
                             const Padding(
@@ -3021,14 +2602,21 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                               child: Text('/'),
                             ),
                             Expanded(
-                              child: _buildVitalsFieldWithValidation(
-                                controller: _diastolicController,
-                                label: 'Diastolic (30-200)',
-                                hint: 'Enter diastolic',
-                                isRequired: true,
-                                showLabel: false,
-                                minNormal: 60,
-                                maxNormal: 90,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey.shade300),
+                                ),
+                                child: Text(
+                                  _ancBpDiastolicController.text.isEmpty ? 'Not set' : _ancBpDiastolicController.text,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: _ancBpDiastolicController.text.isEmpty ? Colors.grey.shade500 : Colors.black87,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -3038,10 +2626,10 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _buildVitalsField(
-                      controller: _temperatureController,
-                      label: 'Temperature (96-106) (°F)',
-                      hint: 'Enter temperature',
+                    child: _buildVitalsReadOnlyField(
+                      value: _ancTemperatureController.text,
+                      label: 'Temperature (°C)',
+                      source: 'ANC Visit',
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -3052,27 +2640,44 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 16),
               
-              // Row 3: HB, Fundal Height, BSR, Albumin
+              // Row 2.5: Pulse (from ANC Visit)
               Row(
                 children: [
                   Expanded(
-                    child: _buildVitalsFieldWithValidation(
-                      controller: _hbController,
-                      label: 'HB (g/dl) (Normal: 11-15)',
-                      hint: 'Enter HB level',
-                      isRequired: true,
-                      minNormal: 11,
-                      maxNormal: 15,
+                    child: _buildVitalsReadOnlyField(
+                      value: _ancPulseController.text,
+                      label: 'Pulse (bpm)',
+                      source: 'ANC Visit',
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _buildVitalsFieldWithValidation(
-                      controller: _fundalHeightController,
-                      label: 'Fundal Height Week (Normal: 20-40)',
-                      hint: 'Enter fundal height',
-                      minNormal: 20,
-                      maxNormal: 40,
+                    child: SizedBox.shrink(), // Empty space
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: SizedBox.shrink(), // Empty space
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Row 3: HB, Fundal Height, BSR, Albumin
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildVitalsReadOnlyField(
+                      value: _ancHemoglobinController.text,
+                      label: 'HB (g/dL)',
+                      source: 'ANC Visit',
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildVitalsReadOnlyField(
+                      value: _ancFundalHeightController.text,
+                      label: 'Fundal Height (cm)',
+                      source: 'ANC Visit',
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -3173,6 +2778,64 @@ class _AncPageState extends State<AncPage> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildVitalsReadOnlyField({
+    required String value,
+    required String label,
+    required String source,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade100,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'From $source',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.blue.shade700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Text(
+            value.isEmpty ? 'Not set in ANC Visit' : value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: value.isEmpty ? Colors.grey.shade500 : Colors.black87,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
