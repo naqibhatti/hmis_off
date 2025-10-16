@@ -6,6 +6,7 @@ import '../theme/shadcn_colors.dart';
 import '../theme/theme_controller.dart';
 import '../widgets/side_navigation_drawer.dart';
 import 'patient_selection_page.dart';
+import 'pregnancy_dashboard.dart';
 import '../models/user_type.dart';
 
 class PregnancyRegistrationPage extends StatefulWidget {
@@ -92,14 +93,11 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
   final TextEditingController _ibdDiagnosedDateController = TextEditingController();
   
   // Previous Surgery section
-  final TextEditingController _surgeryDescriptionController = TextEditingController();
-  bool _surgeryToggle = false;
+  bool _showAddSurgeryForm = false;
+  List<Map<String, dynamic>> _surgeryForms = [];
   
   // Previous surgeries from database and newly added
   List<Map<String, String>> _previousSurgeries = [];
-  final TextEditingController _newSurgeryTypeController = TextEditingController();
-  final TextEditingController _newSurgeryDateController = TextEditingController();
-  final TextEditingController _newSurgeryNotesController = TextEditingController();
   
   // Allergies section
   List<Map<String, dynamic>> _allergies = [];
@@ -124,6 +122,13 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
   final TextEditingController _dietaryPlanController = TextEditingController();
   
   final TextEditingController _clinicalNotesController = TextEditingController();
+
+  // Section expansion states
+  bool _isParaSectionExpanded = false;
+  bool _isLivingChildrenExpanded = false;
+  bool _isHusbandInfoExpanded = false;
+  bool _isPregnancyHistoryExpanded = false;
+  bool _showPregnancyHistorySection = false;
 
   @override
   void initState() {
@@ -168,10 +173,12 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
     _cancerDiagnosedDateController.dispose();
     _asthmaDiagnosedDateController.dispose();
     _ibdDiagnosedDateController.dispose();
-    _surgeryDescriptionController.dispose();
-    _newSurgeryTypeController.dispose();
-    _newSurgeryDateController.dispose();
-    _newSurgeryNotesController.dispose();
+    // Dispose surgery form controllers
+    for (var form in _surgeryForms) {
+      form['typeController']?.dispose();
+      form['dateController']?.dispose();
+      form['notesController']?.dispose();
+    }
     // Dispose allergy controllers
     for (var allergy in _allergies) {
       allergy['controller']?.dispose();
@@ -247,6 +254,24 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
                     }
                     return Row(
                       children: [
+                        // Back button to dashboard
+                        IconButton(
+                          tooltip: 'Back to Dashboard',
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => PregnancyDashboard(),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         CircleAvatar(
                           radius: 20,
                           backgroundColor: ShadcnColors.accent100,
@@ -450,124 +475,225 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
             ),
           ),
           const SizedBox(height: 24),
-          _buildFormSection([
-            // LMP and EDD on the same line
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDateField('Last Menstrual Period (LMP)', 'Select LMP date', _lmpController, onDateSelected: _calculateEDD),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildDateField('Expected Due Date (EDD)', 'Auto-calculated from LMP', _eddController, isReadOnly: true),
+          
+          // Basic Pregnancy Information Section (Non-collapsible)
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-             _buildTextField('Gravida', 'Number of pregnancies', _gravidaController),
-             // Dynamic pregnancy history section
-             if (_shouldShowPregnancyHistory()) ...[
-               const SizedBox(height: 16),
-               _buildPregnancyHistorySection(),
-             ],
-            // Para section with term and pre-term fields
-            Text(
-              'Para (Live Births)',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: ThemeController.instance.useShadcn.value
-                    ? ShadcnColors.accent700
-                    : Colors.green.shade800,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent50
+                        : Colors.green.shade50,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Basic Pregnancy Information',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: ThemeController.instance.useShadcn.value
+                            ? ShadcnColors.accent700
+                            : Colors.green.shade800,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // LMP and EDD on the same line
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDateField('Last Menstrual Period (LMP)', 'Select LMP date', _lmpController, onDateSelected: _calculateEDD),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildDateField('Expected Due Date (EDD)', 'Auto-calculated from LMP', _eddController, isReadOnly: true),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField('Gravida', 'Number of previous pregnancies (excluding current)', _gravidaController),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Add Pregnancy History Button (only show if section is not visible)
+          if (!_showPregnancyHistorySection)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _showPregnancyHistory,
+                  icon: const Icon(Icons.add, size: 20),
+                  label: const Text('Add Previous Pregnancy History'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent600
+                        : Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            // Term and Pre-term fields on the same line
-            Row(
+
+          // Pregnancy History Section (if applicable) - appears right after Basic Pregnancy Information
+          if (_shouldShowPregnancyHistory())
+            _buildCollapsibleSection(
+              title: 'Previous Pregnancy History',
+              isExpanded: _isPregnancyHistoryExpanded,
+              onToggle: () {
+                setState(() {
+                  _isPregnancyHistoryExpanded = !_isPregnancyHistoryExpanded;
+                });
+              },
               children: [
-                Expanded(
-                  child: _buildTextField('Term', 'Full-term pregnancies (≥37 weeks)', _termController),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField('Pre-term', 'Pre-term pregnancies (<37 weeks)', _pretermController),
-                ),
+                _buildPregnancyHistoryContent(),
               ],
             ),
-            // Calculation box
-            _buildCalculationBox(),
-            _buildReadOnlyField('Previous Abortions', 'Auto-calculated: Gravida - Para', _previousAbortionsController),
-            // Living Children section
-            Text(
-              'Living Children',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: ThemeController.instance.useShadcn.value
-                    ? ShadcnColors.accent700
-                    : Colors.green.shade800,
+
+          // Para (Live Births) Section
+          _buildCollapsibleSection(
+            title: 'Para (Live Births)',
+            isExpanded: _isParaSectionExpanded,
+            onToggle: () {
+              setState(() {
+                _isParaSectionExpanded = !_isParaSectionExpanded;
+              });
+            },
+            children: [
+              // Term and Pre-term fields on the same line
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField('Term', 'Full-term pregnancies (≥37 weeks)', _termController),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField('Pre-term', 'Pre-term pregnancies (<37 weeks)', _pretermController),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Calculation box
+              _buildCalculationBox(),
+              _buildReadOnlyField('Previous Abortions', 'Auto-calculated: Gravida - Para', _previousAbortionsController),
+            ],
+          ),
+
+          // Living Children Section
+          _buildCollapsibleSection(
+            title: 'Living Children',
+            isExpanded: _isLivingChildrenExpanded,
+            onToggle: () {
+              setState(() {
+                _isLivingChildrenExpanded = !_isLivingChildrenExpanded;
+              });
+            },
+            children: [
+              // Living Children fields on the same line
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildReadOnlyField('Living Children *', 'Auto-calculated total', _livingChildrenController),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField('Number of Boys', 'Enter number of boys', _numberOfBoysController),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField('Number of Girls', 'Enter number of girls', _numberOfGirlsController),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // Husband Information Section
+          _buildCollapsibleSection(
+            title: 'Husband Information',
+            isExpanded: _isHusbandInfoExpanded,
+            onToggle: () {
+              setState(() {
+                _isHusbandInfoExpanded = !_isHusbandInfoExpanded;
+              });
+            },
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField('Husband Name', 'Enter husband\'s full name', _husbandNameController),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildCnicField('Husband CNIC', 'Enter 13-digit CNIC (e.g., 12345-1234567-1)', _husbandCnicController),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField('Years Since Married', 'Enter number of years', _yearsMarriedController),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildDropdownField('Consanguineous Marriage (Cousin Marriage)', 'Select Yes or No', _consanguineousMarriage, [
+                      'Yes',
+                      'No',
+                    ], (value) {
+                      setState(() {
+                        _consanguineousMarriage = value;
+                      });
+                    }),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // Debug: Show current gravida value for testing
+          if (_gravidaController.text.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(top: 16),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'Debug: Gravida = ${_gravidaController.text}, Should show history: ${_shouldShowPregnancyHistory()}',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               ),
             ),
-            const SizedBox(height: 8),
-            // Living Children fields on the same line
-            Row(
-              children: [
-                Expanded(
-                  child: _buildReadOnlyField('Living Children *', 'Auto-calculated total', _livingChildrenController),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField('Number of Boys', 'Enter number of boys', _numberOfBoysController),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField('Number of Girls', 'Enter number of girls', _numberOfGirlsController),
-                ),
-              ],
-            ),
-            // Husband Information Section
-            const SizedBox(height: 24),
-            Text(
-              'Husband Information',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: ThemeController.instance.useShadcn.value
-                    ? ShadcnColors.accent700
-                    : Colors.green.shade800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField('Husband Name', 'Enter husband\'s full name', _husbandNameController),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildCnicField('Husband CNIC', 'Enter 13-digit CNIC (e.g., 12345-1234567-1)', _husbandCnicController),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField('Years Since Married', 'Enter number of years', _yearsMarriedController),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildDropdownField('Consanguineous Marriage (Cousin Marriage)', 'Select Yes or No', _consanguineousMarriage, [
-                    'Yes',
-                    'No',
-                  ], (value) {
-                    setState(() {
-                      _consanguineousMarriage = value;
-                    });
-                  }),
-                ),
-              ],
-            ),
-          ]),
         ],
       ),
     );
@@ -773,13 +899,17 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Previous Surgery',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: ThemeController.instance.useShadcn.value
-                  ? ShadcnColors.accent700
-                  : Colors.green.shade800,
+          // Header with title
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Previous Surgery',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent700
+                    : Colors.green.shade800,
+              ),
             ),
           ),
           Text(
@@ -791,16 +921,18 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
           ),
           const SizedBox(height: 24),
           
-          // Existing Surgeries from Database
+          // Existing Surgeries
           if (_previousSurgeries.isNotEmpty) ...[
-            Text(
-              'Previous Surgeries from Database:',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: ThemeController.instance.useShadcn.value
-                    ? ShadcnColors.accent700
-                    : Colors.green.shade800,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Previous Surgeries:',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: ThemeController.instance.useShadcn.value
+                      ? ShadcnColors.accent700
+                      : Colors.green.shade800,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -841,7 +973,7 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  isFromDatabase ? 'From DB' : 'New',
+                                  isFromDatabase ? 'Existing' : 'New',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -891,48 +1023,11 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
             const SizedBox(height: 24),
           ],
           
-          // Add New Surgery Section
-          Text(
-            'Add New Surgery:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: ThemeController.instance.useShadcn.value
-                  ? ShadcnColors.accent700
-                  : Colors.green.shade800,
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField('Surgery Type', 'e.g. Appendectomy, C-Section', _newSurgeryTypeController),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildDateField(
-                  'Surgery Date',
-                  'Select surgery date',
-                  _newSurgeryDateController,
-                  onDateSelected: (date) {
-                    setState(() {
-                      _newSurgeryDateController.text = _formatDate(date);
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          
-          _buildTextField('Notes', 'Additional notes about the surgery', _newSurgeryNotesController),
-          const SizedBox(height: 16),
-          
+          // Add Surgery Button (positioned after existing surgeries)
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: _addNewSurgery,
+              onPressed: _toggleAddSurgeryForm,
               icon: const Icon(Icons.add, size: 20),
               label: const Text('Add Surgery'),
               style: ElevatedButton.styleFrom(
@@ -947,21 +1042,121 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
               ),
             ),
           ),
+          const SizedBox(height: 16),
           
-          const SizedBox(height: 32),
-          
-          // Original Surgery Toggle Section
-          _buildToggleField('Previous Caesarean Section', 'Toggle previous caesarean section', _surgeryToggle, (value) {
-            setState(() {
-              _surgeryToggle = value;
-            });
-          }),
-          if (_surgeryToggle) ...[
+          // Add New Surgery Forms (only show when button is clicked)
+          if (_showAddSurgeryForm) ...[
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Add New Surgery:',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: ThemeController.instance.useShadcn.value
+                      ? ShadcnColors.accent700
+                      : Colors.green.shade800,
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
-            _buildFormSection([
-              _buildTextField('Surgery Description', 'Enter details of previous surgeries', _surgeryDescriptionController),
-            ]),
+            
+            // Display all surgery forms
+            ..._surgeryForms.map((form) {
+              final formId = form['id'] as String;
+              final typeController = form['typeController'] as TextEditingController;
+              final dateController = form['dateController'] as TextEditingController;
+              final notesController = form['notesController'] as TextEditingController;
+              
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300, width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with remove button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Surgery ${_surgeryForms.indexOf(form) + 1}',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => _removeSurgeryForm(formId),
+                          icon: Icon(
+                            Icons.close,
+                            color: Colors.red.shade600,
+                            size: 24,
+                          ),
+                          tooltip: 'Remove this surgery form',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Form fields
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildTextField('Surgery Type', 'e.g. Appendectomy, C-Section', typeController),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildDateField(
+                            'Surgery Date',
+                            'Select surgery date',
+                            dateController,
+                            onDateSelected: (date) {
+                              setState(() {
+                                dateController.text = _formatDate(date);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    _buildTextField('Notes', 'Additional notes about the surgery', notesController),
+                    const SizedBox(height: 16),
+                    
+                    // Add button for this specific form
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _addSurgeryFromForm(formId),
+                        icon: const Icon(Icons.add, size: 20),
+                        label: const Text('Add This Surgery'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ThemeController.instance.useShadcn.value
+                              ? ShadcnColors.accent600
+                              : Colors.green.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+            
+            const SizedBox(height: 16),
           ],
+          
         ],
       ),
     );
@@ -1070,9 +1265,8 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
           // Lifestyle Section
           Text(
             'Lifestyle Information',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
               color: ThemeController.instance.useShadcn.value
                   ? ShadcnColors.accent700
                   : Colors.green.shade800,
@@ -1111,9 +1305,8 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
           // Education & Health Section
           Text(
             'Education & Health Information',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
               color: ThemeController.instance.useShadcn.value
                   ? ShadcnColors.accent700
                   : Colors.green.shade800,
@@ -1152,9 +1345,8 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
           // Family History Section
           Text(
             'Family History',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
               color: ThemeController.instance.useShadcn.value
                   ? ShadcnColors.accent700
                   : Colors.green.shade800,
@@ -1211,9 +1403,8 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
           // Risk Assessment Section
           Text(
             'Risk Assessment Screening',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
               color: ThemeController.instance.useShadcn.value
                   ? ShadcnColors.accent700
                   : Colors.green.shade800,
@@ -1246,6 +1437,84 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
         padding: const EdgeInsets.only(bottom: 8),
         child: field,
       )).toList(),
+    );
+  }
+
+  Widget _buildCollapsibleSection({
+    required String title,
+    required List<Widget> children,
+    required bool isExpanded,
+    required VoidCallback onToggle,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Section header
+          InkWell(
+            onTap: onToggle,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent50
+                    : Colors.green.shade50,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isExpanded ? Icons.expand_less : Icons.expand_more,
+                    color: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent700
+                        : Colors.green.shade800,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: ThemeController.instance.useShadcn.value
+                            ? ShadcnColors.accent700
+                            : Colors.green.shade800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Section content
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            height: isExpanded ? null : 0,
+            child: isExpanded
+                ? Container(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: children,
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1803,16 +2072,42 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
   }
 
   bool _shouldShowPregnancyHistory() {
-    final int gravida = int.tryParse(_gravidaController.text) ?? 0;
-    return gravida > 1;
+    return _showPregnancyHistorySection;
+  }
+
+  void _showPregnancyHistory() {
+    setState(() {
+      _showPregnancyHistorySection = true;
+      _isPregnancyHistoryExpanded = true;
+      // Initialize pregnancy history based on gravida
+      final int gravida = int.tryParse(_gravidaController.text) ?? 0;
+      if (gravida >= 1) {
+        // Add new pregnancy entries if needed (gravida = number of previous pregnancies)
+        while (_pregnancyHistory.length < gravida) {
+          _pregnancyHistory.add({
+            'dateOfDeliveryController': TextEditingController(),
+            'weeksOfGestationController': TextEditingController(),
+            'modeOfDelivery': null,
+            'typeOfAnesthesia': null,
+            'abortionType': null,
+            'dncPerformed': null,
+            'stillAlive': null,
+            'complications': null,
+          });
+        }
+      }
+    });
   }
 
   void _updatePregnancyHistory() {
+    // Only update if the pregnancy history section is already visible
+    if (!_showPregnancyHistorySection) return;
+    
     final int gravida = int.tryParse(_gravidaController.text) ?? 0;
     setState(() {
-      if (gravida > 1) {
-        // Add new pregnancy entries if needed
-        while (_pregnancyHistory.length < gravida - 1) {
+      if (gravida >= 1) {
+        // Add new pregnancy entries if needed (gravida = number of previous pregnancies)
+        while (_pregnancyHistory.length < gravida) {
           _pregnancyHistory.add({
             'dateOfDeliveryController': TextEditingController(),
             'weeksOfGestationController': TextEditingController(),
@@ -1825,13 +2120,13 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
           });
         }
         // Remove excess entries if gravida decreased
-        while (_pregnancyHistory.length > gravida - 1) {
+        while (_pregnancyHistory.length > gravida) {
           final removed = _pregnancyHistory.removeLast();
           removed['dateOfDeliveryController']?.dispose();
           removed['weeksOfGestationController']?.dispose();
         }
       } else {
-        // Clear all pregnancy history if gravida is 1 or less
+        // Clear all pregnancy history if gravida is 0 (only current pregnancy)
         for (var pregnancy in _pregnancyHistory) {
           pregnancy['dateOfDeliveryController']?.dispose();
           pregnancy['weeksOfGestationController']?.dispose();
@@ -1841,45 +2136,25 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
     });
   }
 
-  Widget _buildPregnancyHistorySection() {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.blue.shade300,
-          width: 2,
+
+  Widget _buildPregnancyHistoryContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'پچھلی حمل کی تاریخ',
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontStyle: FontStyle.italic,
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Previous Pregnancy History',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue.shade800,
-            ),
-          ),
-          Text(
-            'پچھلی حمل کی تاریخ',
-            style: TextStyle(
-              color: Colors.blue.shade600,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ..._pregnancyHistory.asMap().entries.map((entry) {
-            final int index = entry.key;
-            final Map<String, dynamic> pregnancy = entry.value;
-            return _buildPregnancyHistoryEntry(index + 1, pregnancy);
-          }).toList(),
-        ],
-      ),
+        const SizedBox(height: 16),
+        ..._pregnancyHistory.asMap().entries.map((entry) {
+          final int index = entry.key;
+          final Map<String, dynamic> pregnancy = entry.value;
+          return _buildPregnancyHistoryEntry(index + 1, pregnancy);
+        }).toList(),
+      ],
     );
   }
 
@@ -1895,12 +2170,16 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Pregnancy #$number',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue.shade800,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Previous Pregnancy #$number',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent700
+                    : Colors.green.shade800,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -2062,6 +2341,12 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
               pregnancy['weeksOfGestationController']?.dispose();
             }
             _pregnancyHistory.clear();
+            // Reset section expansion states
+            _isParaSectionExpanded = false;
+            _isLivingChildrenExpanded = false;
+            _isHusbandInfoExpanded = false;
+            _isPregnancyHistoryExpanded = false;
+            _showPregnancyHistorySection = false;
           });
           break;
         case 1: // Chronic Conditions
@@ -2102,11 +2387,14 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
           break;
         case 2: // Previous Surgery
           setState(() {
-            _surgeryDescriptionController.clear();
-            _surgeryToggle = false;
-            _newSurgeryTypeController.clear();
-            _newSurgeryDateController.clear();
-            _newSurgeryNotesController.clear();
+            // Dispose all surgery form controllers
+            for (var form in _surgeryForms) {
+              form['typeController']?.dispose();
+              form['dateController']?.dispose();
+              form['notesController']?.dispose();
+            }
+            _surgeryForms.clear();
+            _showAddSurgeryForm = false;
             // Don't clear _previousSurgeries as they come from database
           });
           break;
@@ -2477,8 +2765,45 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
     }
   }
 
-  void _addNewSurgery() {
-    if (_newSurgeryTypeController.text.trim().isEmpty) {
+  void _toggleAddSurgeryForm() {
+    setState(() {
+      _showAddSurgeryForm = true;
+      _surgeryForms.add({
+        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+        'typeController': TextEditingController(),
+        'dateController': TextEditingController(),
+        'notesController': TextEditingController(),
+      });
+    });
+  }
+
+  void _removeSurgeryForm(String formId) {
+    setState(() {
+      final formIndex = _surgeryForms.indexWhere((form) => form['id'] == formId);
+      if (formIndex != -1) {
+        final form = _surgeryForms.removeAt(formIndex);
+        // Dispose controllers
+        form['typeController']?.dispose();
+        form['dateController']?.dispose();
+        form['notesController']?.dispose();
+      }
+      // Hide form section if no forms left
+      if (_surgeryForms.isEmpty) {
+        _showAddSurgeryForm = false;
+      }
+    });
+  }
+
+  void _addSurgeryFromForm(String formId) {
+    final formIndex = _surgeryForms.indexWhere((form) => form['id'] == formId);
+    if (formIndex == -1) return;
+    
+    final form = _surgeryForms[formIndex];
+    final typeController = form['typeController'] as TextEditingController;
+    final dateController = form['dateController'] as TextEditingController;
+    final notesController = form['notesController'] as TextEditingController;
+    
+    if (typeController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter surgery type'),
@@ -2491,16 +2816,22 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
     setState(() {
       _previousSurgeries.add({
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
-        'type': _newSurgeryTypeController.text.trim(),
-        'date': _newSurgeryDateController.text.trim(),
-        'notes': _newSurgeryNotesController.text.trim(),
+        'type': typeController.text.trim(),
+        'date': dateController.text.trim(),
+        'notes': notesController.text.trim(),
         'source': 'new',
       });
       
-      // Clear the form
-      _newSurgeryTypeController.clear();
-      _newSurgeryDateController.clear();
-      _newSurgeryNotesController.clear();
+      // Remove the form after adding
+      _surgeryForms.removeAt(formIndex);
+      typeController.dispose();
+      dateController.dispose();
+      notesController.dispose();
+      
+      // Hide form section if no forms left
+      if (_surgeryForms.isEmpty) {
+        _showAddSurgeryForm = false;
+      }
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -2511,40 +2842,13 @@ class _PregnancyRegistrationPageState extends State<PregnancyRegistrationPage> w
     );
   }
 
+
   void _removeSurgery(String surgeryId) {
     setState(() {
       _previousSurgeries.removeWhere((surgery) => surgery['id'] == surgeryId);
     });
   }
 
-  Future<void> _selectNewSurgeryDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: ThemeController.instance.useShadcn.value
-                  ? ShadcnColors.accent
-                  : Colors.green.shade600,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      setState(() {
-        _newSurgeryDateController.text = _formatDate(picked);
-      });
-    }
-  }
 
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';

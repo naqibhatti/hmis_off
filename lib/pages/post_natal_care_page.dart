@@ -5,6 +5,7 @@ import '../widgets/side_navigation_drawer.dart';
 import '../widgets/square_tab.dart';
 import '../theme/theme_controller.dart';
 import 'patient_selection_page.dart';
+import 'pregnancy_dashboard.dart';
 import '../models/user_type.dart';
 
 class PostNatalCarePage extends StatefulWidget {
@@ -112,6 +113,14 @@ class _PostNatalCarePageState extends State<PostNatalCarePage> {
     }
   }
 
+  void _cancel() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => PregnancyDashboard(),
+      ),
+    );
+  }
+
 
   void _resetCurrentTab() {
     setState(() {
@@ -180,48 +189,99 @@ class _PostNatalCarePageState extends State<PostNatalCarePage> {
         userType: 'Doctor',
         child: Column(
           children: [
-            // Selected patient (compact) - copied from ANC
-            Container(
+            // Selected patient (compact) - matching other pregnancy sections
+            Padding(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  bottom: BorderSide(
-                    color: Colors.grey.shade300,
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.person,
-                    color: ThemeController.instance.useShadcn.value
-                        ? ShadcnColors.accent500
-                        : Colors.green.shade600,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      PatientManager.currentPatient?.fullName ?? 'No patient selected',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PatientSelectionPage(userType: UserType.doctor),
-                        ),
+                  ],
+                ),
+                child: Builder(
+                  builder: (_) {
+                    final p = PatientManager.currentPatient;
+                    if (p == null) {
+                      return Row(
+                        children: [
+                          Icon(Icons.info_outline, color: Colors.orange.shade700, size: 18),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text('No patient selected. Tap the change icon to select a patient.'),
+                          ),
+                          IconButton(
+                            tooltip: 'Change patient',
+                            onPressed: () {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (_) => const PatientSelectionPage(userType: UserType.doctor),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.swap_horiz),
+                          ),
+                        ],
                       );
-                    },
-                    child: const Text('Change Patient'),
-                  ),
-                ],
+                    }
+                    return Row(
+                      children: [
+                        // Back button to pregnancy dashboard
+                        IconButton(
+                          tooltip: 'Back to Pregnancy Dashboard',
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => PregnancyDashboard(),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: ShadcnColors.accent100,
+                          child: Text(
+                            p.fullName.isNotEmpty ? p.fullName[0].toUpperCase() : '?',
+                            style: TextStyle(color: ShadcnColors.accent700),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '${p.fullName} • ${p.age}y • ${p.gender} • ${p.cnic}',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Change patient',
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => const PatientSelectionPage(userType: UserType.doctor),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.swap_horiz),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
             
@@ -273,7 +333,7 @@ class _PostNatalCarePageState extends State<PostNatalCarePage> {
                     child: SizedBox(
                       height: 48,
                       child: OutlinedButton(
-                        onPressed: _currentTabIndex > 0 ? _goBack : null,
+                        onPressed: _currentTabIndex > 0 ? _goBack : _cancel,
                         child: Text(
                           _currentTabIndex > 0 ? 'Back to ${_getPreviousTabName()}' : 'Cancel',
                         ),

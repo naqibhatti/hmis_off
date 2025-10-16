@@ -207,6 +207,24 @@ class _DeliveryNewbornPageState extends State<DeliveryNewbornPage> with TickerPr
                     }
                     return Row(
                       children: [
+                        // Back button to pregnancy dashboard
+                        IconButton(
+                          tooltip: 'Back to Pregnancy Dashboard',
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => PregnancyDashboard(),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: ThemeController.instance.useShadcn.value
+                                ? ShadcnColors.accent700
+                                : Colors.green.shade800,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         CircleAvatar(
                           radius: 20,
                           backgroundColor: ShadcnColors.accent100,
