@@ -52,6 +52,8 @@ class _PostNatalCarePageState extends State<PostNatalCarePage> {
   // Post-Partum FP specific fields
   String? _fpCounselingProvided;
   String? _fpCommoditiesGiven;
+  bool _showCommoditiesSection = false;
+  List<Map<String, dynamic>> _commodities = [];
 
   final List<String> tabNames = [
     'Vitals And Assessment',
@@ -147,6 +149,8 @@ class _PostNatalCarePageState extends State<PostNatalCarePage> {
         case 2: // Post-Partum FP
           _fpCounselingProvided = null;
           _fpCommoditiesGiven = null;
+          _showCommoditiesSection = false;
+          _commodities.clear();
           break;
       }
     });
@@ -629,12 +633,295 @@ class _PostNatalCarePageState extends State<PostNatalCarePage> {
             ], (value) {
               setState(() {
                 _fpCommoditiesGiven = value;
+                _showCommoditiesSection = value == 'Yes';
+                if (value == 'No') {
+                  _commodities.clear();
+                }
               });
             }),
+            
+            // Commodities Section (only show if Yes is selected)
+            if (_showCommoditiesSection) ...[
+              const SizedBox(height: 16),
+              _buildCommoditiesSection(),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildCommoditiesSection() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent50
+                  : Colors.green.shade50,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'FP Commodities',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent700
+                        : Colors.green.shade800,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _showAddCommodityModal,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Add Commodity'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeController.instance.useShadcn.value
+                        ? ShadcnColors.accent500
+                        : Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_commodities.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.grey.shade600, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'No commodities added yet. Click "Add Commodity" to get started.',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ..._commodities.map((commodity) {
+                    final index = _commodities.indexOf(commodity);
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.shade200, width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  commodity['name'] ?? '',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.blue.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Quantity: ${commodity['quantity'] ?? ''}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => _removeCommodity(index),
+                            icon: Icon(
+                              Icons.delete_outline,
+                              color: Colors.red.shade600,
+                              size: 24,
+                            ),
+                            tooltip: 'Remove commodity',
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddCommodityModal() {
+    String? selectedCommodity;
+    final TextEditingController quantityController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Add FP Commodity',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: ThemeController.instance.useShadcn.value
+                  ? ShadcnColors.accent700
+                  : Colors.green.shade800,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Commodity Type *',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: selectedCommodity,
+                decoration: InputDecoration(
+                  hintText: 'Select commodity type',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                items: [
+                  'Condoms',
+                  'IUCD (Intrauterine Contraceptive Device)',
+                  'Oral Contraceptive Pills',
+                  'Injectable Contraceptives',
+                  'Implant',
+                  'Emergency Contraceptive Pills',
+                  'Diaphragm',
+                  'Cervical Cap',
+                  'Spermicide',
+                  'Other',
+                ].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  selectedCommodity = newValue;
+                },
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Quantity *',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: quantityController,
+                decoration: InputDecoration(
+                  hintText: 'Enter quantity',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (selectedCommodity != null && quantityController.text.trim().isNotEmpty) {
+                  setState(() {
+                    _commodities.add({
+                      'name': selectedCommodity!,
+                      'quantity': quantityController.text.trim(),
+                    });
+                  });
+                  Navigator.of(context).pop();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please select a commodity and enter quantity'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ThemeController.instance.useShadcn.value
+                    ? ShadcnColors.accent600
+                    : Colors.green.shade600,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _removeCommodity(int index) {
+    setState(() {
+      _commodities.removeAt(index);
+    });
   }
 
   Widget _buildNumberField(String label, String hint, TextEditingController controller) {
