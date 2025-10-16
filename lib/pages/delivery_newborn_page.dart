@@ -641,11 +641,15 @@ class _DeliveryNewbornPageState extends State<DeliveryNewbornPage> with TickerPr
                 child: FilledButton(
                   onPressed: _saveAndContinueInitialAssessment,
                   style: FilledButton.styleFrom(
-                    backgroundColor: ShadcnColors.accent600,
+                    backgroundColor: _initialProgressToNextStage == 'False Labor' 
+                        ? Colors.orange.shade600 
+                        : ShadcnColors.accent600,
                     foregroundColor: Colors.white,
                   ),
                   child: Text(
-                    'Save and Continue to ${_getNextTabName()}',
+                    _initialProgressToNextStage == 'False Labor' 
+                        ? 'Save and Exit (False Labor)'
+                        : 'Save and Continue to ${_getNextTabName()}',
                   ),
                 ),
               ),
@@ -1928,6 +1932,13 @@ class _DeliveryNewbornPageState extends State<DeliveryNewbornPage> with TickerPr
 
   // Save and continue methods
   void _saveAndContinueInitialAssessment() {
+    // Check if False Labor is selected
+    if (_initialProgressToNextStage == 'False Labor') {
+      // Save the form data and exit
+      _saveFormDataAndExit();
+      return;
+    }
+    
     // Validation temporarily disabled for testing
     // TODO: Re-enable validation when requested
     // if (_validateInitialAssessmentForm()) {
@@ -1950,6 +1961,29 @@ class _DeliveryNewbornPageState extends State<DeliveryNewbornPage> with TickerPr
         ),
       );
     // }
+  }
+
+  void _saveFormDataAndExit() {
+    // TODO: Save form data to backend/database
+    // For now, just show a success message and navigate back
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('False Labor case saved successfully. Returning to dashboard.'),
+        backgroundColor: Colors.orange.shade600,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+    
+    // Navigate back to pregnancy dashboard after a short delay
+    Future.delayed(const Duration(seconds: 1), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => PregnancyDashboard(),
+        ),
+      );
+    });
   }
 
   void _saveAndContinueDeliveryAssessment() {

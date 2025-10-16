@@ -8,6 +8,7 @@ import 'anc_page.dart';
 import 'delivery_newborn_page.dart';
 import 'pregnancy_registration_page.dart';
 import 'post_natal_care_page.dart';
+import 'doctor_dashboard.dart';
 import '../models/user_type.dart';
 
 class PregnancyDashboard extends StatefulWidget {
@@ -161,6 +162,23 @@ class _PregnancyDashboardState extends State<PregnancyDashboard> {
                           }
                           return Row(
                             children: [
+                              IconButton(
+                                tooltip: 'Back to Doctor Dashboard',
+                                onPressed: () {
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (_) => const DoctorDashboard(),
+                                    ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.arrow_back,
+                                  color: ThemeController.instance.useShadcn.value
+                                      ? ShadcnColors.accent700
+                                      : Colors.green.shade800,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
                               CircleAvatar(
                                 radius: 18,
                                 backgroundColor: ShadcnColors.accent100,
